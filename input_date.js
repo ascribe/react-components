@@ -8,19 +8,15 @@ let InputDate = React.createClass({
     mixins : [AlertMixin],
 
     getInitialState() {
-        return {value: '2015-01-01',
+        return {value: null,
                 alerts: null // needed in AlertMixin
         };
     },
-    handleChange(moment_date) {
-        this.setState({value: moment_date.format("YYYY-MM-DD")});
+
+    handleChange(date) {
+        this.setState({value: date});
     },
-    isValidDate: function (str) {
-        return (
-            /^[0-9]{4}$/.test(str) &&
-            moment(str, 'YYYY-MM-DD').isValid()
-        );
-    },
+
     render: function () {
         let className = "form-control input-text-ascribe";
         let alerts = (this.props.submitted) ? null : this.state.alerts;
@@ -28,7 +24,9 @@ let InputDate = React.createClass({
              <DatePicker
                  key="example2"
                  dateFormat="YYYY-MM-DD"
+                 selected={this.state.value}
                  onChange={this.handleChange}
+                 placeholderText={this.props.placeholderText}
               />
         );
         //return (
