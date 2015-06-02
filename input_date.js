@@ -9,42 +9,31 @@ let InputDate = React.createClass({
 
     getInitialState() {
         return {value: null,
+                value_formatted: null,
                 alerts: null // needed in AlertMixin
         };
     },
 
     handleChange(date) {
-        this.setState({value: date});
+        this.setState({
+            value: date,
+            value_formatted: date.format("YYYY-MM-DD")});
     },
 
     render: function () {
         let className = "form-control input-text-ascribe";
         let alerts = (this.props.submitted) ? null : this.state.alerts;
         return (
-             <DatePicker
-                 key="example2"
-                 dateFormat="YYYY-MM-DD"
-                 selected={this.state.value}
-                 onChange={this.handleChange}
-                 placeholderText={this.props.placeholderText}
-              />
+            <div className="form-group">
+                {alerts}
+                <DatePicker
+                    key="example2"
+                    dateFormat="YYYY-MM-DD"
+                    selected={this.state.value}
+                    onChange={this.handleChange}
+                    placeholderText={this.props.placeholderText}/>
+            </div>
         );
-        //return (
-        //    <div className="input-group date"
-        //        ref={this.props.name + "_picker"}
-        //        onChange={this.handleChange}>
-        //        <input className={className}
-        //            ref={this.props.name}
-        //            placeholder={this.props.placeholder}
-        //            required={this.props.required}
-        //            type="text"/>
-        //        <span className="input-group-addon input-text-ascribe">
-        //            <span className="glyphicon glyphicon-calendar" style={{"color": "black"}}></span>
-        //        </span>
-        //    </div>
-        //)
-
-
     }
 });
 
