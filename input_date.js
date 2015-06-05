@@ -1,15 +1,18 @@
+'use strict';
+
 import React from 'react';
 
-import AlertMixin from '../../mixins/alert_mixin'
-import DatePicker from 'react-datepicker/dist/react-datepicker'
+import AlertMixin from '../../mixins/alert_mixin';
+import DatePicker from 'react-datepicker/dist/react-datepicker';
 
 let InputDate = React.createClass({
 
-    mixins : [AlertMixin],
+    mixins: [AlertMixin],
 
     getInitialState() {
-        return {value: null,
-                alerts: null // needed in AlertMixin
+        return {
+            value: null,
+            alerts: null // needed in AlertMixin
         };
     },
 
@@ -18,7 +21,7 @@ let InputDate = React.createClass({
     },
 
     render: function () {
-        let className = "form-control input-text-ascribe";
+        let className = 'form-control input-text-ascribe';
         let alerts = (this.props.submitted) ? null : this.state.alerts;
         return (
              <DatePicker
@@ -29,6 +32,10 @@ let InputDate = React.createClass({
                  placeholderText={this.props.placeholderText}
               />
         );
+        // CAN THIS BE REMOVED???
+        //
+        //  - Tim?
+        //
         //return (
         //    <div className="input-group date"
         //        ref={this.props.name + "_picker"}
