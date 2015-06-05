@@ -1,16 +1,19 @@
+'use strict';
+
 import React from 'react';
 
-import AlertMixin from '../../mixins/alert_mixin'
-import DatePicker from 'react-datepicker/dist/react-datepicker'
+import AlertMixin from '../../mixins/alert_mixin';
+import DatePicker from 'react-datepicker/dist/react-datepicker';
 
 let InputDate = React.createClass({
 
-    mixins : [AlertMixin],
+    mixins: [AlertMixin],
 
     getInitialState() {
-        return {value: null,
-                value_formatted: null,
-                alerts: null // needed in AlertMixin
+        return {
+            value: null,
+            value_formatted: null,
+            alerts: null // needed in AlertMixin
         };
     },
 
@@ -21,7 +24,7 @@ let InputDate = React.createClass({
     },
 
     render: function () {
-        let className = "form-control input-text-ascribe";
+        let className = 'form-control input-text-ascribe';
         let alerts = (this.props.submitted) ? null : this.state.alerts;
         return (
             <div className="form-group">
@@ -34,6 +37,24 @@ let InputDate = React.createClass({
                     placeholderText={this.props.placeholderText}/>
             </div>
         );
+        // CAN THIS BE REMOVED???
+        //
+        //  - Tim?
+        //
+        //return (
+        //    <div className="input-group date"
+        //        ref={this.props.name + "_picker"}
+        //        onChange={this.handleChange}>
+        //        <input className={className}
+        //            ref={this.props.name}
+        //            placeholder={this.props.placeholder}
+        //            required={this.props.required}
+        //            type="text"/>
+        //        <span className="input-group-addon input-text-ascribe">
+        //            <span className="glyphicon glyphicon-calendar" style={{"color": "black"}}></span>
+        //        </span>
+        //    </div>
+        //)
     }
 });
 

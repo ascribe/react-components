@@ -1,19 +1,24 @@
+'use strict';
+
 import React from 'react';
 
-import AlertMixin from '../../mixins/alert_mixin'
+import AlertMixin from '../../mixins/alert_mixin';
 
 let InputCheckbox = React.createClass({
 
-    mixins : [AlertMixin],
+    mixins: [AlertMixin],
 
     getInitialState() {
-        return {value: null,
-                alerts: null // needed in AlertMixin
+        return {
+            value: null,
+            alerts: null // needed in AlertMixin
         };
     },
+    
     handleChange(event) {
         this.setState({value: event.target.value});
     },
+
     render() {
         let alerts = (this.props.submitted) ? null : this.state.alerts;
         return (
