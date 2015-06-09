@@ -6,6 +6,10 @@ import AlertMixin from '../../mixins/alert_mixin';
 import DatePicker from 'react-datepicker/dist/react-datepicker';
 
 let InputDate = React.createClass({
+    propTypes: {
+        submitted: React.PropTypes.bool,
+        placeholderText: React.PropTypes.string
+    },
 
     mixins: [AlertMixin],
 
@@ -20,11 +24,10 @@ let InputDate = React.createClass({
     handleChange(date) {
         this.setState({
             value: date,
-            value_formatted: date.format("YYYY-MM-DD")});
+            value_formatted: date.format('YYYY-MM-DD')});
     },
 
     render: function () {
-        let className = 'form-control input-text-ascribe';
         let alerts = (this.props.submitted) ? null : this.state.alerts;
         return (
             <div className="form-group">
@@ -37,24 +40,6 @@ let InputDate = React.createClass({
                     placeholderText={this.props.placeholderText}/>
             </div>
         );
-        // CAN THIS BE REMOVED???
-        //
-        //  - Tim?
-        //
-        //return (
-        //    <div className="input-group date"
-        //        ref={this.props.name + "_picker"}
-        //        onChange={this.handleChange}>
-        //        <input className={className}
-        //            ref={this.props.name}
-        //            placeholder={this.props.placeholder}
-        //            required={this.props.required}
-        //            type="text"/>
-        //        <span className="input-group-addon input-text-ascribe">
-        //            <span className="glyphicon glyphicon-calendar" style={{"color": "black"}}></span>
-        //        </span>
-        //    </div>
-        //)
     }
 });
 

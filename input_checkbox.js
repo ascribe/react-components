@@ -5,6 +5,11 @@ import React from 'react';
 import AlertMixin from '../../mixins/alert_mixin';
 
 let InputCheckbox = React.createClass({
+    propTypes: {
+        submitted: React.PropTypes.bool.isRequired,
+        required: React.PropTypes.string.isRequired,
+        label: React.PropTypes.string.isRequired
+    },
 
     mixins: [AlertMixin],
 

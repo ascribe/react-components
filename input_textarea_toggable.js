@@ -8,6 +8,15 @@ import Button from 'react-bootstrap/lib/Button';
 
 let InputTextAreaToggable = React.createClass({
 
+    propTypes: {
+        editable: React.PropTypes.bool.isRequired,
+        submitted: React.PropTypes.bool,
+        rows: React.PropTypes.number.isRequired,
+        onSubmit: React.PropTypes.func.isRequired,
+        required: React.PropTypes.string,
+        defaultValue: React.PropTypes.string
+    },
+
     mixins: [AlertMixin],
 
     getInitialState() {
