@@ -85,7 +85,7 @@ let Form = React.createClass({
     },
     clearErrors(){
         for (var ref in this.refs){
-            if ('clearError' in this.refs[ref]){
+            if ('clearErrors' in this.refs[ref]){
                 this.refs[ref].clearErrors();
             }
         }
@@ -123,10 +123,9 @@ let Form = React.createClass({
     },
     render() {
         return (
-            <form role="form" onSubmit={this.submit}>
+            <form role="form" className="ascribe-form" onSubmit={this.submit} autoComplete="on">
                 {this.getErrors()}
                 {this.renderChildren()}
-                {this.getButtons()}
             </form>
 
         );

@@ -3,6 +3,9 @@
 import React from 'react';
 import ReactAddons from 'react/addons';
 
+import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
+import Tooltip from 'react-bootstrap/lib/Tooltip';
+
 let Property = React.createClass({
     propTypes: {
         editable: React.PropTypes.bool,
@@ -49,6 +52,11 @@ let Property = React.createClass({
             isFocused: true
         });
     },
+    handleBlur() {
+        this.setState({
+            isFocused: false
+        });
+    },
     handleSuccess(){
         this.setState({
             isFocused: false,
@@ -83,22 +91,35 @@ let Property = React.createClass({
             return ReactAddons.addons.cloneWithProps(child, {
                 value: this.state.value,
                 onChange: this.handleChange,
+                onFocus: this.handleFocus,
+                onBlur: this.handleBlur,
                 disabled: !this.props.editable,
                 ref: 'input'
             });
         });
     },
     render() {
-
+        let tooltip = <span/>;
+        if (this.props.tooltip){
+            tooltip = (
+                <Tooltip>
+                    {this.props.tooltip}
+                </Tooltip>);
+        }
         return (
             <div
                 className={'ascribe-settings-wrapper ' + this.getClassName()}
-                onClick={this.handleFocus}>
-                <div className="ascribe-settings-property">
-                    {this.state.errors}
-                    <span>{ this.props.label}</span>
-                    {this.renderChildren()}
-                </div>
+                onClick={this.handleFocus} onfocus={this.handleFocus}>
+                <OverlayTrigger
+                    delay={500}
+                    placement="top"
+                    overlay={tooltip}>
+                    <div className="ascribe-settings-property">
+                        {this.state.errors}
+                        <span>{ this.props.label}</span>
+                        {this.renderChildren()}
+                    </div>
+                </OverlayTrigger>
             </div>
         );
     }
