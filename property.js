@@ -8,7 +8,9 @@ import Tooltip from 'react-bootstrap/lib/Tooltip';
 
 let Property = React.createClass({
     propTypes: {
+        hidden: React.PropTypes.bool,
         editable: React.PropTypes.bool,
+        tooltip: React.PropTypes.element,
         label: React.PropTypes.string,
         value: React.PropTypes.oneOfType([
             React.PropTypes.string,
@@ -19,7 +21,8 @@ let Property = React.createClass({
 
     getDefaultProps() {
         return {
-            editable: true
+            editable: true,
+            hidden: false
         };
     },
 
@@ -38,8 +41,16 @@ let Property = React.createClass({
         });
     },
     reset(){
+        // maybe do reset by reload instead of frontend state?
         this.setState({value: this.state.initialValue});
-        this.refs.input.getDOMNode().value = this.state.initialValue;
+        if (this.refs.input.state){
+            // This is probably not the right way but easy fix
+            this.refs.input.state.value = this.state.initialValue;
+        }
+        else{
+            this.refs.input.getDOMNode().value = this.state.initialValue;
+        }
+
     },
 
     handleChange(event) {
@@ -74,6 +85,9 @@ let Property = React.createClass({
         this.setState({errors: null});
     },
     getClassName() {
+        if(this.props.hidden){
+            return 'is-hidden';
+        }
         if(!this.props.editable){
             return 'is-fixed';
         }
