@@ -66,7 +66,7 @@ let Form = React.createClass({
                 this.refs[ref].handleSuccess();
             }
         }
-        this.setState({edited: false});
+        this.setState({edited: false, submitted: false});
     },
     handleError(err){
         if (err.json) {
@@ -102,10 +102,10 @@ let Form = React.createClass({
 
         if (this.state.edited){
             buttons = (
-                <div className="pull-right">
+                <p className="pull-right">
                     <Button className="ascribe-btn" type="submit">Save</Button>
                     <Button className="ascribe-btn" onClick={this.reset}>Cancel</Button>
-                </div>
+                </p>
             );
 
         }
