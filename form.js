@@ -102,10 +102,12 @@ let Form = React.createClass({
 
         if (this.state.edited){
             buttons = (
-                <p className="pull-right">
-                    <Button className="ascribe-btn" type="submit">Save</Button>
-                    <Button className="ascribe-btn" onClick={this.reset}>Cancel</Button>
-                </p>
+                <div className="row" style={{margin: 0}}>
+                    <p className="pull-right">
+                        <Button className="ascribe-btn" type="submit">Save</Button>
+                        <Button className="ascribe-btn" onClick={this.reset}>Cancel</Button>
+                    </p>
+                </div>
             );
 
         }
