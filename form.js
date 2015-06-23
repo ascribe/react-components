@@ -10,6 +10,9 @@ import AlertDismissable from './alert';
 
 let Form = React.createClass({
     propTypes: {
+        url: React.PropTypes.string,
+        handleSuccess: React.PropTypes.func,
+        getFormData: React.PropTypes.func,
         children: React.PropTypes.oneOfType([
             React.PropTypes.object,
             React.PropTypes.array
