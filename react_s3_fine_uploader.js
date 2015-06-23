@@ -12,24 +12,15 @@ import FileDragAndDrop from './file_drag_and_drop';
 
 var ReactS3FineUploader = React.createClass({
 
-    getInitialState() {
-        return {
-            filesToUpload: [],
-            uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig())
-        };
-    },
-
-    componentDidMount() {
-        //console.log(JSON.stringify(this.propsToConfig()));
-        //let file = this.state.uploader.getResumableFilesData()[0];
-        //this.state.uploader.retry('1RKieODp_EBoDPNhISXBDNuA1JKdVuXCWhyk44DTK81WUQvpu3M8TXsKPLkjm3ICSvbbyR2KaHhEysvRQ_s4qHNFCbBiYrZ0Q8clXGCYtzk-');
-    },
-
     propTypes: {
         keyRoutine: React.PropTypes.shape({
             url: React.PropTypes.string,
             fileClass: React.PropTypes.string
         }),
+        createBlobRoutine: React.PropTypes.shape({
+            url: React.PropTypes.string
+        }),
+        handleChange: React.PropTypes.func,
         autoUpload: React.PropTypes.bool,
         debug: React.PropTypes.bool,
         objectProperties: React.PropTypes.shape({
@@ -84,9 +75,16 @@ var ReactS3FineUploader = React.createClass({
         })
     },
 
+    getInitialState() {
+        return {
+            filesToUpload: [],
+            uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig())
+        };
+    },
+
     propsToConfig() {
         let objectProperties = this.props.objectProperties;
-        objectProperties['key'] = this.requestKey;
+        objectProperties.key = this.requestKey;
 
         return {
             autoUpload: this.props.autoUpload,
@@ -109,7 +107,7 @@ var ReactS3FineUploader = React.createClass({
                 onSubmit: this.onSubmit,
                 onComplete: this.onComplete,
                 onDelete: this.onDelete,
-                onSessionRequestComplete: this.onSessionRequestComplete, 
+                onSessionRequestComplete: this.onSessionRequestComplete,
                 onProgress: this.onProgress,
                 onRetry: this.onRetry,
                 onAutoRetry: this.onAutoRetry,
@@ -118,6 +116,7 @@ var ReactS3FineUploader = React.createClass({
             }
         };
     },
+
     getCookie(name) {
         console.log(document.cookie);
         let value = '; ' + document.cookie;
@@ -160,8 +159,45 @@ var ReactS3FineUploader = React.createClass({
         console.log('submit');
     },
 
-    onComplete() {
-        console.log('complete');
+    onComplete(id) {
+        let files = this.state.filesToUpload;
+        files[id].status = 'upload successful';
+        files[id].key = this.state.uploader.getKey(id);
+
+        let newState = React.addons.update(this.state, {
+            filesToUpload: { $set: files }
+        });
+        this.setState(newState);
+        this.createBlob(files[id]);
+        this.props.handleChange();
+        console.log('completed ' + files[id].name);
+    },
+
+    createBlob(file) {
+        let defer = new fineUploader.Promise();
+        fetch(this.props.createBlobRoutine.url, {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': this.getCookie('csrftoken')
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                'filename': file.name,
+                'key': file.key
+            })
+        })
+        .then((res) => {
+            return res.json();
+        })
+        .then((res) =>{
+            defer.success(res.key);
+        })
+        .catch((err) => {
+            console.error(err);
+        });
+        return defer;
     },
 
     onRetry() {
@@ -193,13 +229,14 @@ var ReactS3FineUploader = React.createClass({
             // also, sync files from state with the ones from fineuploader
             let filesToUpload = JSON.parse(JSON.stringify(this.state.filesToUpload));
             // splice because I can
-            filesToUpload.splice(fileId, 1);
+            filesToUpload.splice(id, 1);
 
             // set state
             this.setState({
                 filesToUpload: React.addons.update(this.state.filesToUpload, {$set: filesToUpload})
             });
         } else {
+            console.log(id);
             // TODO: add global notification
         }
     },
@@ -207,7 +244,7 @@ var ReactS3FineUploader = React.createClass({
     onProgress(id, name, uploadedBytes, totalBytes) {
         var newState = React.addons.update(this.state, {
             filesToUpload: { [id]: {
-                progress: { $set: (uploadedBytes/totalBytes)*100} }
+                progress: { $set: (uploadedBytes / totalBytes) * 100} }
             }
         });
         this.setState(newState);
@@ -216,7 +253,7 @@ var ReactS3FineUploader = React.createClass({
     handleDeleteFile(fileId) {
         // delete file from server
         this.state.uploader.deleteFile(fileId);
-        // this is being continues in onDeleteFile, as 
+        // this is being continues in onDeleteFile, as
         // fineuploaders deleteFile does not return a correct callback or
         // promise
     },
@@ -241,7 +278,7 @@ var ReactS3FineUploader = React.createClass({
         for(let i = 0; i < oldAndNewFiles.length; i++) {
             for(let j = 0; j < oldFiles.length; j++) {
                 if(oldAndNewFiles[i].originalName === oldFiles[j].name) {
-                    oldAndNewFiles[i].progress = 0;
+                    oldAndNewFiles[i].progress = oldFiles[j].progress;
                     oldAndNewFiles[i].type = oldFiles[j].type;
                     oldAndNewFiles[i].url = oldFiles[j].url;
                 }
@@ -256,7 +293,7 @@ var ReactS3FineUploader = React.createClass({
 
     render() {
         return (
-            <FileDragAndDrop 
+            <FileDragAndDrop
                 onDrop={this.handleUploadFile}
                 filesToUpload={this.state.filesToUpload}
                 handleDeleteFile={this.handleDeleteFile}/>

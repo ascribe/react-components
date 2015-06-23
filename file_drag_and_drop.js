@@ -81,8 +81,8 @@ var FileDragAndDrop = React.createClass({
 
     handleOnClick() {
         // Simulate click on hidden file input
-        var event = document.createEvent("HTMLEvents");
-        event.initEvent("click", false, true);
+        var event = document.createEvent('HTMLEvents');
+        event.initEvent('click', false, true);
         this.refs.fileinput.getDOMNode().dispatchEvent(event);
     },
 
@@ -101,17 +101,17 @@ var FileDragAndDrop = React.createClass({
                 onDrop={this.handleDrop}
                 onDragEnd={this.handleDragEnd}>
                     {hasFiles ? null : <span>Click or drag to add files</span>}
-                    <FileDragAndDropPreviewIterator 
+                    <FileDragAndDropPreviewIterator
                         files={this.props.filesToUpload}
                         handleDeleteFile={this.handleDeleteFile}/>
                     <input
                         multiple
                         ref="fileinput"
-                        type="file" 
+                        type="file"
                         style={{
                             display: 'none',
-                            height:0,
-                            width:0
+                            height: 0,
+                            width: 0
                         }}
                         onChange={this.handleDrop} />
             </div>
