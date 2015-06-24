@@ -118,7 +118,7 @@ var ReactS3FineUploader = React.createClass({
     },
 
     getCookie(name) {
-        console.log(document.cookie);
+        //console.log(document);
         let value = '; ' + document.cookie;
         let parts = value.split('; ' + name + '=');
         if (parts.length === 2) {
@@ -126,31 +126,33 @@ var ReactS3FineUploader = React.createClass({
         }
     },
     requestKey(fileId) {
+        //console.log(this.getCookie('csrftoken'));
         let filename = this.state.uploader.getName(fileId);
-        let defer = new fineUploader.Promise();
-        fetch(this.props.keyRoutine.url, {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-CSRFToken': this.getCookie('csrftoken')
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                'filename': filename,
-                'file_class': 'digitalwork'
+        return new Promise((resolve, reject) => {
+            fetch(this.props.keyRoutine.url, {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.getCookie('csrftoken')
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    'filename': filename,
+                    'file_class': 'digitalwork'
+                })
             })
-        })
-        .then((res) => {
-            return res.json();
-        })
-        .then((res) =>{
-            defer.success(res.key);
-        })
-        .catch((err) => {
-            console.error(err);
+            .then((res) => {
+                return res.json();
+            })
+            .then((res) =>{
+                resolve(res.key);
+            })
+            .catch((err) => {
+                console.error(err);
+                reject(err);
+            });
         });
-        return defer;
     },
 
     /* FineUploader specific callback function handlers */
