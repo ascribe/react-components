@@ -137,9 +137,12 @@ let Form = React.createClass({
         });
     },
     render() {
-
         return (
-            <form role="form" className="ascribe-form" onSubmit={this.submit} autoComplete="on">
+            <form 
+                role="form"
+                className="ascribe-form"
+                onSubmit={this.submit}
+                autoComplete="on">
                 {this.getErrors()}
                 {this.renderChildren()}
                 {this.getButtons()}
