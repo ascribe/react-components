@@ -1,3 +1,5 @@
+'use strict';
+
 import React from 'react';
 
 import FileDragAndDropPreviewImage from './file_drag_and_drop_preview_image';
@@ -6,7 +8,7 @@ import FileDragAndDropPreviewOther from './file_drag_and_drop_preview_other';
 
 let FileDragAndDropPreview = React.createClass({
 
-    propsTypes: {
+    propTypes: {
         file: React.PropTypes.shape({
             url: React.PropTypes.string,
             type: React.PropTypes.string
@@ -28,20 +30,20 @@ let FileDragAndDropPreview = React.createClass({
     render() {
         let previewElement;
 
-        // Decide wether an image or a placeholder picture should be displayed
+        // Decide whether an image or a placeholder picture should be displayed
         if(this.props.file.type.split('/')[0] === 'image') {
-            previewElement = (<FileDragAndDropPreviewImage 
-                    progress={this.props.file.progress} 
+            previewElement = (<FileDragAndDropPreviewImage
+                    progress={this.props.file.progress}
                     url={this.props.file.url}/>);
         } else {
-            previewElement = (<FileDragAndDropPreviewOther 
-                    progress={this.props.file.progress} 
+            previewElement = (<FileDragAndDropPreviewOther
+                    progress={this.props.file.progress}
                     type={this.props.file.type.split('/')[1]}/>);
         }
 
         return (
-            <div 
-                className="file-drag-and-drop-position" 
+            <div
+                className="file-drag-and-drop-position"
                 onClick={this.handleDeleteFile}>
                 {previewElement}
             </div>

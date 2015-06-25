@@ -1,3 +1,5 @@
+'use strict';
+
 import React from 'react';
 import ProgressBar from 'react-progressbar';
 
@@ -18,6 +20,7 @@ let FileDragAndDropPreviewImage = React.createClass({
                 className="file-drag-and-drop-preview-image"
                 style={imageStyle}>
                     <ProgressBar completed={this.props.progress} color="black"/>
+                    <span className="glyphicon glyphicon-remove delete-file" aria-hidden="true" title="Delete"></span>
             </div>
         );
     }
