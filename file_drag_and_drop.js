@@ -115,7 +115,7 @@ var FileDragAndDrop = React.createClass({
                 onDragOver={this.handleDragOver}
                 onDrop={this.handleDrop}
                 onDragEnd={this.handleDragEnd}>
-                    {hasFiles ? null : <span>Click or drag to add files</span>}
+                    {hasFiles ? null : this.props.multiple ? <span>Click or drag to add files</span> : <span>Click or drag to add a file</span>}
                     <FileDragAndDropPreviewIterator
                         files={this.props.filesToUpload}
                         handleDeleteFile={this.handleDeleteFile}/>
