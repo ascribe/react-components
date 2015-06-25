@@ -221,6 +221,7 @@ var ReactS3FineUploader = React.createClass({
 
     onCancel() {
         console.log('cancel');
+        // handle file removal here, for this.state.filesToUpload (same as in onDeleteComplete)
     },
 
     onSessionRequestComplete() {

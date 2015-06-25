@@ -27,6 +27,9 @@ let FileDragAndDropPreview = React.createClass({
         }
     },
 
+    // implement a handle cancel action here that triggers fineuploaders cancel method
+    // to delete files that are currently uploading
+
     render() {
         let previewElement;
 
