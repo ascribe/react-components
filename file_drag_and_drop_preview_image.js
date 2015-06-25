@@ -22,7 +22,7 @@ let FileDragAndDropPreviewImage = React.createClass({
                 className="file-drag-and-drop-preview-image"
                 style={imageStyle}>
                     <ProgressBar completed={this.props.progress} color="black"/>
-                    <span className="glyphicon glyphicon-remove delete-file" aria-hidden="true" title="Delete"></span>
+                    {this.props.progress === 100 ? <span className="glyphicon glyphicon-remove delete-file" aria-hidden="true" title="Delete"></span> : null}
             </div>
         );
     }
