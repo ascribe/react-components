@@ -118,7 +118,6 @@ var ReactS3FineUploader = React.createClass({
     },
 
     getCookie(name) {
-        //console.log(document);
         let value = '; ' + document.cookie;
         let parts = value.split('; ' + name + '=');
         if (parts.length === 2) {
@@ -126,7 +125,6 @@ var ReactS3FineUploader = React.createClass({
         }
     },
     requestKey(fileId) {
-        //console.log(this.getCookie('csrftoken'));
         let filename = this.state.uploader.getName(fileId);
         return new Promise((resolve, reject) => {
             fetch(this.props.keyRoutine.url, {
