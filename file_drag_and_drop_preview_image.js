@@ -6,7 +6,8 @@ import ProgressBar from 'react-progressbar';
 let FileDragAndDropPreviewImage = React.createClass({
     propTypes: {
         progress: React.PropTypes.number,
-        url: React.PropTypes.string
+        url: React.PropTypes.string,
+        onClick: React.PropTypes.func
     },
 
     render() {
@@ -17,6 +18,7 @@ let FileDragAndDropPreviewImage = React.createClass({
 
         return (
             <div
+                onClick={this.props.onClick}
                 className="file-drag-and-drop-preview-image"
                 style={imageStyle}>
                     <ProgressBar completed={this.props.progress} color="black"/>

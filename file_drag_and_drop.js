@@ -99,7 +99,6 @@ var FileDragAndDrop = React.createClass({
     },
 
     render: function () {
-        console.log(this.props.dropzoneInactive);
         let hasFiles = this.props.filesToUpload.length > 0;
         let className = hasFiles ? 'file-drag-and-drop has-files ' : 'file-drag-and-drop ';
         className += this.props.dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';

@@ -6,12 +6,14 @@ import ProgressBar from 'react-progressbar';
 let FileDragAndDropPreviewOther = React.createClass({
     propTypes: {
         type: React.PropTypes.string,
-        progress: React.PropTypes.number
+        progress: React.PropTypes.number,
+        onClick: React.PropTypes.func
     },
 
     render() {
         return (
             <div
+                onClick={this.props.onClick}
                 className="file-drag-and-drop-preview">
                 <ProgressBar completed={this.props.progress} color="black"/>
                 <div className="file-drag-and-drop-preview-table-wrapper">
