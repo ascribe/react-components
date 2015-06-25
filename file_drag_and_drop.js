@@ -12,7 +12,8 @@ var FileDragAndDrop = React.createClass({
         onDragOver: React.PropTypes.func,
         onDragEnd: React.PropTypes.func,
         filesToUpload: React.PropTypes.array,
-        handleDeleteFile: React.PropTypes.func
+        handleDeleteFile: React.PropTypes.func,
+        multiple: React.PropTypes.bool
     },
 
     handleDragStart(event) {
@@ -105,7 +106,7 @@ var FileDragAndDrop = React.createClass({
                         files={this.props.filesToUpload}
                         handleDeleteFile={this.handleDeleteFile}/>
                     <input
-                        multiple
+                        multiple={this.props.multiple}
                         ref="fileinput"
                         type="file"
                         style={{
