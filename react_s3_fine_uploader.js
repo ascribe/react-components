@@ -10,6 +10,9 @@ import fetch from 'isomorphic-fetch';
 import fineUploader from 'fineUploader';
 import FileDragAndDrop from './file_drag_and_drop';
 
+import GlobalNotificationModel from '../../models/global_notification_model';
+import GlobalNotificationActions from '../../actions/global_notification_actions';
+
 var ReactS3FineUploader = React.createClass({
 
     propTypes: {
@@ -259,6 +262,26 @@ var ReactS3FineUploader = React.createClass({
     },
 
     handleUploadFile(files) {
+
+        // If multiple set and user already uploaded its work,
+        // cancel upload
+        if(!this.props.multiple && this.state.filesToUpload.length > 0) {
+            return;
+        }
+
+        // if multiple is set to false and user drops multiple files into the dropzone,
+        // take the first one and notify user that only one file can be submitted
+        if(!this.props.multiple && files.length > 1) {
+            let tempFilesList = [];
+            tempFilesList.push(files[0]);
+
+            // replace filelist with first-element file list
+            files = tempFilesList;
+
+            let notification = new GlobalNotificationModel('Only one file allowed (took first one)', 'danger', 10000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
+        }
+
         this.state.uploader.addFiles(files);
         let oldFiles = this.state.filesToUpload;
         let oldAndNewFiles = this.state.uploader.getUploads();
@@ -297,7 +320,8 @@ var ReactS3FineUploader = React.createClass({
                 onDrop={this.handleUploadFile}
                 filesToUpload={this.state.filesToUpload}
                 handleDeleteFile={this.handleDeleteFile}
-                multiple={this.props.multiple}/>
+                multiple={this.props.multiple} 
+                dropzoneInactive={!this.props.multiple && this.state.filesToUpload.length > 0} />
         );
     }
 

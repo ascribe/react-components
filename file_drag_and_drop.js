@@ -1,3 +1,5 @@
+'use strict';
+
 import React from 'react';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
 
@@ -7,13 +9,16 @@ var FileDragAndDrop = React.createClass({
     propTypes: {
         onDragStart: React.PropTypes.func,
         onDrop: React.PropTypes.func.isRequired,
+        onDrag: React.PropTypes.func,
         onDragEnter: React.PropTypes.func,
         onLeave: React.PropTypes.func,
+        onDragLeave: React.PropTypes.func,
         onDragOver: React.PropTypes.func,
         onDragEnd: React.PropTypes.func,
         filesToUpload: React.PropTypes.array,
         handleDeleteFile: React.PropTypes.func,
-        multiple: React.PropTypes.bool
+        multiple: React.PropTypes.bool,
+        dropzoneInactive: React.PropTypes.bool
     },
 
     handleDragStart(event) {
@@ -81,6 +86,12 @@ var FileDragAndDrop = React.createClass({
     },
 
     handleOnClick() {
+        // when multiple is set to false and the user already uploaded a piece,
+        // do not propagate event
+        if(this.props.dropzoneInactive) {
+            return;
+        }
+
         // Simulate click on hidden file input
         var event = document.createEvent('HTMLEvents');
         event.initEvent('click', false, true);
@@ -88,11 +99,14 @@ var FileDragAndDrop = React.createClass({
     },
 
     render: function () {
+        console.log(this.props.dropzoneInactive);
         let hasFiles = this.props.filesToUpload.length > 0;
+        let className = hasFiles ? 'file-drag-and-drop has-files ' : 'file-drag-and-drop ';
+        className += this.props.dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';
 
         return (
             <div
-                className={hasFiles ? 'file-drag-and-drop has-files' : 'file-drag-and-drop' }
+                className={className}
                 onClick={this.handleOnClick}
                 onDragStart={this.handleDragStart}
                 onDrag={this.handleDrop}
@@ -120,4 +134,4 @@ var FileDragAndDrop = React.createClass({
     }
 });
 
-module.exports = FileDragAndDrop;
+export default FileDragAndDrop;
