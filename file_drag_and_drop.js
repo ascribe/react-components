@@ -19,6 +19,8 @@ var FileDragAndDrop = React.createClass({
         filesToUpload: React.PropTypes.array,
         handleDeleteFile: React.PropTypes.func,
         handleCancelFile: React.PropTypes.func,
+        handlePauseFile: React.PropTypes.func,
+        handleResumeFile: React.PropTypes.func,
         multiple: React.PropTypes.bool,
         dropzoneInactive: React.PropTypes.bool
     },
@@ -93,6 +95,20 @@ var FileDragAndDrop = React.createClass({
         this.props.handleCancelFile(fileId);
     },
 
+    handlePauseFile(fileId) {
+        // input's value is not change the second time someone
+        // inputs the same file again, therefore we need to reset its value
+        this.refs.fileinput.getDOMNode().value = '';
+        this.props.handlePauseFile(fileId);
+    },
+
+    handleResumeFile(fileId) {
+        // input's value is not change the second time someone
+        // inputs the same file again, therefore we need to reset its value
+        this.refs.fileinput.getDOMNode().value = '';
+        this.props.handleResumeFile(fileId);
+    },
+
     handleOnClick() {
         // when multiple is set to false and the user already uploaded a piece,
         // do not propagate event
@@ -128,7 +144,9 @@ var FileDragAndDrop = React.createClass({
                     <FileDragAndDropPreviewIterator
                         files={this.props.filesToUpload}
                         handleDeleteFile={this.handleDeleteFile}
-                        handleCancelFile={this.handleCancelFile}/>
+                        handleCancelFile={this.handleCancelFile}
+                        handlePauseFile={this.handlePauseFile}
+                        handleResumeFile={this.handleResumeFile}/>
                     <input
                         multiple={this.props.multiple}
                         ref="fileinput"

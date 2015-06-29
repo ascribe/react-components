@@ -14,11 +14,17 @@ let FileDragAndDropPreview = React.createClass({
             type: React.PropTypes.string
         }).isRequired,
         handleDeleteFile: React.PropTypes.func,
-        handleCancelFile: React.PropTypes.func
+        handleCancelFile: React.PropTypes.func,
+        handlePauseFile: React.PropTypes.func,
+        handleResumeFile: React.PropTypes.func
     },
 
     toggleUploadProcess() {
-
+        if(this.props.file.status === 'uploading') {
+            this.props.handlePauseFile(this.props.file.id);
+        } else if(this.props.file.status === 'paused') {
+            this.props.handleResumeFile(this.props.file.id);
+        }
     },
 
     handleDeleteFile() {

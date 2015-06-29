@@ -349,6 +349,23 @@ var ReactS3FineUploader = React.createClass({
         this.state.uploader.cancel(fileId);
     },
 
+    handlePauseFile(fileId) {
+        if(this.state.uploader.pauseUpload(fileId)) {
+            this.setStatusOfFile(fileId, 'paused');
+        } else {
+            throw new Error('File upload could not be paused.');
+        }
+        
+    },
+
+    handleResumeFile(fileId) {
+        if(this.state.uploader.continueUpload(fileId)) {
+            this.setStatusOfFile(fileId, 'uploading');
+        } else {
+            throw new Error('File upload could not be resumed.');
+        }
+    },
+
     handleUploadFile(files) {
 
         // If multiple set and user already uploaded its work,
@@ -418,6 +435,20 @@ var ReactS3FineUploader = React.createClass({
         this.setState(newState);
     },
 
+    setStatusOfFile(fileId, status) {
+        // also, sync files from state with the ones from fineuploader
+        let filesToUpload = JSON.parse(JSON.stringify(this.state.filesToUpload));
+
+        // splice because I can
+        filesToUpload[fileId].status = status;
+
+        // set state
+        let newState = React.addons.update(this.state, {
+            filesToUpload: { $set: filesToUpload }
+        });
+        this.setState(newState);
+    },
+
     render() {
         return (
             <div>
@@ -427,6 +458,8 @@ var ReactS3FineUploader = React.createClass({
                     filesToUpload={this.state.filesToUpload}
                     handleDeleteFile={this.handleDeleteFile}
                     handleCancelFile={this.handleCancelFile}
+                    handlePauseFile={this.handlePauseFile}
+                    handleResumeFile={this.handleResumeFile}
                     multiple={this.props.multiple}
                     dropzoneInactive={!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0} />
             </div>

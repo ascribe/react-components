@@ -3,7 +3,6 @@
 import React from 'react';
 import ProgressBar from 'react-progressbar';
 
-import AppConstants from '../../constants/application_constants';
 
 let FileDragAndDropPreviewOther = React.createClass({
     propTypes: {
