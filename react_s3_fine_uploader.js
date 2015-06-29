@@ -6,6 +6,8 @@ import promise from 'es6-promise';
 promise.polyfill();
 
 import fetch from 'isomorphic-fetch';
+import AppConstants from '../../constants/application_constants';
+
 
 import fineUploader from 'fineUploader';
 import FileDragAndDrop from './file_drag_and_drop';
@@ -18,7 +20,8 @@ var ReactS3FineUploader = React.createClass({
     propTypes: {
         keyRoutine: React.PropTypes.shape({
             url: React.PropTypes.string,
-            fileClass: React.PropTypes.string
+            fileClass: React.PropTypes.string,
+            bitcoinId: React.PropTypes.string
         }),
         createBlobRoutine: React.PropTypes.shape({
             url: React.PropTypes.string
@@ -84,7 +87,64 @@ var ReactS3FineUploader = React.createClass({
             uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig())
         };
     },
-
+    getDefaultProps() {
+        return {
+            autoUpload: true,
+            debug: false,
+            objectProperties: {
+                acl: 'public-read',
+                bucket: 'exampleBucket'
+            },
+            request: {
+                endpoint: 'http://example-amazons3-bucket.com',
+                accessKey: 'exampleAccessKey'
+            },
+            uploadSuccess: {
+                params: {
+                    isBrowserPreviewCapable: fineUploader.supportedFeatures.imagePreviews
+                }
+            },
+            signature: {
+                endpoint: AppConstants.serverUrl + 's3/signature/'
+                //customHeaders: {
+                //    'Authorization': 'OAuth ' + getCookie('sessionid')
+                //}
+            },
+            deleteFile: {
+                enabled: true,
+                method: 'DELETE',
+                endpoint: AppConstants.serverUrl + 's3/delete'
+                //customHeaders: {
+                //    'X-CSRFToken': getCookie('csrftoken')
+                //}
+            },
+            cors: {
+                expected: true
+            },
+            chunking: {
+                enabled: true
+            },
+            resume: {
+                enabled: true
+            },
+            retry: {
+                enableAuto: false
+            },
+            session: {
+                endpoint: null
+            },
+            messages: {
+                unsupportedBrowser: '<h3>Upload is not functional in IE7 as IE7 has no support for CORS!</h3>'
+            },
+            formatFileName: function(name){// fix maybe
+                if (name !== undefined && name.length > 26) {
+                    name = name.slice(0, 15) + '...' + name.slice(-15);
+                }
+                return name;
+            },
+            multiple: false
+        };
+    },
     propsToConfig() {
         let objectProperties = this.props.objectProperties;
         objectProperties.key = this.requestKey;
@@ -140,7 +200,8 @@ var ReactS3FineUploader = React.createClass({
                 credentials: 'include',
                 body: JSON.stringify({
                     'filename': filename,
-                    'file_class': 'digitalwork'
+                    'file_class': this.props.keyRoutine.fileClass,
+                    'bitcoin_id': this.props.keyRoutine.bitcoinId
                 })
             })
             .then((res) => {
@@ -326,7 +387,7 @@ var ReactS3FineUploader = React.createClass({
                 onDrop={this.handleUploadFile}
                 filesToUpload={this.state.filesToUpload}
                 handleDeleteFile={this.handleDeleteFile}
-                multiple={this.props.multiple} 
+                multiple={this.props.multiple}
                 dropzoneInactive={!this.props.multiple && this.state.filesToUpload.length > 0} />
         );
     }
