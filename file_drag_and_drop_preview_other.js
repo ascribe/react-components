@@ -13,12 +13,17 @@ let FileDragAndDropPreviewOther = React.createClass({
     render() {
         return (
             <div
-                onClick={this.props.onClick}
+                
                 className="file-drag-and-drop-preview">
                 <ProgressBar completed={this.props.progress} color="black"/>
                 <div className="file-drag-and-drop-preview-table-wrapper">
                     <div className="file-drag-and-drop-preview-other">
-                        {this.props.progress === 100 ? <span className="glyphicon glyphicon-remove delete-file" aria-hidden="true" title="Delete"></span> : null}
+                        <span
+                            className="glyphicon glyphicon-remove delete-file"
+                            aria-hidden="true"
+                            title="Delete"
+                            onClick={this.props.onClick}>
+                        </span>
                         <span>{'.' + this.props.type}</span>
                     </div>
                 </div>

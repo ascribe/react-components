@@ -13,7 +13,8 @@ let FileDragAndDropPreview = React.createClass({
             url: React.PropTypes.string,
             type: React.PropTypes.string
         }).isRequired,
-        handleDeleteFile: React.PropTypes.func
+        handleDeleteFile: React.PropTypes.func,
+        handleCancelFile: React.PropTypes.func
     },
 
     handleDeleteFile(event) {
@@ -22,8 +23,12 @@ let FileDragAndDropPreview = React.createClass({
 
         // handleDeleteFile is optional, so if its not submitted,
         // don't run it
-        if(this.props.handleDeleteFile) {
+        // On the other hand, if the files progress is not yet at a 100%,
+        // just run fineuploader.cancel
+        if(this.props.handleDeleteFile && this.props.file.progress === 100) {
             this.props.handleDeleteFile(this.props.file.id);
+        } else if(this.props.handleCancelFile && this.props.file.progress !== 100) {
+            this.props.handleCancelFile(this.props.file.id);
         }
     },
 

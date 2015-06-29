@@ -7,7 +7,8 @@ import FileDragAndDropPreview from './file_drag_and_drop_preview';
 let FileDragAndDropPreviewIterator = React.createClass({
     propTypes: {
         files: React.PropTypes.array,
-        handleDeleteFile: React.PropTypes.func
+        handleDeleteFile: React.PropTypes.func,
+        handleCancelFile: React.PropTypes.func
     },
 
     render() {
@@ -19,7 +20,8 @@ let FileDragAndDropPreviewIterator = React.createClass({
                             <FileDragAndDropPreview
                                 key={i}
                                 file={file}
-                                handleDeleteFile={this.props.handleDeleteFile}/>
+                                handleDeleteFile={this.props.handleDeleteFile}
+                                handleCancelFile={this.props.handleCancelFile}/>
                         );
                     })}
                 </div>

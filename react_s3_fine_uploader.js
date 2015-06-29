@@ -59,7 +59,8 @@ var ReactS3FineUploader = React.createClass({
         deleteFile: React.PropTypes.shape({
             enabled: React.PropTypes.bool,
             method: React.PropTypes.string,
-            endpoint: React.PropTypes.string
+            endpoint: React.PropTypes.string,
+            customHeaders: React.PropTypes.object
         }),
         session: React.PropTypes.shape({
             endpoint: React.PropTypes.bool
@@ -79,6 +80,7 @@ var ReactS3FineUploader = React.createClass({
     },
 
     getInitialState() {
+        console.log(this.props);
         return {
             filesToUpload: [],
             uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig())
@@ -109,6 +111,7 @@ var ReactS3FineUploader = React.createClass({
             callbacks: {
                 onSubmit: this.onSubmit,
                 onComplete: this.onComplete,
+                onCancel: this.onCancel,
                 onDelete: this.onDelete,
                 onSessionRequestComplete: this.onSessionRequestComplete,
                 onProgress: this.onProgress,
@@ -219,9 +222,11 @@ var ReactS3FineUploader = React.createClass({
         console.log('delete');
     },
 
-    onCancel() {
-        console.log('cancel');
-        // handle file removal here, for this.state.filesToUpload (same as in onDeleteComplete)
+    onCancel(id) {
+        this.removeFileWithIdFromFilesToUpload(id);
+
+        let notification = new GlobalNotificationModel('File upload canceled', 'success', 10000);
+        GlobalNotificationActions.appendGlobalNotification(notification);
     },
 
     onSessionRequestComplete() {
@@ -233,17 +238,7 @@ var ReactS3FineUploader = React.createClass({
             let notification = new GlobalNotificationModel('Couldn\'t delete file', 'danger', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         } else {
-            // also, sync files from state with the ones from fineuploader
-            let filesToUpload = JSON.parse(JSON.stringify(this.state.filesToUpload));
-
-            // splice because I can
-            filesToUpload.splice(id, 1);
-
-            // set state
-            let newState = React.addons.update(this.state, {
-                filesToUpload: { $set: filesToUpload }
-            });
-            this.setState(newState);
+            this.removeFileWithIdFromFilesToUpload(id);
 
             let notification = new GlobalNotificationModel('File deleted', 'success', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
@@ -265,6 +260,10 @@ var ReactS3FineUploader = React.createClass({
         // this is being continues in onDeleteFile, as
         // fineuploaders deleteFile does not return a correct callback or
         // promise
+    },
+
+    handleCancelFile(fileId) {
+        this.state.uploader.cancel(fileId);
     },
 
     handleUploadFile(files) {
@@ -320,13 +319,28 @@ var ReactS3FineUploader = React.createClass({
         this.setState(newState);
     },
 
+    removeFileWithIdFromFilesToUpload(fileId) {
+        // also, sync files from state with the ones from fineuploader
+        let filesToUpload = JSON.parse(JSON.stringify(this.state.filesToUpload));
+
+        // splice because I can
+        filesToUpload.splice(fileId, 1);
+
+        // set state
+        let newState = React.addons.update(this.state, {
+            filesToUpload: { $set: filesToUpload }
+        });
+        this.setState(newState);
+    },
+
     render() {
         return (
             <FileDragAndDrop
                 onDrop={this.handleUploadFile}
                 filesToUpload={this.state.filesToUpload}
                 handleDeleteFile={this.handleDeleteFile}
-                multiple={this.props.multiple} 
+                handleCancelFile={this.handleCancelFile}
+                multiple={this.props.multiple}
                 dropzoneInactive={!this.props.multiple && this.state.filesToUpload.length > 0} />
         );
     }
