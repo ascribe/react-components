@@ -27,7 +27,7 @@ var ReactS3FineUploader = React.createClass({
         createBlobRoutine: React.PropTypes.shape({
             url: React.PropTypes.string
         }),
-        handleChange: React.PropTypes.func,
+        submitKey: React.PropTypes.func,
         autoUpload: React.PropTypes.bool,
         debug: React.PropTypes.bool,
         objectProperties: React.PropTypes.shape({
@@ -80,7 +80,9 @@ var ReactS3FineUploader = React.createClass({
         multiple: React.PropTypes.bool,
         retry: React.PropTypes.shape({
             enableAuto: React.PropTypes.bool
-        })
+        }),
+        setUploadStatus: React.PropTypes.func,
+        isReadyForFormSubmission: React.PropTypes.func
     },
 
     getDefaultProps() {
@@ -104,7 +106,7 @@ var ReactS3FineUploader = React.createClass({
                 endpoint: AppConstants.serverUrl + 's3/signature/',
                 customHeaders: {
                    'X-CSRFToken': getCookie('csrftoken')
-                },
+                }
             },
             deleteFile: {
                 enabled: true,
@@ -239,8 +241,16 @@ var ReactS3FineUploader = React.createClass({
         });
         this.setState(newState);
         this.createBlob(files[id]);
-        this.props.handleChange();
-        console.log('completed ' + files[id].name);
+        this.props.submitKey(files[id].key);
+        
+        // also, lets check if after the completion of this upload,
+        // the form is ready for submission or not
+        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+            // if so, set uploadstatus to true
+            this.props.setUploadStatus(true);
+        } else {
+            this.props.setUploadStatus(false);
+        }
     },
 
     createBlob(file) {
@@ -291,6 +301,13 @@ var ReactS3FineUploader = React.createClass({
 
         let notification = new GlobalNotificationModel('File upload canceled', 'success', 10000);
         GlobalNotificationActions.appendGlobalNotification(notification);
+
+        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+            // if so, set uploadstatus to true
+            this.props.setUploadStatus(true);
+        } else {
+            this.props.setUploadStatus(false);
+        }
     },
 
     onSessionRequestComplete() {
@@ -306,6 +323,13 @@ var ReactS3FineUploader = React.createClass({
 
             let notification = new GlobalNotificationModel('File deleted', 'success', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
+        }
+
+        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+            // if so, set uploadstatus to true
+            this.props.setUploadStatus(true);
+        } else {
+            this.props.setUploadStatus(false);
         }
     },
 
