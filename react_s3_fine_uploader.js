@@ -25,7 +25,8 @@ var ReactS3FineUploader = React.createClass({
             bitcoinId: React.PropTypes.string
         }),
         createBlobRoutine: React.PropTypes.shape({
-            url: React.PropTypes.string
+            url: React.PropTypes.string,
+            bitcoinId: React.PropTypes.string
         }),
         submitKey: React.PropTypes.func,
         autoUpload: React.PropTypes.bool,
@@ -264,7 +265,8 @@ var ReactS3FineUploader = React.createClass({
             credentials: 'include',
             body: JSON.stringify({
                 'filename': file.name,
-                'key': file.key
+                'key': file.key,
+                'bitcoin_id': this.props.createBlobRoutine.bitcoinId
             })
         })
         .then((res) => {
