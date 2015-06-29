@@ -17,6 +17,10 @@ let FileDragAndDropPreview = React.createClass({
         handleCancelFile: React.PropTypes.func
     },
 
+    toggleUploadProcess() {
+
+    },
+
     handleDeleteFile() {
         // handleDeleteFile is optional, so if its not submitted,
         // don't run it
@@ -40,12 +44,14 @@ let FileDragAndDropPreview = React.createClass({
             previewElement = (<FileDragAndDropPreviewImage
                                 onClick={this.handleDeleteFile}
                                 progress={this.props.file.progress}
-                                url={this.props.file.url}/>);
+                                url={this.props.file.url}
+                                toggleUploadProcess={this.toggleUploadProcess}/>);
         } else {
             previewElement = (<FileDragAndDropPreviewOther
                                 onClick={this.handleDeleteFile}
                                 progress={this.props.file.progress}
-                                type={this.props.file.type.split('/')[1]}/>);
+                                type={this.props.file.type.split('/')[1]}
+                                toggleUploadProcess={this.toggleUploadProcess}/>);
         }
 
         return (
