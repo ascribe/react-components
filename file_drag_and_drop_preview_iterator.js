@@ -16,13 +16,17 @@ let FileDragAndDropPreviewIterator = React.createClass({
             return (
                 <div>
                     {this.props.files.map((file, i) => {
-                        return (
-                            <FileDragAndDropPreview
-                                key={i}
-                                file={file}
-                                handleDeleteFile={this.props.handleDeleteFile}
-                                handleCancelFile={this.props.handleCancelFile}/>
-                        );
+                        if(file.status !== 'deleted' && file.status !== 'canceled') {
+                            return (
+                                <FileDragAndDropPreview
+                                    key={i}
+                                    file={file}
+                                    handleDeleteFile={this.props.handleDeleteFile}
+                                    handleCancelFile={this.props.handleCancelFile}/>
+                            );
+                        } else {
+                            return null;
+                        }
                     })}
                 </div>
             );

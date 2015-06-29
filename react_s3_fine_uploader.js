@@ -6,6 +6,9 @@ import promise from 'es6-promise';
 promise.polyfill();
 
 import fetch from 'isomorphic-fetch';
+import AppConstants from '../../constants/application_constants';
+
+import { getCookie } from '../../utils/fetch_api_utils';
 
 import fineUploader from 'fineUploader';
 import FileDragAndDrop from './file_drag_and_drop';
@@ -18,7 +21,8 @@ var ReactS3FineUploader = React.createClass({
     propTypes: {
         keyRoutine: React.PropTypes.shape({
             url: React.PropTypes.string,
-            fileClass: React.PropTypes.string
+            fileClass: React.PropTypes.string,
+            bitcoinId: React.PropTypes.string
         }),
         createBlobRoutine: React.PropTypes.shape({
             url: React.PropTypes.string
@@ -79,8 +83,67 @@ var ReactS3FineUploader = React.createClass({
         })
     },
 
+    getDefaultProps() {
+        return {
+            autoUpload: true,
+            debug: false,
+            objectProperties: {
+                acl: 'public-read',
+                bucket: 'exampleBucket'
+            },
+            request: {
+                endpoint: 'http://example-amazons3-bucket.com',
+                accessKey: 'exampleAccessKey'
+            },
+            uploadSuccess: {
+                params: {
+                    isBrowserPreviewCapable: fineUploader.supportedFeatures.imagePreviews
+                }
+            },
+            signature: {
+                endpoint: AppConstants.serverUrl + 's3/signature/',
+                customHeaders: {
+                   'X-CSRFToken': getCookie('csrftoken')
+                },
+            },
+            deleteFile: {
+                enabled: true,
+                method: 'DELETE',
+                endpoint: AppConstants.serverUrl + 's3/delete',
+                customHeaders: {
+                   'X-CSRFToken': getCookie('csrftoken')
+                }
+            },
+            cors: {
+                expected: true,
+                sendCredentials: true
+            },
+            chunking: {
+                enabled: true
+            },
+            resume: {
+                enabled: true
+            },
+            retry: {
+                enableAuto: false
+            },
+            session: {
+                endpoint: null
+            },
+            messages: {
+                unsupportedBrowser: '<h3>Upload is not functional in IE7 as IE7 has no support for CORS!</h3>'
+            },
+            formatFileName: function(name){// fix maybe
+                if (name !== undefined && name.length > 26) {
+                    name = name.slice(0, 15) + '...' + name.slice(-15);
+                }
+                return name;
+            },
+            multiple: false
+        };
+    },
+
     getInitialState() {
-        console.log(this.props);
         return {
             filesToUpload: [],
             uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig())
@@ -143,7 +206,8 @@ var ReactS3FineUploader = React.createClass({
                 credentials: 'include',
                 body: JSON.stringify({
                     'filename': filename,
-                    'file_class': 'digitalwork'
+                    'file_class': this.props.keyRoutine.fileClass,
+                    'bitcoin_id': this.props.keyRoutine.bitcoinId
                 })
             })
             .then((res) => {
@@ -270,7 +334,7 @@ var ReactS3FineUploader = React.createClass({
 
         // If multiple set and user already uploaded its work,
         // cancel upload
-        if(!this.props.multiple && this.state.filesToUpload.length > 0) {
+        if(!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0) {
             return;
         }
 
@@ -313,6 +377,7 @@ var ReactS3FineUploader = React.createClass({
             }
         }
 
+        // set the new file array
         let newState = React.addons.update(this.state, {
             filesToUpload: { $set: oldAndNewFiles }
         });
@@ -341,7 +406,7 @@ var ReactS3FineUploader = React.createClass({
                 handleDeleteFile={this.handleDeleteFile}
                 handleCancelFile={this.handleCancelFile}
                 multiple={this.props.multiple}
-                dropzoneInactive={!this.props.multiple && this.state.filesToUpload.length > 0} />
+                dropzoneInactive={!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0} />
         );
     }
 
