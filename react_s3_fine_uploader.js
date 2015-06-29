@@ -12,6 +12,7 @@ import { getCookie } from '../../utils/fetch_api_utils';
 
 import fineUploader from 'fineUploader';
 import FileDragAndDrop from './file_drag_and_drop';
+import FileDragAndDropToolbar from './file_drag_and_drop_toolbar';
 
 import GlobalNotificationModel from '../../models/global_notification_model';
 import GlobalNotificationActions from '../../actions/global_notification_actions';
@@ -27,7 +28,7 @@ var ReactS3FineUploader = React.createClass({
         createBlobRoutine: React.PropTypes.shape({
             url: React.PropTypes.string
         }),
-        handleChange: React.PropTypes.func,
+        submitKey: React.PropTypes.func,
         autoUpload: React.PropTypes.bool,
         debug: React.PropTypes.bool,
         objectProperties: React.PropTypes.shape({
@@ -63,7 +64,8 @@ var ReactS3FineUploader = React.createClass({
         deleteFile: React.PropTypes.shape({
             enabled: React.PropTypes.bool,
             method: React.PropTypes.string,
-            endpoint: React.PropTypes.string
+            endpoint: React.PropTypes.string,
+            customHeaders: React.PropTypes.object
         }),
         session: React.PropTypes.shape({
             endpoint: React.PropTypes.bool
@@ -79,15 +81,11 @@ var ReactS3FineUploader = React.createClass({
         multiple: React.PropTypes.bool,
         retry: React.PropTypes.shape({
             enableAuto: React.PropTypes.bool
-        })
+        }),
+        setUploadStatus: React.PropTypes.func,
+        isReadyForFormSubmission: React.PropTypes.func
     },
 
-    getInitialState() {
-        return {
-            filesToUpload: [],
-            uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig())
-        };
-    },
     getDefaultProps() {
         return {
             autoUpload: true,
@@ -108,7 +106,7 @@ var ReactS3FineUploader = React.createClass({
             signature: {
                 endpoint: AppConstants.serverUrl + 's3/signature/',
                 customHeaders: {
-                    'X-CSRFToken': getCookie('csrftoken')
+                   'X-CSRFToken': getCookie('csrftoken')
                 }
             },
             deleteFile: {
@@ -116,7 +114,7 @@ var ReactS3FineUploader = React.createClass({
                 method: 'DELETE',
                 endpoint: AppConstants.serverUrl + 's3/delete',
                 customHeaders: {
-                    'X-CSRFToken': getCookie('csrftoken')
+                   'X-CSRFToken': getCookie('csrftoken')
                 }
             },
             cors: {
@@ -147,6 +145,14 @@ var ReactS3FineUploader = React.createClass({
             multiple: false
         };
     },
+
+    getInitialState() {
+        return {
+            filesToUpload: [],
+            uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig())
+        };
+    },
+
     propsToConfig() {
         let objectProperties = this.props.objectProperties;
         objectProperties.key = this.requestKey;
@@ -171,6 +177,7 @@ var ReactS3FineUploader = React.createClass({
             callbacks: {
                 onSubmit: this.onSubmit,
                 onComplete: this.onComplete,
+                onCancel: this.onCancel,
                 onDelete: this.onDelete,
                 onSessionRequestComplete: this.onSessionRequestComplete,
                 onProgress: this.onProgress,
@@ -235,8 +242,16 @@ var ReactS3FineUploader = React.createClass({
         });
         this.setState(newState);
         this.createBlob(files[id]);
-        this.props.handleChange();
-        console.log('completed ' + files[id].name);
+        this.props.submitKey(files[id].key);
+        
+        // also, lets check if after the completion of this upload,
+        // the form is ready for submission or not
+        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+            // if so, set uploadstatus to true
+            this.props.setUploadStatus(true);
+        } else {
+            this.props.setUploadStatus(false);
+        }
     },
 
     createBlob(file) {
@@ -282,13 +297,18 @@ var ReactS3FineUploader = React.createClass({
         console.log('delete');
     },
 
-    onCancel() {
-        console.log('cancel');
-        // handle file removal here, for this.state.filesToUpload (same as in onDeleteComplete)
-    },
+    onCancel(id) {
+        this.removeFileWithIdFromFilesToUpload(id);
 
-    onSessionRequestComplete() {
-        console.log('sessionrequestcomplete');
+        let notification = new GlobalNotificationModel('File upload canceled', 'success', 5000);
+        GlobalNotificationActions.appendGlobalNotification(notification);
+
+        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+            // if so, set uploadstatus to true
+            this.props.setUploadStatus(true);
+        } else {
+            this.props.setUploadStatus(false);
+        }
     },
 
     onDeleteComplete(id, xhr, isError) {
@@ -296,20 +316,17 @@ var ReactS3FineUploader = React.createClass({
             let notification = new GlobalNotificationModel('Couldn\'t delete file', 'danger', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         } else {
-            // also, sync files from state with the ones from fineuploader
-            let filesToUpload = JSON.parse(JSON.stringify(this.state.filesToUpload));
+            this.removeFileWithIdFromFilesToUpload(id);
 
-            // splice because I can
-            filesToUpload.splice(id, 1);
-
-            // set state
-            let newState = React.addons.update(this.state, {
-                filesToUpload: { $set: filesToUpload }
-            });
-            this.setState(newState);
-
-            let notification = new GlobalNotificationModel('File deleted', 'success', 10000);
+            let notification = new GlobalNotificationModel('File deleted', 'success', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
+        }
+
+        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+            // if so, set uploadstatus to true
+            this.props.setUploadStatus(true);
+        } else {
+            this.props.setUploadStatus(false);
         }
     },
 
@@ -330,11 +347,15 @@ var ReactS3FineUploader = React.createClass({
         // promise
     },
 
+    handleCancelFile(fileId) {
+        this.state.uploader.cancel(fileId);
+    },
+
     handleUploadFile(files) {
 
         // If multiple set and user already uploaded its work,
         // cancel upload
-        if(!this.props.multiple && this.state.filesToUpload.length > 0) {
+        if(!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0) {
             return;
         }
 
@@ -373,24 +394,45 @@ var ReactS3FineUploader = React.createClass({
                     oldAndNewFiles[i].progress = oldFiles[j].progress;
                     oldAndNewFiles[i].type = oldFiles[j].type;
                     oldAndNewFiles[i].url = oldFiles[j].url;
+                    oldAndNewFiles[i].key = oldFiles[j].key;
                 }
             }
         }
 
+        // set the new file array
         let newState = React.addons.update(this.state, {
             filesToUpload: { $set: oldAndNewFiles }
         });
         this.setState(newState);
     },
 
+    removeFileWithIdFromFilesToUpload(fileId) {
+        // also, sync files from state with the ones from fineuploader
+        let filesToUpload = JSON.parse(JSON.stringify(this.state.filesToUpload));
+
+        // splice because I can
+        filesToUpload.splice(fileId, 1);
+
+        // set state
+        let newState = React.addons.update(this.state, {
+            filesToUpload: { $set: filesToUpload }
+        });
+        this.setState(newState);
+    },
+
     render() {
         return (
-            <FileDragAndDrop
-                onDrop={this.handleUploadFile}
-                filesToUpload={this.state.filesToUpload}
-                handleDeleteFile={this.handleDeleteFile}
-                multiple={this.props.multiple}
-                dropzoneInactive={!this.props.multiple && this.state.filesToUpload.length > 0} />
+            <div>
+                <FileDragAndDrop
+                    className="file-drag-and-drop"
+                    onDrop={this.handleUploadFile}
+                    filesToUpload={this.state.filesToUpload}
+                    handleDeleteFile={this.handleDeleteFile}
+                    handleCancelFile={this.handleCancelFile}
+                    multiple={this.props.multiple}
+                    dropzoneInactive={!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0} />
+                <FileDragAndDropToolbar />
+            </div>
         );
     }
 

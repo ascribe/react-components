@@ -7,6 +7,7 @@ import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterato
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
 var FileDragAndDrop = React.createClass({
     propTypes: {
+        className: React.PropTypes.string,
         onDragStart: React.PropTypes.func,
         onDrop: React.PropTypes.func.isRequired,
         onDrag: React.PropTypes.func,
@@ -17,6 +18,7 @@ var FileDragAndDrop = React.createClass({
         onDragEnd: React.PropTypes.func,
         filesToUpload: React.PropTypes.array,
         handleDeleteFile: React.PropTypes.func,
+        handleCancelFile: React.PropTypes.func,
         multiple: React.PropTypes.bool,
         dropzoneInactive: React.PropTypes.bool
     },
@@ -59,7 +61,6 @@ var FileDragAndDrop = React.createClass({
         }
     },
 
-
     handleDrop(event) {
         event.preventDefault();
         event.stopPropagation();
@@ -85,6 +86,13 @@ var FileDragAndDrop = React.createClass({
         this.props.handleDeleteFile(fileId);
     },
 
+    handleCancelFile(fileId) {
+        // input's value is not change the second time someone
+        // inputs the same file again, therefore we need to reset its value
+        this.refs.fileinput.getDOMNode().value = '';
+        this.props.handleCancelFile(fileId);
+    },
+
     handleOnClick() {
         // when multiple is set to false and the user already uploaded a piece,
         // do not propagate event
@@ -99,9 +107,11 @@ var FileDragAndDrop = React.createClass({
     },
 
     render: function () {
-        let hasFiles = this.props.filesToUpload.length > 0;
-        let className = hasFiles ? 'file-drag-and-drop has-files ' : 'file-drag-and-drop ';
+        // has files only is true if there are files that do not have the status deleted or canceled
+        let hasFiles = this.props.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0;
+        let className = hasFiles ? 'has-files ' : '';
         className += this.props.dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';
+        className += this.props.className ? ' ' + this.props.className : '';
 
         return (
             <div
@@ -114,10 +124,11 @@ var FileDragAndDrop = React.createClass({
                 onDragOver={this.handleDragOver}
                 onDrop={this.handleDrop}
                 onDragEnd={this.handleDragEnd}>
-                    {hasFiles ? null : this.props.multiple ? <span>Click or drag to add files</span> : <span>Click or drag to add a file</span>}
+                    {hasFiles ? null : this.props.multiple ? <span className="file-drag-and-drop-dialog">Click or drag to add files</span> : <span className="file-drag-and-drop-dialog">Click or drag to add a file</span>}
                     <FileDragAndDropPreviewIterator
                         files={this.props.filesToUpload}
-                        handleDeleteFile={this.handleDeleteFile}/>
+                        handleDeleteFile={this.handleDeleteFile}
+                        handleCancelFile={this.handleCancelFile}/>
                     <input
                         multiple={this.props.multiple}
                         ref="fileinput"
