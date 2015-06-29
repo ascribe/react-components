@@ -242,7 +242,7 @@ var ReactS3FineUploader = React.createClass({
         this.setState(newState);
         this.createBlob(files[id]);
         this.props.submitKey(files[id].key);
-        
+
         // also, lets check if after the completion of this upload,
         // the form is ready for submission or not
         if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
