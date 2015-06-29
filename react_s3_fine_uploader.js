@@ -141,7 +141,7 @@ var ReactS3FineUploader = React.createClass({
                 }
                 return name;
             },
-            multiple: false
+            multiple: true
         };
     },
 
@@ -425,6 +425,7 @@ var ReactS3FineUploader = React.createClass({
     render() {
         return (
             <FileDragAndDrop
+                className="file-drag-and-drop"
                 onDrop={this.handleUploadFile}
                 filesToUpload={this.state.filesToUpload}
                 handleDeleteFile={this.handleDeleteFile}
