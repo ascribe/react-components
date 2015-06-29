@@ -8,6 +8,7 @@ promise.polyfill();
 import fetch from 'isomorphic-fetch';
 import AppConstants from '../../constants/application_constants';
 
+import { getCookie } from '../../utils/fetch_api_utils';
 
 import fineUploader from 'fineUploader';
 import FileDragAndDrop from './file_drag_and_drop';
@@ -105,21 +106,22 @@ var ReactS3FineUploader = React.createClass({
                 }
             },
             signature: {
-                endpoint: AppConstants.serverUrl + 's3/signature/'
-                //customHeaders: {
-                //    'Authorization': 'OAuth ' + getCookie('sessionid')
-                //}
+                endpoint: AppConstants.serverUrl + 's3/signature/',
+                customHeaders: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
             },
             deleteFile: {
                 enabled: true,
                 method: 'DELETE',
-                endpoint: AppConstants.serverUrl + 's3/delete'
-                //customHeaders: {
-                //    'X-CSRFToken': getCookie('csrftoken')
-                //}
+                endpoint: AppConstants.serverUrl + 's3/delete',
+                customHeaders: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
             },
             cors: {
-                expected: true
+                expected: true,
+                sendCredentials: true
             },
             chunking: {
                 enabled: true
