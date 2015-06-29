@@ -12,6 +12,7 @@ import { getCookie } from '../../utils/fetch_api_utils';
 
 import fineUploader from 'fineUploader';
 import FileDragAndDrop from './file_drag_and_drop';
+import FileDragAndDropToolbar from './file_drag_and_drop_toolbar';
 
 import GlobalNotificationModel from '../../models/global_notification_model';
 import GlobalNotificationActions from '../../actions/global_notification_actions';
@@ -141,7 +142,7 @@ var ReactS3FineUploader = React.createClass({
                 }
                 return name;
             },
-            multiple: true
+            multiple: false
         };
     },
 
@@ -299,7 +300,7 @@ var ReactS3FineUploader = React.createClass({
     onCancel(id) {
         this.removeFileWithIdFromFilesToUpload(id);
 
-        let notification = new GlobalNotificationModel('File upload canceled', 'success', 10000);
+        let notification = new GlobalNotificationModel('File upload canceled', 'success', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
 
         if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
@@ -310,10 +311,6 @@ var ReactS3FineUploader = React.createClass({
         }
     },
 
-    onSessionRequestComplete() {
-        console.log('sessionrequestcomplete');
-    },
-
     onDeleteComplete(id, xhr, isError) {
         if(isError) {
             let notification = new GlobalNotificationModel('Couldn\'t delete file', 'danger', 10000);
@@ -321,7 +318,7 @@ var ReactS3FineUploader = React.createClass({
         } else {
             this.removeFileWithIdFromFilesToUpload(id);
 
-            let notification = new GlobalNotificationModel('File deleted', 'success', 10000);
+            let notification = new GlobalNotificationModel('File deleted', 'success', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
 
@@ -397,6 +394,7 @@ var ReactS3FineUploader = React.createClass({
                     oldAndNewFiles[i].progress = oldFiles[j].progress;
                     oldAndNewFiles[i].type = oldFiles[j].type;
                     oldAndNewFiles[i].url = oldFiles[j].url;
+                    oldAndNewFiles[i].key = oldFiles[j].key;
                 }
             }
         }
@@ -424,14 +422,17 @@ var ReactS3FineUploader = React.createClass({
 
     render() {
         return (
-            <FileDragAndDrop
-                className="file-drag-and-drop"
-                onDrop={this.handleUploadFile}
-                filesToUpload={this.state.filesToUpload}
-                handleDeleteFile={this.handleDeleteFile}
-                handleCancelFile={this.handleCancelFile}
-                multiple={this.props.multiple}
-                dropzoneInactive={!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0} />
+            <div>
+                <FileDragAndDrop
+                    className="file-drag-and-drop"
+                    onDrop={this.handleUploadFile}
+                    filesToUpload={this.state.filesToUpload}
+                    handleDeleteFile={this.handleDeleteFile}
+                    handleCancelFile={this.handleCancelFile}
+                    multiple={this.props.multiple}
+                    dropzoneInactive={!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0} />
+                <FileDragAndDropToolbar />
+            </div>
         );
     }
 

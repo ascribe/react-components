@@ -19,6 +19,9 @@ let FileDragAndDropPreviewImage = React.createClass({
     },
 
     onClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         this.setState({
             loading: true
         });

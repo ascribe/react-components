@@ -17,10 +17,7 @@ let FileDragAndDropPreview = React.createClass({
         handleCancelFile: React.PropTypes.func
     },
 
-    handleDeleteFile(event) {
-        event.preventDefault();
-        event.stopPropagation();
-
+    handleDeleteFile() {
         // handleDeleteFile is optional, so if its not submitted,
         // don't run it
         // On the other hand, if the files progress is not yet at a 100%,
