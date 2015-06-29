@@ -30,14 +30,14 @@ let FileDragAndDropPreviewOther = React.createClass({
     },
 
     render() {
-        let actionSymbol = this.state.loading ? <img src={AppConstants.baseUrl + 'static/img/ascribe_animated_medium.gif'} /> : <span className="glyphicon glyphicon-remove delete-file" aria-hidden="true" title="Delete or cancel upload" onClick={this.onClick} />;
+        //let actionSymbol = this.state.loading ? <img src={AppConstants.baseUrl + 'static/img/ascribe_animated_medium.gif'} /> : <span className="glyphicon glyphicon-remove delete-file" aria-hidden="true" title="Delete or cancel upload" onClick={this.onClick} />;
         return (
             <div
                 className="file-drag-and-drop-preview">
                 <ProgressBar completed={this.props.progress} color="black"/>
                 <div className="file-drag-and-drop-preview-table-wrapper">
                     <div className="file-drag-and-drop-preview-other">
-                        {actionSymbol}
+                        <span className="glyphicon glyphicon-pause delete-file" aria-hidden="true" title="Delete or cancel upload"/>
                         <span>{'.' + this.props.type}</span>
                     </div>
                 </div>

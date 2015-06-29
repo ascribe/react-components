@@ -12,7 +12,6 @@ import { getCookie } from '../../utils/fetch_api_utils';
 
 import fineUploader from 'fineUploader';
 import FileDragAndDrop from './file_drag_and_drop';
-import FileDragAndDropToolbar from './file_drag_and_drop_toolbar';
 
 import GlobalNotificationModel from '../../models/global_notification_model';
 import GlobalNotificationActions from '../../actions/global_notification_actions';
@@ -179,7 +178,6 @@ var ReactS3FineUploader = React.createClass({
                 onComplete: this.onComplete,
                 onCancel: this.onCancel,
                 onDelete: this.onDelete,
-                onSessionRequestComplete: this.onSessionRequestComplete,
                 onProgress: this.onProgress,
                 onRetry: this.onRetry,
                 onAutoRetry: this.onAutoRetry,
@@ -431,7 +429,6 @@ var ReactS3FineUploader = React.createClass({
                     handleCancelFile={this.handleCancelFile}
                     multiple={this.props.multiple}
                     dropzoneInactive={!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0} />
-                <FileDragAndDropToolbar />
             </div>
         );
     }
