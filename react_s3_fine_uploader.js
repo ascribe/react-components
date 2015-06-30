@@ -314,25 +314,6 @@ var ReactS3FineUploader = React.createClass({
         }
     },
 
-    onDeleteComplete(id, xhr, isError) {
-        if(isError) {
-            let notification = new GlobalNotificationModel('Couldn\'t delete file', 'danger', 10000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-        } else {
-            this.removeFileWithIdFromFilesToUpload(id);
-
-            let notification = new GlobalNotificationModel('File deleted', 'success', 5000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-        }
-
-        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
-            // if so, set uploadstatus to true
-            this.props.setIsUploadReady(true);
-        } else {
-            this.props.setIsUploadReady(false);
-        }
-    },
-
     onProgress(id, name, uploadedBytes, totalBytes) {
         let newState = React.addons.update(this.state, {
             filesToUpload: { [id]: {
@@ -364,10 +345,29 @@ var ReactS3FineUploader = React.createClass({
             let newState = React.addons.update(this.state, {filesToUpload: {$set: updatedFilesToUpload}});
             this.setState(newState);
         } else {
-            let notification = new GlobalNotificationModel('Could not load attached files (Further data)', 'success', 5000);
+            let notification = new GlobalNotificationModel('Could not load attached files (Further data)', 'danger', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
 
             throw new Error('The session request failed', response);
+        }
+    },
+
+    onDeleteComplete(id, xhr, isError) {
+        if(isError) {
+            let notification = new GlobalNotificationModel('Couldn\'t delete file', 'danger', 10000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
+        } else {
+            this.removeFileWithIdFromFilesToUpload(id);
+
+            let notification = new GlobalNotificationModel('File deleted', 'success', 5000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
+        }
+
+        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+            // if so, set uploadstatus to true
+            this.props.setIsUploadReady(true);
+        } else {
+            this.props.setIsUploadReady(false);
         }
     },
 
@@ -375,7 +375,7 @@ var ReactS3FineUploader = React.createClass({
         // In some instances (when the file was already uploaded and is just displayed to the user)
         // fineuploader does not register an id on the file (we do, don't be confused by this!).
         // Since you can only delete a file by its id, we have to implement this method ourselves
-        // 
+        //
         //  So, if an id is not present, we delete the file manually
         //  To check which files are already uploaded from previous sessions we check their status.
         //  If they are, it is "online"
@@ -390,12 +390,8 @@ var ReactS3FineUploader = React.createClass({
             let fileToDelete = this.state.filesToUpload[fileId];
             S3Fetcher
                 .deleteFile(fileToDelete.s3Key, fileToDelete.s3Bucket)
-                .then((res) => {
-                    console.log(res);
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
+                .then(() => this.onDeleteComplete(fileToDelete.id, null, false))
+                .catch(() => this.onDeleteComplete(fileToDelete.id, null, true));
         }
     },
 

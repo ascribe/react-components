@@ -11,7 +11,7 @@ let FileDragAndDropPreviewOther = React.createClass({
         progress: React.PropTypes.number,
         areAssetsDownloadable: React.PropTypes.bool,
         toggleUploadProcess: React.PropTypes.func,
-        downloadFile: React.PropTypes.func,
+        downloadFile: React.PropTypes.func
     },
 
     getInitialState() {
@@ -29,10 +29,6 @@ let FileDragAndDropPreviewOther = React.createClass({
         });
 
         this.props.toggleUploadProcess();
-    },
-
-    downloadFile() {
-        console.log('implement this');
     },
 
     render() {
