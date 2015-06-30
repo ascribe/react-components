@@ -345,10 +345,10 @@ var ReactS3FineUploader = React.createClass({
             let newState = React.addons.update(this.state, {filesToUpload: {$set: updatedFilesToUpload}});
             this.setState(newState);
         } else {
-            let notification = new GlobalNotificationModel('Could not load attached files (Further data)', 'danger', 10000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-
-            throw new Error('The session request failed', response);
+            //let notification = new GlobalNotificationModel('Could not load attached files (Further data)', 'danger', 10000);
+            //GlobalNotificationActions.appendGlobalNotification(notification);
+            //
+            //throw new Error('The session request failed', response);
         }
     },
 
