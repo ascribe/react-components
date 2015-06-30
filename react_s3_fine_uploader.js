@@ -82,7 +82,7 @@ var ReactS3FineUploader = React.createClass({
         retry: React.PropTypes.shape({
             enableAuto: React.PropTypes.bool
         }),
-        setUploadStatus: React.PropTypes.func,
+        setIsUploadReady: React.PropTypes.func,
         isReadyForFormSubmission: React.PropTypes.func
     },
 
@@ -247,9 +247,9 @@ var ReactS3FineUploader = React.createClass({
         // the form is ready for submission or not
         if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
             // if so, set uploadstatus to true
-            this.props.setUploadStatus(true);
+            this.props.setIsUploadReady(true);
         } else {
-            this.props.setUploadStatus(false);
+            this.props.setIsUploadReady(false);
         }
     },
 
@@ -305,9 +305,9 @@ var ReactS3FineUploader = React.createClass({
 
         if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
             // if so, set uploadstatus to true
-            this.props.setUploadStatus(true);
+            this.props.setIsUploadReady(true);
         } else {
-            this.props.setUploadStatus(false);
+            this.props.setIsUploadReady(false);
         }
     },
 
@@ -324,9 +324,9 @@ var ReactS3FineUploader = React.createClass({
 
         if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
             // if so, set uploadstatus to true
-            this.props.setUploadStatus(true);
+            this.props.setIsUploadReady(true);
         } else {
-            this.props.setUploadStatus(false);
+            this.props.setIsUploadReady(false);
         }
     },
 
