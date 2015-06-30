@@ -24,7 +24,8 @@ let FileDragAndDrop = React.createClass({
         handlePauseFile: React.PropTypes.func,
         handleResumeFile: React.PropTypes.func,
         multiple: React.PropTypes.bool,
-        dropzoneInactive: React.PropTypes.bool
+        dropzoneInactive: React.PropTypes.bool,
+        areAssetsDownloadable: React.PropTypes.bool
     },
 
     handleDragStart(event) {
@@ -154,7 +155,8 @@ let FileDragAndDrop = React.createClass({
                         handleDeleteFile={this.handleDeleteFile}
                         handleCancelFile={this.handleCancelFile}
                         handlePauseFile={this.handlePauseFile}
-                        handleResumeFile={this.handleResumeFile}/>
+                        handleResumeFile={this.handleResumeFile}
+                        areAssetsDownloadable={this.props.areAssetsDownloadable}/>
                     <input
                         multiple={this.props.multiple}
                         ref="fileinput"

@@ -3,40 +3,65 @@
 import React from 'react';
 import ProgressBar from 'react-progressbar';
 
+import AppConstants from '../../constants/application_constants';
 
 let FileDragAndDropPreviewOther = React.createClass({
     propTypes: {
         type: React.PropTypes.string,
         progress: React.PropTypes.number,
-        onClick: React.PropTypes.func
+        areAssetsDownloadable: React.PropTypes.bool,
+        toggleUploadProcess: React.PropTypes.func,
+        downloadFile: React.PropTypes.func,
     },
 
     getInitialState() {
         return {
-            loading: false
+            paused: true
         };
     },
 
-    onClick(e) {
+    toggleUploadProcess(e) {
         e.preventDefault();
         e.stopPropagation();
-        
+
         this.setState({
-            loading: true
+            paused: !this.state.paused
         });
 
-        this.props.onClick(e);
+        this.props.toggleUploadProcess();
+    },
+
+    downloadFile() {
+        console.log('implement this');
     },
 
     render() {
-        //let actionSymbol = this.state.loading ? <img src={AppConstants.baseUrl + 'static/img/ascribe_animated_medium.gif'} /> : <span className="glyphicon glyphicon-remove delete-file" aria-hidden="true" title="Delete or cancel upload" onClick={this.onClick} />;
+
+        let actionSymbol;
+        
+        if(this.props.progress > 0 && this.props.progress < 99 && this.state.paused) {
+            actionSymbol = <span className="glyphicon glyphicon-pause action-file" aria-hidden="true" title="Pause upload" onClick={this.toggleUploadProcess}/>;
+        } else if(this.props.progress > 0 && this.props.progress < 99 && !this.state.paused) {
+            actionSymbol = <span className="glyphicon glyphicon-play action-file" aria-hidden="true" title="Resume uploading" onClick={this.toggleUploadProcess}/>;
+        } else if(this.props.progress === 100) {
+
+            // only if assets are actually downloadable, there should be a download icon if the process is already at
+            // 100%. If not, no actionSymbol should be displayed
+            if(this.props.areAssetsDownloadable) {
+                actionSymbol = <span className="glyphicon glyphicon-download action-file" aria-hidden="true" title="Download file" onClick={this.props.downloadFile}/>;
+            }
+
+        } else {
+            actionSymbol = <img height={35} src={AppConstants.baseUrl + 'static/img/ascribe_animated_medium.gif'} />;
+        }
+
         return (
             <div
                 className="file-drag-and-drop-preview">
                 <ProgressBar completed={this.props.progress} color="black"/>
                 <div className="file-drag-and-drop-preview-table-wrapper">
                     <div className="file-drag-and-drop-preview-other">
-                        <span className="glyphicon glyphicon-pause delete-file" aria-hidden="true" title="Delete or cancel upload"/>
+                        {actionSymbol}
                         <span>{'.' + this.props.type}</span>
                     </div>
                 </div>

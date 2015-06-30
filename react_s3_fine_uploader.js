@@ -83,7 +83,8 @@ var ReactS3FineUploader = React.createClass({
             enableAuto: React.PropTypes.bool
         }),
         setIsUploadReady: React.PropTypes.func,
-        isReadyForFormSubmission: React.PropTypes.func
+        isReadyForFormSubmission: React.PropTypes.func,
+        areAssetsDownloadable: React.PropTypes.bool
     },
 
     getDefaultProps() {
@@ -463,6 +464,7 @@ var ReactS3FineUploader = React.createClass({
                     handlePauseFile={this.handlePauseFile}
                     handleResumeFile={this.handleResumeFile}
                     multiple={this.props.multiple}
+                    areAssetsDownloadable={this.props.areAssetsDownloadable}
                     dropzoneInactive={!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0} />
             </div>
         );

@@ -16,7 +16,8 @@ let FileDragAndDropPreview = React.createClass({
         handleDeleteFile: React.PropTypes.func,
         handleCancelFile: React.PropTypes.func,
         handlePauseFile: React.PropTypes.func,
-        handleResumeFile: React.PropTypes.func
+        handleResumeFile: React.PropTypes.func,
+        areAssetsDownloadable: React.PropTypes.bool
     },
 
     toggleUploadProcess() {
@@ -51,13 +52,15 @@ let FileDragAndDropPreview = React.createClass({
                                 onClick={this.handleDeleteFile}
                                 progress={this.props.file.progress}
                                 url={this.props.file.url}
-                                toggleUploadProcess={this.toggleUploadProcess}/>);
+                                toggleUploadProcess={this.toggleUploadProcess}
+                                areAssetsDownloadable={this.props.areAssetsDownloadable}/>);
         } else {
             previewElement = (<FileDragAndDropPreviewOther
                                 onClick={this.handleDeleteFile}
                                 progress={this.props.file.progress}
                                 type={this.props.file.type.split('/')[1]}
-                                toggleUploadProcess={this.toggleUploadProcess}/>);
+                                toggleUploadProcess={this.toggleUploadProcess}
+                                areAssetsDownloadable={this.props.areAssetsDownloadable}/>);
         }
 
         return (
