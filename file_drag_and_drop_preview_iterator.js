@@ -19,7 +19,7 @@ let FileDragAndDropPreviewIterator = React.createClass({
             return (
                 <div>
                     {this.props.files.map((file, i) => {
-                        if(file.status !== 'deleted' && file.status !== 'canceled') {
+                        if(file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1) {
                             return (
                                 <FileDragAndDropPreview
                                     key={i}
