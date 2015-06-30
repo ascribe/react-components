@@ -40,8 +40,11 @@ let FileDragAndDropPreview = React.createClass({
         }
     },
 
-    // implement a handle cancel action here that triggers fineuploaders cancel method
-    // to delete files that are currently uploading
+    handleDownloadFile() {
+        if(this.props.file.s3Url) {
+            open(this.props.file.s3Url);
+        }
+    },
 
     render() {
         let previewElement;
@@ -53,14 +56,16 @@ let FileDragAndDropPreview = React.createClass({
                                 progress={this.props.file.progress}
                                 url={this.props.file.url}
                                 toggleUploadProcess={this.toggleUploadProcess}
-                                areAssetsDownloadable={this.props.areAssetsDownloadable}/>);
+                                areAssetsDownloadable={this.props.areAssetsDownloadable}
+                                downloadFile={this.handleDownloadFile}/>);
         } else {
             previewElement = (<FileDragAndDropPreviewOther
                                 onClick={this.handleDeleteFile}
                                 progress={this.props.file.progress}
                                 type={this.props.file.type.split('/')[1]}
                                 toggleUploadProcess={this.toggleUploadProcess}
-                                areAssetsDownloadable={this.props.areAssetsDownloadable}/>);
+                                areAssetsDownloadable={this.props.areAssetsDownloadable}
+                                downloadFile={this.handleDownloadFile}/>);
         }
 
         return (

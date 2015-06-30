@@ -31,10 +31,6 @@ let FileDragAndDropPreviewImage = React.createClass({
         this.props.toggleUploadProcess();
     },
 
-    downloadFile() {
-        console.log('implement this');
-    },
-
     render() {
         let imageStyle = {
             backgroundImage: 'url("' + this.props.url + '")',
