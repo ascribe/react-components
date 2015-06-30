@@ -130,15 +130,17 @@ let Form = React.createClass({
     },
     renderChildren() {
         return ReactAddons.Children.map(this.props.children, (child) => {
-            return ReactAddons.addons.cloneWithProps(child, {
-                handleChange: this.handleChangeChild,
-                ref: child.props.name
-            });
+            if (child) {
+                return ReactAddons.addons.cloneWithProps(child, {
+                    handleChange: this.handleChangeChild,
+                    ref: child.props.name
+                });
+            }
         });
     },
     render() {
         return (
-            <form 
+            <form
                 role="form"
                 className="ascribe-form"
                 onSubmit={this.submit}

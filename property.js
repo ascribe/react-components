@@ -16,13 +16,14 @@ let Property = React.createClass({
             React.PropTypes.string,
             React.PropTypes.element
         ]),
+        footer: React.PropTypes.element,
         handleChange: React.PropTypes.func
     },
 
     getDefaultProps() {
         return {
             editable: true,
-            hidden: false
+            hidden: false,
         };
     },
 
@@ -55,6 +56,9 @@ let Property = React.createClass({
 
     handleChange(event) {
         this.props.handleChange(event);
+        if ('onChange' in this.props) {
+            this.props.onChange(event);
+        }
         this.setState({value: event.target.value});
     },
     handleFocus() {
@@ -120,6 +124,13 @@ let Property = React.createClass({
                     {this.props.tooltip}
                 </Tooltip>);
         }
+        let footer = null;
+        if (this.props.footer){
+            footer = (
+                <div className="ascribe-property-footer">
+                    {this.props.footer}
+                </div>);
+        }
         return (
             <div
                 className={'ascribe-settings-wrapper ' + this.getClassName()}
@@ -132,6 +143,7 @@ let Property = React.createClass({
                         {this.state.errors}
                         <span>{ this.props.label}</span>
                         {this.renderChildren()}
+                        {footer}
                     </div>
                 </OverlayTrigger>
             </div>
