@@ -32,7 +32,6 @@ let FileDragAndDropPreview = React.createClass({
         // don't run it
         // On the other hand, if the files progress is not yet at a 100%,
         // just run fineuploader.cancel
-        console.log(this.props.file);
         if(this.props.handleDeleteFile && this.props.file.progress === 100) {
             this.props.handleDeleteFile(this.props.file.id);
         } else if(this.props.handleCancelFile && this.props.file.progress !== 100) {
