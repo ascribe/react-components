@@ -57,7 +57,7 @@ let FileDragAndDropPreview = React.createClass({
                                 url={this.props.file.url}
                                 toggleUploadProcess={this.toggleUploadProcess}
                                 areAssetsDownloadable={this.props.areAssetsDownloadable}
-                                downloadFile={this.handleDownloadFile}/>);
+                                downloadUrl={this.props.file.s3UrlSafe}/>);
         } else {
             previewElement = (<FileDragAndDropPreviewOther
                                 onClick={this.handleDeleteFile}
@@ -65,7 +65,7 @@ let FileDragAndDropPreview = React.createClass({
                                 type={this.props.file.type.split('/')[1]}
                                 toggleUploadProcess={this.toggleUploadProcess}
                                 areAssetsDownloadable={this.props.areAssetsDownloadable}
-                                downloadFile={this.handleDownloadFile}/>);
+                                downloadUrl={this.props.file.s3UrlSafe}/>);
         }
 
         return (

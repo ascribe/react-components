@@ -10,7 +10,7 @@ let FileDragAndDropPreviewImage = React.createClass({
         progress: React.PropTypes.number,
         url: React.PropTypes.string,
         toggleUploadProcess: React.PropTypes.func,
-        downloadFile: React.PropTypes.func,
+        downloadUrl: React.PropTypes.string,
         areAssetsDownloadable: React.PropTypes.bool
     },
 
@@ -48,7 +48,7 @@ let FileDragAndDropPreviewImage = React.createClass({
             // only if assets are actually downloadable, there should be a download icon if the process is already at
             // 100%. If not, no actionSymbol should be displayed
             if(this.props.areAssetsDownloadable) {
-                actionSymbol = <span className="glyphicon glyphicon-download action-file" aria-hidden="true" title="Download file" onClick={this.props.downloadFile}/>;
+                actionSymbol = <a href={this.props.downloadUrl} target="_blank" className="glyphicon glyphicon-download action-file" aria-hidden="true" title="Download file"/>;
             }
 
         } else {
