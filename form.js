@@ -6,7 +6,9 @@ import ReactAddons from 'react/addons';
 import Button from 'react-bootstrap/lib/Button';
 
 import requests from '../../utils/requests';
+import { getLangText } from '../../utils/lang_utils';
 import AlertDismissable from './alert';
+
 
 let Form = React.createClass({
     propTypes: {
@@ -85,7 +87,7 @@ let Form = React.createClass({
             }
         }
         else {
-            this.setState({errors: ['Something went wrong, please try again later']});
+            this.setState({errors: [getLangText('Something went wrong, please try again later')]});
         }
         this.setState({submitted: false});
     },
