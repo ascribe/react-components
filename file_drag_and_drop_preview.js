@@ -17,7 +17,8 @@ let FileDragAndDropPreview = React.createClass({
         handleCancelFile: React.PropTypes.func,
         handlePauseFile: React.PropTypes.func,
         handleResumeFile: React.PropTypes.func,
-        areAssetsDownloadable: React.PropTypes.bool
+        areAssetsDownloadable: React.PropTypes.bool,
+        areAssetsEditable: React.PropTypes.bool
     },
 
     toggleUploadProcess() {
@@ -48,6 +49,7 @@ let FileDragAndDropPreview = React.createClass({
 
     render() {
         let previewElement;
+        let removeBtn;
 
         // Decide whether an image or a placeholder picture should be displayed
         if(this.props.file.type.split('/')[0] === 'image') {
@@ -68,12 +70,16 @@ let FileDragAndDropPreview = React.createClass({
                                 downloadUrl={this.props.file.s3UrlSafe}/>);
         }
 
+        if(this.props.areAssetsEditable) {
+           removeBtn = (<div className="delete-file">
+                            <span className="glyphicon glyphicon-remove text-center" aria-hidden="true" title="Remove file" onClick={this.handleDeleteFile}/>
+                        </div>);
+        }
+
         return (
             <div
                 className="file-drag-and-drop-position">
-                <div className="delete-file">
-                    <span className="glyphicon glyphicon-remove text-center" aria-hidden="true" title="Remove file" onClick={this.handleDeleteFile}/>
-                </div>
+                {removeBtn}
                 {previewElement}
             </div>
         );

@@ -85,7 +85,8 @@ var ReactS3FineUploader = React.createClass({
         }),
         setIsUploadReady: React.PropTypes.func,
         isReadyForFormSubmission: React.PropTypes.func,
-        areAssetsDownloadable: React.PropTypes.bool
+        areAssetsDownloadable: React.PropTypes.bool,
+        areAssetsEditable: React.PropTypes.bool
     },
 
     getDefaultProps() {
@@ -278,6 +279,10 @@ var ReactS3FineUploader = React.createClass({
         .then((res) =>{
             if(res.otherdata) {
                 file.s3Url = res.otherdata.url_safe;
+                file.s3UrlSafe = res.otherdata.url_safe;
+            } else if(res.digitalwork) {
+                file.s3Url = res.digitalwork.url_safe;
+                file.s3UrlSafe = res.digitalwork.url_safe;
             } else {
                 throw new Error('Could not find a url to download.');
             }
@@ -519,7 +524,8 @@ var ReactS3FineUploader = React.createClass({
                     handleResumeFile={this.handleResumeFile}
                     multiple={this.props.multiple}
                     areAssetsDownloadable={this.props.areAssetsDownloadable}
-                    dropzoneInactive={!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0} />
+                    areAssetsEditable={this.props.areAssetsEditable}
+                    dropzoneInactive={!this.props.areAssetsEditable || !this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0} />
             </div>
         );
     }

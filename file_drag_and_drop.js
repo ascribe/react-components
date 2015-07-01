@@ -4,8 +4,6 @@ import React from 'react';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
 
 
-let ReactTestUtils = React.addons.TestUtils;
-
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDrop = React.createClass({
     propTypes: {
@@ -25,7 +23,8 @@ let FileDragAndDrop = React.createClass({
         handleResumeFile: React.PropTypes.func,
         multiple: React.PropTypes.bool,
         dropzoneInactive: React.PropTypes.bool,
-        areAssetsDownloadable: React.PropTypes.bool
+        areAssetsDownloadable: React.PropTypes.bool,
+        areAssetsEditable: React.PropTypes.bool
     },
 
     handleDragStart(event) {
@@ -156,7 +155,8 @@ let FileDragAndDrop = React.createClass({
                         handleCancelFile={this.handleCancelFile}
                         handlePauseFile={this.handlePauseFile}
                         handleResumeFile={this.handleResumeFile}
-                        areAssetsDownloadable={this.props.areAssetsDownloadable}/>
+                        areAssetsDownloadable={this.props.areAssetsDownloadable}
+                        areAssetsEditable={this.props.areAssetsEditable}/>
                     <input
                         multiple={this.props.multiple}
                         ref="fileinput"
