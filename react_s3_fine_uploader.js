@@ -106,10 +106,10 @@ var ReactS3FineUploader = React.createClass({
                     isBrowserPreviewCapable: fineUploader.supportedFeatures.imagePreviews
                 }
             },
-            cors: {
-                expected: true,
-                sendCredentials: true
-            },
+            //cors: {
+            //    expected: true,
+            //    sendCredentials: true
+            //},
             chunking: {
                 enabled: true
             },
