@@ -110,8 +110,8 @@ let Form = React.createClass({
             buttons = (
                 <div className="row" style={{margin: 0}}>
                     <p className="pull-right">
-                        <Button className="ascribe-btn" type="submit">Save</Button>
-                        <Button className="ascribe-btn" onClick={this.reset}>Cancel</Button>
+                        <Button className="btn btn-default btn-sm ascribe-margin-1px" type="submit">SAVE</Button>
+                        <Button className="btn btn-danger btn-delete btn-sm ascribe-margin-1px" onClick={this.reset}>CANCEL</Button>
                     </p>
                 </div>
             );
