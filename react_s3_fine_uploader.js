@@ -44,7 +44,7 @@ var ReactS3FineUploader = React.createClass({
         }),
         signature: React.PropTypes.shape({
             endpoint: React.PropTypes.string
-        }),
+        }).isRequired,
         uploadSuccess: React.PropTypes.shape({
             method: React.PropTypes.string,
             endpoint: React.PropTypes.string,
@@ -67,7 +67,7 @@ var ReactS3FineUploader = React.createClass({
             method: React.PropTypes.string,
             endpoint: React.PropTypes.string,
             customHeaders: React.PropTypes.object
-        }),
+        }).isRequired,
         session: React.PropTypes.shape({
             endpoint: React.PropTypes.bool
         }),
@@ -106,20 +106,6 @@ var ReactS3FineUploader = React.createClass({
                     isBrowserPreviewCapable: fineUploader.supportedFeatures.imagePreviews
                 }
             },
-            signature: {
-                endpoint: AppConstants.serverUrl + 's3/signature/',
-                customHeaders: {
-                   'X-CSRFToken': getCookie('csrftoken')
-                }
-            },
-            deleteFile: {
-                enabled: true,
-                method: 'DELETE',
-                endpoint: AppConstants.serverUrl + 's3/delete',
-                customHeaders: {
-                   'X-CSRFToken': getCookie('csrftoken')
-                }
-            },
             cors: {
                 expected: true,
                 sendCredentials: true
@@ -152,8 +138,22 @@ var ReactS3FineUploader = React.createClass({
     getInitialState() {
         return {
             filesToUpload: [],
-            uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig())
+            uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
+            csrfToken: getCookie('csrftoken')
         };
+    },
+
+    // since the csrf header is defined in this component's props,
+    // everytime the csrf cookie is changed we'll need to reinitalize 
+    // fineuploader and update the actual csrf token
+    componentWillUpdate(nextProps, nextState) {
+        let potentiallyNewCSRFToken = getCookie('csrftoken');
+        if(this.state.csrfToken !== potentiallyNewCSRFToken) {
+            this.setState({
+                uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
+                csrfToken: potentiallyNewCSRFToken
+            });
+        }
     },
 
     propsToConfig() {
@@ -192,13 +192,6 @@ var ReactS3FineUploader = React.createClass({
         };
     },
 
-    getCookie(name) {
-        let value = '; ' + document.cookie;
-        let parts = value.split('; ' + name + '=');
-        if (parts.length === 2) {
-            return parts.pop().split(';').shift();
-        }
-    },
     requestKey(fileId) {
         let filename = this.state.uploader.getName(fileId);
         return new Promise((resolve, reject) => {
@@ -207,7 +200,7 @@ var ReactS3FineUploader = React.createClass({
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': this.getCookie('csrftoken')
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
                 credentials: 'include',
                 body: JSON.stringify({
@@ -264,7 +257,7 @@ var ReactS3FineUploader = React.createClass({
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'X-CSRFToken': this.getCookie('csrftoken')
+                'X-CSRFToken': getCookie('csrftoken')
             },
             credentials: 'include',
             body: JSON.stringify({
