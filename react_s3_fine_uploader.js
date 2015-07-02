@@ -238,15 +238,27 @@ var ReactS3FineUploader = React.createClass({
         });
         this.setState(newState);
         this.createBlob(files[id]);
-        this.props.submitKey(files[id].key);
 
-        // also, lets check if after the completion of this upload,
-        // the form is ready for submission or not
-        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
-            // if so, set uploadstatus to true
-            this.props.setIsUploadReady(true);
+        // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitKey
+        // are optional, we'll only trigger them when they're actually defined
+        if(this.props.submitKey) {
+            this.props.submitKey(files[id].key);
         } else {
-            this.props.setIsUploadReady(false);
+            console.warn('You didn\'t define submitKey in as a prop in react-s3-fine-uploader');
+        }
+        
+        // for explanation, check comment of if statement above
+        if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
+            // also, lets check if after the completion of this upload,
+            // the form is ready for submission or not
+            if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+                // if so, set uploadstatus to true
+                this.props.setIsUploadReady(true);
+            } else {
+                this.props.setIsUploadReady(false);
+            }
+        } else {
+            console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
         }
     },
 
@@ -309,11 +321,17 @@ var ReactS3FineUploader = React.createClass({
         let notification = new GlobalNotificationModel('File upload canceled', 'success', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
 
-        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
-            // if so, set uploadstatus to true
-            this.props.setIsUploadReady(true);
+        // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitKey
+        // are optional, we'll only trigger them when they're actually defined
+        if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
+            if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+                // if so, set uploadstatus to true
+                this.props.setIsUploadReady(true);
+            } else {
+                this.props.setIsUploadReady(false);
+            }
         } else {
-            this.props.setIsUploadReady(false);
+            console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
         }
     },
 
@@ -367,11 +385,19 @@ var ReactS3FineUploader = React.createClass({
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
 
-        if(this.props.isReadyForFormSubmission && this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
-            // if so, set uploadstatus to true
-            this.props.setIsUploadReady(true);
+        // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitKey
+        // are optional, we'll only trigger them when they're actually defined
+        if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
+            // also, lets check if after the completion of this upload,
+            // the form is ready for submission or not
+            if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+                // if so, set uploadstatus to true
+                this.props.setIsUploadReady(true);
+            } else {
+                this.props.setIsUploadReady(false);
+            }
         } else {
-            this.props.setIsUploadReady(false);
+            console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
         }
     },
 
