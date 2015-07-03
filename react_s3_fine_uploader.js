@@ -463,7 +463,7 @@ var ReactS3FineUploader = React.createClass({
 
             // replace filelist with first-element file list
             files = tempFilesList;
-
+            // TOOD translate?
             let notification = new GlobalNotificationModel('Only one file allowed (took first one)', 'danger', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
