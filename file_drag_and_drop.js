@@ -1,6 +1,8 @@
 'use strict';
 
 import React from 'react';
+
+import FileDragAndDropDialog from './file_drag_and_drop_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
 
 
@@ -140,7 +142,6 @@ let FileDragAndDrop = React.createClass({
         return (
             <div
                 className={className}
-                onClick={this.handleOnClick}
                 onDragStart={this.handleDragStart}
                 onDrag={this.handleDrop}
                 onDragEnter={this.handleDragEnter}
@@ -148,7 +149,11 @@ let FileDragAndDrop = React.createClass({
                 onDragOver={this.handleDragOver}
                 onDrop={this.handleDrop}
                 onDragEnd={this.handleDragEnd}>
-                    {hasFiles ? null : this.props.multiple ? <span className="file-drag-and-drop-dialog">Click or drag to add files</span> : <span className="file-drag-and-drop-dialog">Click or drag to add a file</span>}
+                    <FileDragAndDropDialog 
+                        multipleFiles={this.props.multiple}
+                        hasFiles={hasFiles}
+                        onClick={this.handleOnClick}
+                    />
                     <FileDragAndDropPreviewIterator
                         files={this.props.filesToUpload}
                         handleDeleteFile={this.handleDeleteFile}
