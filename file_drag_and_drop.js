@@ -4,7 +4,6 @@ import React from 'react';
 
 import FileDragAndDropDialog from './file_drag_and_drop_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
-import { getLangText } from '../../utils/lang_utils.js';
 
 
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
@@ -150,7 +149,7 @@ let FileDragAndDrop = React.createClass({
                 onDragOver={this.handleDragOver}
                 onDrop={this.handleDrop}
                 onDragEnd={this.handleDragEnd}>
-                    <FileDragAndDropDialog 
+                    <FileDragAndDropDialog
                         multipleFiles={this.props.multiple}
                         hasFiles={hasFiles}
                         onClick={this.handleOnClick}/>

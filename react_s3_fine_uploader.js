@@ -6,9 +6,10 @@ import promise from 'es6-promise';
 promise.polyfill();
 
 import fetch from 'isomorphic-fetch';
-import AppConstants from '../../constants/application_constants';
 
 import { getCookie } from '../../utils/fetch_api_utils';
+import { getLangText } from '../../utils/lang_utils';
+
 import S3Fetcher from '../../fetchers/s3_fetcher';
 
 import fineUploader from 'fineUploader';
@@ -144,9 +145,9 @@ var ReactS3FineUploader = React.createClass({
     },
 
     // since the csrf header is defined in this component's props,
-    // everytime the csrf cookie is changed we'll need to reinitalize 
+    // everytime the csrf cookie is changed we'll need to reinitalize
     // fineuploader and update the actual csrf token
-    componentWillUpdate(nextProps, nextState) {
+    componentWillUpdate() {
         let potentiallyNewCSRFToken = getCookie('csrftoken');
         if(this.state.csrfToken !== potentiallyNewCSRFToken) {
             this.setState({
@@ -376,12 +377,12 @@ var ReactS3FineUploader = React.createClass({
 
     onDeleteComplete(id, xhr, isError) {
         if(isError) {
-            let notification = new GlobalNotificationModel('Couldn\'t delete file', 'danger', 10000);
+            let notification = new GlobalNotificationModel(getLangText('Couldn\'t delete file'), 'danger', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         } else {
             this.removeFileWithIdFromFilesToUpload(id);
 
-            let notification = new GlobalNotificationModel('File deleted', 'success', 5000);
+            let notification = new GlobalNotificationModel(getLangText('File deleted'), 'success', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
 
@@ -464,7 +465,7 @@ var ReactS3FineUploader = React.createClass({
             // replace filelist with first-element file list
             files = tempFilesList;
             // TOOD translate?
-            let notification = new GlobalNotificationModel('Only one file allowed (took first one)', 'danger', 10000);
+            let notification = new GlobalNotificationModel(getLangText('Only one file allowed (took first one)'), 'danger', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
 
