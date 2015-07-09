@@ -17,13 +17,14 @@ let Property = React.createClass({
             React.PropTypes.element
         ]),
         footer: React.PropTypes.element,
-        handleChange: React.PropTypes.func
+        handleChange: React.PropTypes.func,
+        ignoreFocus: React.PropTypes.bool
     },
 
     getDefaultProps() {
         return {
             editable: true,
-            hidden: false,
+            hidden: false
         };
     },
 
@@ -62,6 +63,9 @@ let Property = React.createClass({
         this.setState({value: event.target.value});
     },
     handleFocus() {
+        if(this.props.ignoreFocus) {
+            return;
+        }
         this.refs.input.getDOMNode().focus();
         this.setState({
             isFocused: true
@@ -134,7 +138,8 @@ let Property = React.createClass({
         return (
             <div
                 className={'ascribe-settings-wrapper ' + this.getClassName()}
-                onClick={this.handleFocus} onfocus={this.handleFocus}>
+                onClick={this.handleFocus}
+                onfocus={this.handleFocus}>
                 <OverlayTrigger
                     delay={500}
                     placement="top"
