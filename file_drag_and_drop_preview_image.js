@@ -4,6 +4,7 @@ import React from 'react';
 import ProgressBar from 'react-progressbar';
 
 import AppConstants from '../../constants/application_constants';
+import { getLangText } from '../../utils/lang_utils.js'
 
 let FileDragAndDropPreviewImage = React.createClass({
     propTypes: {
@@ -40,15 +41,15 @@ let FileDragAndDropPreviewImage = React.createClass({
         let actionSymbol;
         
         if(this.props.progress > 0 && this.props.progress < 99 && this.state.paused) {
-            actionSymbol = <span className="glyphicon glyphicon-pause action-file" aria-hidden="true" title="Pause upload" onClick={this.toggleUploadProcess}/>;
+            actionSymbol = <span className="glyphicon glyphicon-pause action-file" aria-hidden="true" title={getLangText('Pause upload')} onClick={this.toggleUploadProcess}/>;
         } else if(this.props.progress > 0 && this.props.progress < 99 && !this.state.paused) {
-            actionSymbol = <span className="glyphicon glyphicon-play action-file" aria-hidden="true" title="Resume uploading" onClick={this.toggleUploadProcess}/>;
+            actionSymbol = <span className="glyphicon glyphicon-play action-file" aria-hidden="true" title={getLangText('Resume uploading')} onClick={this.toggleUploadProcess}/>;
         } else if(this.props.progress === 100) {
 
             // only if assets are actually downloadable, there should be a download icon if the process is already at
             // 100%. If not, no actionSymbol should be displayed
             if(this.props.areAssetsDownloadable) {
-                actionSymbol = <a href={this.props.downloadUrl} target="_blank" className="glyphicon glyphicon-download action-file" aria-hidden="true" title="Download file"/>;
+                actionSymbol = <a href={this.props.downloadUrl} target="_blank" className="glyphicon glyphicon-download action-file" aria-hidden="true" title={getLangText('Download file')}/>;
             }
 
         } else {
