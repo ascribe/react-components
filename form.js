@@ -18,7 +18,8 @@ let Form = React.createClass({
         children: React.PropTypes.oneOfType([
             React.PropTypes.object,
             React.PropTypes.array
-        ])
+        ]),
+        className: React.PropTypes.string
     },
 
     getInitialState() {
@@ -141,10 +142,16 @@ let Form = React.createClass({
         });
     },
     render() {
+        let className = 'ascribe-form';
+
+        if(this.props.className) {
+            className += ' ' + this.props.className;
+        }
+
         return (
             <form
                 role="form"
-                className="ascribe-form"
+                className={className}
                 onSubmit={this.submit}
                 autoComplete="on">
                 {this.getErrors()}
