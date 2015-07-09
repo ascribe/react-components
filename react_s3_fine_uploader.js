@@ -276,7 +276,7 @@ var ReactS3FineUploader = React.createClass({
             body: JSON.stringify({
                 'filename': file.name,
                 'key': file.key,
-                'bitcoin_id': this.props.createBlobRoutine.pieceId
+                'piece_id': this.props.createBlobRoutine.pieceId
             })
         })
         .then((res) => {
