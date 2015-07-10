@@ -35,6 +35,7 @@ let Form = React.createClass({
                 this.refs[ref].reset();
             }
         }
+        this.setState(this.getInitialState());
     },
     submit(event){
         if (event) {
