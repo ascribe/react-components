@@ -25,7 +25,8 @@ let Property = React.createClass({
         children: React.PropTypes.oneOfType([
             React.PropTypes.arrayOf(React.PropTypes.element),
             React.PropTypes.element
-        ])
+        ]),
+        style: React.PropTypes.object
     },
 
     getDefaultProps() {
@@ -166,7 +167,8 @@ let Property = React.createClass({
             <div
                 className={'ascribe-settings-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
-                onFocus={this.handleFocus}>
+                onFocus={this.handleFocus}
+                style={this.props.style}>
                 <OverlayTrigger
                     delay={500}
                     placement="top"

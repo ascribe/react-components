@@ -31,7 +31,7 @@ let InputCheckbox = React.createClass({
                 <input type="checkbox" ref="checkbox"/>
                 <span className="checkbox">
                     <span>
-                        {getLangText('I agree to the Terms of Service') + ' '}
+                        {' ' + getLangText('I agree to the Terms of Service') + ' '}
                         (<a href="/terms" target="_blank" style={{fontSize: '0.9em', color: 'rgba(0,0,0,0.7)'}}>
                             {getLangText('read')}
                         </a>)
