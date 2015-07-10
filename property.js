@@ -18,13 +18,22 @@ let Property = React.createClass({
         ]),
         footer: React.PropTypes.element,
         handleChange: React.PropTypes.func,
-        ignoreFocus: React.PropTypes.bool
+        ignoreFocus: React.PropTypes.bool,
+        className: React.PropTypes.string,
+        onClick: React.PropTypes.func,
+        onChange: React.PropTypes.func,
+        children: React.PropTypes.oneOfType([
+            React.PropTypes.arrayOf(React.PropTypes.element),
+            React.PropTypes.element
+        ]),
+        style: React.PropTypes.object
     },
 
     getDefaultProps() {
         return {
             editable: true,
-            hidden: false
+            hidden: false,
+            className: ''
         };
     },
 
@@ -36,12 +45,14 @@ let Property = React.createClass({
             errors: null
         };
     },
+
     componentWillReceiveProps(){
         this.setState({
             initialValue: this.refs.input.getDOMNode().defaultValue,
             value: this.refs.input.getDOMNode().value
         });
     },
+
     reset(){
         // maybe do reset by reload instead of frontend state?
         this.setState({value: this.state.initialValue});
@@ -62,26 +73,39 @@ let Property = React.createClass({
         }
         this.setState({value: event.target.value});
     },
+
     handleFocus() {
+        // if ignoreFocus (bool) is defined, then just ignore focusing on
+        // the property and input
         if(this.props.ignoreFocus) {
             return;
         }
+
+        // if onClick is defined from the outside,
+        // just call it
+        if(this.props.onClick) {
+            this.props.onClick();
+        }
+
         this.refs.input.getDOMNode().focus();
         this.setState({
             isFocused: true
         });
     },
+
     handleBlur() {
         this.setState({
             isFocused: false
         });
     },
+
     handleSuccess(){
         this.setState({
             isFocused: false,
             errors: null
         });
     },
+
     setErrors(errors){
         this.setState({
             errors: errors.map((error) => {
@@ -89,9 +113,11 @@ let Property = React.createClass({
             })
         });
     },
+
     clearErrors(){
         this.setState({errors: null});
     },
+
     getClassName() {
         if(this.props.hidden){
             return 'is-hidden';
@@ -108,6 +134,7 @@ let Property = React.createClass({
             return '';
         }
     },
+
     renderChildren() {
         return ReactAddons.Children.map(this.props.children, (child) => {
             return ReactAddons.addons.cloneWithProps(child, {
@@ -120,6 +147,7 @@ let Property = React.createClass({
             });
         });
     },
+
     render() {
         let tooltip = <span/>;
         if (this.props.tooltip){
@@ -139,12 +167,13 @@ let Property = React.createClass({
             <div
                 className={'ascribe-settings-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
-                onfocus={this.handleFocus}>
+                onFocus={this.handleFocus}
+                style={this.props.style}>
                 <OverlayTrigger
                     delay={500}
                     placement="top"
                     overlay={tooltip}>
-                    <div className="ascribe-settings-property">
+                    <div className={'ascribe-settings-property ' + this.props.className}>
                         {this.state.errors}
                         <span>{ this.props.label}</span>
                         {this.renderChildren()}
