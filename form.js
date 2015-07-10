@@ -54,10 +54,10 @@ let Form = React.createClass({
     },
 
     getFormData(){
-        if ('getFormData' in this.props){
-            return this.props.getFormData();
-        }
         let data = {};
+        if ('getFormData' in this.props){
+            data = this.props.getFormData();
+        }
         for (let ref in this.refs){
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
         }
