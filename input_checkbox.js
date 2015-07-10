@@ -19,7 +19,8 @@ let InputCheckbox = React.createClass({
     handleFocus() {
         this.refs.checkbox.getDOMNode().checked = !this.refs.checkbox.getDOMNode().checked;
         this.setState({
-            show: this.refs.checkbox.getDOMNode().checked
+            show: this.refs.checkbox.getDOMNode().checked,
+            value: this.refs.checkbox.getDOMNode().checked
         });
     },
 

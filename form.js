@@ -7,6 +7,7 @@ import Button from 'react-bootstrap/lib/Button';
 
 import requests from '../../utils/requests';
 import { getLangText } from '../../utils/lang_utils';
+import { mergeOptionsWithDuplicates } from '../../utils/general_utils';
 import AlertDismissable from './alert';
 
 
@@ -55,11 +56,11 @@ let Form = React.createClass({
 
     getFormData(){
         let data = {};
-        if ('getFormData' in this.props){
-            data = this.props.getFormData();
-        }
         for (let ref in this.refs){
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
+        }
+        if ('getFormData' in this.props){
+            data = mergeOptionsWithDuplicates(data, this.props.getFormData());
         }
         return data;
     },
