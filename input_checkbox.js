@@ -2,48 +2,43 @@
 
 import React from 'react';
 
-import AlertMixin from '../../mixins/alert_mixin';
+import { getLangText } from '../../utils/lang_utils';
 
 let InputCheckbox = React.createClass({
     propTypes: {
-        submitted: React.PropTypes.bool.isRequired,
         required: React.PropTypes.string.isRequired,
         label: React.PropTypes.string.isRequired
     },
 
-    mixins: [AlertMixin],
-
     getInitialState() {
         return {
-            value: null,
-            alerts: null // needed in AlertMixin
+            show: false
         };
     },
-    
-    handleChange(event) {
-        this.setState({value: event.target.value});
+
+    handleFocus() {
+        this.refs.checkbox.getDOMNode().checked = !this.refs.checkbox.getDOMNode().checked;
+        this.setState({
+            show: this.refs.checkbox.getDOMNode().checked
+        });
     },
 
     render() {
-        let alerts = (this.props.submitted) ? null : this.state.alerts;
         return (
-            <div className="form-group">
-                {alerts}
-                <div className="input-checkbox-ascribe">
-                    <div className="checkbox">
-                        <label>
-                            <input
-                                type="checkbox"
-                                required={this.props.required}
-                                onChange={this.handleChange}
-                            />
-                            {this.props.label}
-                        </label>
-                    </div>
-                </div>
-            </div>
+            <span
+                onClick={this.handleFocus}
+                onFocus={this.handleFocus}>
+                <input type="checkbox" ref="checkbox"/>
+                <span className="checkbox">
+                    <span>
+                        {getLangText('I agree to the Terms of Service') + ' '}
+                        (<a href="/terms" target="_blank" style={{fontSize: '0.9em', color: 'rgba(0,0,0,0.7)'}}>
+                            {getLangText('read')}
+                        </a>)
+                    </span>
+                </span>
+            </span>
         );
-
     }
 });
 
