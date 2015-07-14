@@ -46,10 +46,19 @@ let Property = React.createClass({
         };
     },
 
-    componentWillReceiveProps(){
+    componentWillReceiveProps() {
+
+        // In order to set this.state.value from another component
+        // the state of value should only be set if its not undefined and
+        // actually references something
+        if(typeof this.refs.input.getDOMNode().value !== 'undefined') {
+            this.setState({
+                value: this.refs.input.getDOMNode().value
+            });
+        }
+
         this.setState({
-            initialValue: this.refs.input.getDOMNode().defaultValue,
-            value: this.refs.input.getDOMNode().value
+            initialValue: this.refs.input.getDOMNode().defaultValue
         });
     },
 
@@ -67,11 +76,13 @@ let Property = React.createClass({
     },
 
     handleChange(event) {
+
         this.props.handleChange(event);
         if ('onChange' in this.props) {
             this.props.onChange(event);
         }
-        this.setState({value: event.target.value});
+
+        this.setState({value: true});
     },
 
     handleFocus() {
