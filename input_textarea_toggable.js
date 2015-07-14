@@ -32,6 +32,7 @@ let InputTextAreaToggable = React.createClass({
                     className={className}
                     value={this.state.value}
                     rows={this.props.rows}
+                    maxRows={10}
                     required={this.props.required}
                     onChange={this.handleChange}
                     onBlur={this.props.onBlur}
