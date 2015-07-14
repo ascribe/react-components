@@ -2,11 +2,6 @@
 
 import React from 'react/addons';
 
-import promise from 'es6-promise';
-promise.polyfill();
-
-import fetch from 'isomorphic-fetch';
-
 import { getCookie } from '../../utils/fetch_api_utils';
 import { getLangText } from '../../utils/lang_utils';
 
