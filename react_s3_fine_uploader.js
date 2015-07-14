@@ -163,6 +163,13 @@ var ReactS3FineUploader = React.createClass({
         }
     },
 
+    componentWillUnmount() {
+        // Without this method, fineuploader will continue to try to upload artworks
+        // even though this component is not mounted any more.
+        // Therefore we cancel all uploads
+        this.state.uploader.cancelAll();
+    },
+
     propsToConfig() {
         let objectProperties = this.props.objectProperties;
         objectProperties.key = this.requestKey;
