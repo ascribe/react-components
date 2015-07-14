@@ -96,7 +96,8 @@ var ReactS3FineUploader = React.createClass({
         setIsUploadReady: React.PropTypes.func,
         isReadyForFormSubmission: React.PropTypes.func,
         areAssetsDownloadable: React.PropTypes.bool,
-        areAssetsEditable: React.PropTypes.bool
+        areAssetsEditable: React.PropTypes.bool,
+        defaultErrorMessage: React.PropTypes.string
     },
 
     getDefaultProps() {
@@ -141,7 +142,8 @@ var ReactS3FineUploader = React.createClass({
                 }
                 return name;
             },
-            multiple: false
+            multiple: false,
+            defaultErrorMessage: 'Unexpected error. Please contact us if this happens repeatedly.'
         };
     },
 
@@ -188,16 +190,12 @@ var ReactS3FineUploader = React.createClass({
             multiple: this.props.multiple,
             retry: this.props.retry,
             callbacks: {
-                onSubmit: this.onSubmit,
                 onComplete: this.onComplete,
                 onCancel: this.onCancel,
-                onDelete: this.onDelete,
                 onProgress: this.onProgress,
-                onRetry: this.onRetry,
-                onAutoRetry: this.onAutoRetry,
-                onManualRetry: this.onManualRetry,
                 onDeleteComplete: this.onDeleteComplete,
-                onSessionRequestComplete: this.onSessionRequestComplete
+                onSessionRequestComplete: this.onSessionRequestComplete,
+                onError: this.onError
             }
         };
     },
@@ -226,17 +224,12 @@ var ReactS3FineUploader = React.createClass({
                 resolve(res.key);
             })
             .catch((err) => {
-                console.error(err);
                 reject(err);
             });
         });
     },
 
     /* FineUploader specific callback function handlers */
-
-    onSubmit() {
-        console.log('submit');
-    },
 
     onComplete(id) {
         let files = this.state.filesToUpload;
@@ -309,20 +302,9 @@ var ReactS3FineUploader = React.createClass({
         return defer;
     },
 
-    onRetry() {
-        console.log('retry');
-    },
-
-    onAutoRetry() {
-        console.log('autoretry');
-    },
-
-    onManualRetry() {
-        console.log('manualretry');
-    },
-
-    onDelete() {
-        console.log('delete');
+    onError() {
+        let notification = new GlobalNotificationModel(this.props.defaultErrorMessage, 'danger', 5000);
+        GlobalNotificationActions.appendGlobalNotification(notification);
     },
 
     onCancel(id) {
