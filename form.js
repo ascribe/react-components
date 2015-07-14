@@ -59,6 +59,7 @@ let Form = React.createClass({
         for (let ref in this.refs){
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
         }
+        console.log(data);
         if ('getFormData' in this.props){
             data = mergeOptionsWithDuplicates(data, this.props.getFormData());
         }
