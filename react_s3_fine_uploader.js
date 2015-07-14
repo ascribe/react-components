@@ -199,7 +199,7 @@ var ReactS3FineUploader = React.createClass({
         let defer = new fineUploader.Promise();
         let filename = this.state.uploader.getName(fileId);
 
-        fetch(this.props.keyRoutine.url, {
+        window.fetch(this.props.keyRoutine.url, {
             method: 'post',
             headers: {
                 'Accept': 'application/json',
@@ -228,7 +228,7 @@ var ReactS3FineUploader = React.createClass({
 
     createBlob(file) {
         let defer = new fineUploader.Promise();
-        fetch(this.props.createBlobRoutine.url, {
+        window.fetch(this.props.createBlobRoutine.url, {
             method: 'post',
             headers: {
                 'Accept': 'application/json',
