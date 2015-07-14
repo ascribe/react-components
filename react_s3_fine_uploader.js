@@ -201,32 +201,72 @@ var ReactS3FineUploader = React.createClass({
     },
 
     requestKey(fileId) {
+        let defer = new fineUploader.Promise();
         let filename = this.state.uploader.getName(fileId);
-        return new Promise((resolve, reject) => {
-            fetch(this.props.keyRoutine.url, {
-                method: 'post',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    'filename': filename,
-                    'file_class': this.props.keyRoutine.fileClass,
-                    'piece_id': this.props.keyRoutine.pieceId
-                })
+
+        fetch(this.props.keyRoutine.url, {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                'filename': filename,
+                'file_class': this.props.keyRoutine.fileClass,
+                'piece_id': this.props.keyRoutine.pieceId
             })
-            .then((res) => {
-                return res.json();
-            })
-            .then((res) =>{
-                resolve(res.key);
-            })
-            .catch((err) => {
-                reject(err);
-            });
+        })
+        .then((res) => {
+            return res.json();
+        })
+        .then((res) =>{
+            defer.success(res.key);
+        })
+        .catch((err) => {
+            defer.failure(err);
         });
+
+        return defer;
+    },
+
+    createBlob(file) {
+        let defer = new fineUploader.Promise();
+        fetch(this.props.createBlobRoutine.url, {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                'filename': file.name,
+                'key': file.key,
+                'piece_id': this.props.createBlobRoutine.pieceId
+            })
+        })
+        .then((res) => {
+            return res.json();
+        })
+        .then((res) =>{
+            if(res.otherdata) {
+                file.s3Url = res.otherdata.url_safe;
+                file.s3UrlSafe = res.otherdata.url_safe;
+            } else if(res.digitalwork) {
+                file.s3Url = res.digitalwork.url_safe;
+                file.s3UrlSafe = res.digitalwork.url_safe;
+            } else {
+                throw new Error('Could not find a url to download.');
+            }
+            defer.success(res.key);
+        })
+        .catch((err) => {
+            defer.failure(err);
+            console.error(err);
+        });
+        return defer;
     },
 
     /* FineUploader specific callback function handlers */
@@ -263,43 +303,6 @@ var ReactS3FineUploader = React.createClass({
         } else {
             console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
         }
-    },
-
-    createBlob(file) {
-        let defer = new fineUploader.Promise();
-        fetch(this.props.createBlobRoutine.url, {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                'filename': file.name,
-                'key': file.key,
-                'piece_id': this.props.createBlobRoutine.pieceId
-            })
-        })
-        .then((res) => {
-            return res.json();
-        })
-        .then((res) =>{
-            if(res.otherdata) {
-                file.s3Url = res.otherdata.url_safe;
-                file.s3UrlSafe = res.otherdata.url_safe;
-            } else if(res.digitalwork) {
-                file.s3Url = res.digitalwork.url_safe;
-                file.s3UrlSafe = res.digitalwork.url_safe;
-            } else {
-                throw new Error('Could not find a url to download.');
-            }
-            defer.success(res.key);
-        })
-        .catch((err) => {
-            console.error(err);
-        });
-        return defer;
     },
 
     onError() {
