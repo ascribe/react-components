@@ -7,7 +7,10 @@ import { getLangText } from '../../utils/lang_utils';
 let InputCheckbox = React.createClass({
     propTypes: {
         required: React.PropTypes.string.isRequired,
-        label: React.PropTypes.string.isRequired
+        children: React.PropTypes.oneOfType([
+            React.PropTypes.arrayOf(React.PropTypes.element),
+            React.PropTypes.element
+        ]).isRequired
     },
 
     getInitialState() {
@@ -31,12 +34,7 @@ let InputCheckbox = React.createClass({
                 onFocus={this.handleFocus}>
                 <input type="checkbox" ref="checkbox"/>
                 <span className="checkbox">
-                    <span>
-                        {' ' + getLangText('I agree to the Terms of Service') + ' '}
-                        (<a href="/terms" target="_blank" style={{fontSize: '0.9em', color: 'rgba(0,0,0,0.7)'}}>
-                            {getLangText('read')}
-                        </a>)
-                    </span>
+                    {this.props.children}
                 </span>
             </span>
         );
