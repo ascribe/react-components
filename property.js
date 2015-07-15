@@ -82,7 +82,7 @@ let Property = React.createClass({
             this.props.onChange(event);
         }
 
-        this.setState({value: true});
+        this.setState({value: event.target.value});
     },
 
     handleFocus() {

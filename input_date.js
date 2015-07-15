@@ -2,7 +2,6 @@
 
 import React from 'react';
 
-import AlertMixin from '../../mixins/alert_mixin';
 import DatePicker from 'react-datepicker/dist/react-datepicker';
 
 let InputDate = React.createClass({
@@ -11,31 +10,33 @@ let InputDate = React.createClass({
         placeholderText: React.PropTypes.string
     },
 
-    mixins: [AlertMixin],
-
     getInitialState() {
         return {
-            value: null,
-            value_formatted: null,
-            alerts: null // needed in AlertMixin
+            value: null
         };
     },
 
     handleChange(date) {
+        let formattedDate = date.format('YYYY-MM-DD');
         this.setState({
-            value: date,
-            value_formatted: date.format('YYYY-MM-DD')});
+            value: formattedDate,
+            value_moment: date
+        });
+
+        this.props.onChange({
+            target: {
+                value: formattedDate
+            }
+        });
     },
 
     render: function () {
-        let alerts = (this.props.submitted) ? null : this.state.alerts;
+        console.log(this.state.value);
         return (
             <div className="form-group">
-                {alerts}
                 <DatePicker
-                    key="example2"
                     dateFormat="YYYY-MM-DD"
-                    selected={this.state.value}
+                    selected={this.state.value_moment}
                     onChange={this.handleChange}
                     placeholderText={this.props.placeholderText}/>
             </div>
