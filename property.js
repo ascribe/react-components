@@ -104,10 +104,14 @@ let Property = React.createClass({
         });
     },
 
-    handleBlur() {
+    handleBlur(event) {
         this.setState({
             isFocused: false
         });
+
+        if(this.props.onBlur) {
+            this.props.onBlur(event);
+        }
     },
 
     handleSuccess(){
