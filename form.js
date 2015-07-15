@@ -62,6 +62,7 @@ let Form = React.createClass({
         if ('getFormData' in this.props){
             data = mergeOptionsWithDuplicates(data, this.props.getFormData());
         }
+        console.log(data);
         return data;
     },
 

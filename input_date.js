@@ -31,7 +31,6 @@ let InputDate = React.createClass({
     },
 
     render: function () {
-        console.log(this.state.value);
         return (
             <div className="form-group">
                 <DatePicker

@@ -40,7 +40,7 @@ let InputCheckbox = React.createClass({
             <span
                 onClick={this.handleFocus}
                 onFocus={this.handleFocus}>
-                <input type="checkbox" ref="checkbox"/>
+                <input type="checkbox" ref="checkbox" required="required"/>
                 <span className="checkbox">
                     {this.props.children}
                 </span>
