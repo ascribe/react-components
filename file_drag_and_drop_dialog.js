@@ -22,11 +22,11 @@ let FileDragAndDropDialog = React.createClass({
                     <span className="file-drag-and-drop-dialog">
                         <p>Drag a file here</p>
                         <p>or</p>
-                        <button
+                        <span
                             className="btn btn-default"
                             onClick={this.props.onClick}>
                                 choose a file to upload
-                        </button>
+                        </span>
                     </span>
                 );
             }

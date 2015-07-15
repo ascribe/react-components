@@ -113,7 +113,7 @@ let FileDragAndDrop = React.createClass({
         this.props.handleResumeFile(fileId);
     },
 
-    handleOnClick() {
+    handleOnClick(event) {
         // when multiple is set to false and the user already uploaded a piece,
         // do not propagate event
         if(this.props.dropzoneInactive) {
@@ -128,6 +128,7 @@ let FileDragAndDrop = React.createClass({
             bubbles: true,
             cancelable: true
         });
+
         evt.stopPropagation();
         this.refs.fileinput.getDOMNode().dispatchEvent(evt);
     },

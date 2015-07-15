@@ -197,7 +197,8 @@ var ReactS3FineUploader = React.createClass({
                 onProgress: this.onProgress,
                 onDeleteComplete: this.onDeleteComplete,
                 onSessionRequestComplete: this.onSessionRequestComplete,
-                onError: this.onError
+                onError: this.onError,
+                onValidate: this.onValidate
             }
         };
     },
@@ -235,6 +236,7 @@ var ReactS3FineUploader = React.createClass({
 
     createBlob(file) {
         let defer = new fineUploader.Promise();
+
         window.fetch(this.props.createBlobRoutine.url, {
             method: 'post',
             headers: {
@@ -310,6 +312,14 @@ var ReactS3FineUploader = React.createClass({
     onError() {
         let notification = new GlobalNotificationModel(this.props.defaultErrorMessage, 'danger', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
+    },
+
+    onValidate(data) {
+        if(data.size > this.props.validation.sizeLimit) {
+            this.state.uploader.cancelAll();
+            let notification = new GlobalNotificationModel('Your file is bigger than 10MB', 'danger', 5000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
+        }
     },
 
     onCancel(id) {
