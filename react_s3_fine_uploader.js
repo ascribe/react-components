@@ -312,6 +312,7 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onError() {
+        Raven.captureException('react-fineuploader-error');
         let notification = new GlobalNotificationModel(this.props.defaultErrorMessage, 'danger', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
     },
