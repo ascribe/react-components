@@ -13,6 +13,8 @@ import FileDragAndDrop from './file_drag_and_drop';
 import GlobalNotificationModel from '../../models/global_notification_model';
 import GlobalNotificationActions from '../../actions/global_notification_actions';
 
+import AppConstants from '../../constants/application_constants';
+
 var ReactS3FineUploader = React.createClass({
 
     propTypes: {
@@ -146,7 +148,7 @@ var ReactS3FineUploader = React.createClass({
         return {
             filesToUpload: [],
             uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
-            csrfToken: getCookie('csrftoken')
+            csrfToken: getCookie(AppConstants.csrftoken)
         };
     },
 
@@ -154,7 +156,7 @@ var ReactS3FineUploader = React.createClass({
     // everytime the csrf cookie is changed we'll need to reinitalize
     // fineuploader and update the actual csrf token
     componentWillUpdate() {
-        let potentiallyNewCSRFToken = getCookie('csrftoken');
+        let potentiallyNewCSRFToken = getCookie(AppConstants.csrftoken);
         if(this.state.csrfToken !== potentiallyNewCSRFToken) {
             this.setState({
                 uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
@@ -212,7 +214,7 @@ var ReactS3FineUploader = React.createClass({
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCookie(AppConstants.csrftoken)
             },
             credentials: 'include',
             body: JSON.stringify({
@@ -242,7 +244,7 @@ var ReactS3FineUploader = React.createClass({
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
+                'X-CSRFToken': getCookie(AppConstants.csrftoken)
             },
             credentials: 'include',
             body: JSON.stringify({
