@@ -80,7 +80,6 @@ let Form = React.createClass({
         this.setState({edited: false, submitted: false});
     },
     handleError(err){
-        console.log(err);
         if (err.json) {
             for (var input in err.json.errors){
                 if (this.refs && this.refs[input] && this.refs[input].state) {
