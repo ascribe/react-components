@@ -271,7 +271,7 @@ var ReactS3FineUploader = React.createClass({
         })
         .catch((err) => {
             defer.failure(err);
-            console.error(err);
+            console.logGlobal(err);
         });
         return defer;
     },
