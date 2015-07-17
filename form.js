@@ -90,7 +90,7 @@ let Form = React.createClass({
             }
         }
         else {
-            console.error(err);
+            console.logGlobal(err);
             this.setState({errors: [getLangText('Something went wrong, please try again later')]});
         }
         this.setState({submitted: false});
