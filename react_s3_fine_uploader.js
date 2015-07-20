@@ -209,6 +209,7 @@ var ReactS3FineUploader = React.createClass({
     requestKey(fileId) {
         let defer = new fineUploader.Promise();
         let filename = this.state.uploader.getName(fileId);
+        let uuid = this.state.uploader.getUuid(fileId);
 
         window.fetch(this.props.keyRoutine.url, {
             method: 'post',
@@ -220,7 +221,8 @@ var ReactS3FineUploader = React.createClass({
             credentials: 'include',
             body: JSON.stringify({
                 'filename': filename,
-                'file_class': this.props.keyRoutine.fileClass,
+                'category': this.props.keyRoutine.fileClass,
+                'uuid': uuid,
                 'piece_id': this.props.keyRoutine.pieceId
             })
         })
