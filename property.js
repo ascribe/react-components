@@ -57,13 +57,15 @@ let Property = React.createClass({
             });
         }
 
-        this.setState({
-            initialValue: this.refs.input.getDOMNode().defaultValue
-        });
+        if(!this.state.initialValue) {
+            this.setState({
+                initialValue: this.refs.input.getDOMNode().defaultValue
+            });
+        }
     },
 
     reset(){
-        // maybe do reset by reload instead of frontend state?
+        // maybe do reset by reload instead of front end state?
         this.setState({value: this.state.initialValue});
         if (this.refs.input.state){
             // This is probably not the right way but easy fix
@@ -117,7 +119,10 @@ let Property = React.createClass({
     handleSuccess(){
         this.setState({
             isFocused: false,
-            errors: null
+            errors: null,
+
+            // also update initialValue in case of the user updating and canceling its actions again
+            initialValue: this.refs.input.getDOMNode().value
         });
     },
 
