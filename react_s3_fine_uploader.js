@@ -95,7 +95,8 @@ var ReactS3FineUploader = React.createClass({
         isReadyForFormSubmission: React.PropTypes.func,
         areAssetsDownloadable: React.PropTypes.bool,
         areAssetsEditable: React.PropTypes.bool,
-        defaultErrorMessage: React.PropTypes.string
+        defaultErrorMessage: React.PropTypes.string,
+        onInactive: React.PropTypes.func
     },
 
     getDefaultProps() {
@@ -555,7 +556,8 @@ var ReactS3FineUploader = React.createClass({
                     multiple={this.props.multiple}
                     areAssetsDownloadable={this.props.areAssetsDownloadable}
                     areAssetsEditable={this.props.areAssetsEditable}
-                    dropzoneInactive={!this.props.areAssetsEditable || !this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0} />
+                    dropzoneInactive={!this.props.areAssetsEditable || !this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0}
+                    onInactive={this.props.onInactive}/>
             </div>
         );
     }
