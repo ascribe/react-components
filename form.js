@@ -39,7 +39,6 @@ let Form = React.createClass({
         this.setState(this.getInitialState());
     },
     submit(event){
-        console.log('submit')
         if (event) {
             event.preventDefault();
         }
@@ -57,13 +56,9 @@ let Form = React.createClass({
 
     getFormData(){
         let data = {};
-        console.log('data')
         for (let ref in this.refs){
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
-            console.log(this.refs[ref].state.value)
-            console.log(this.refs[ref].refs.input.state.value)
         }
-        //console.log(data)
 
         if ('getFormData' in this.props){
             data = mergeOptionsWithDuplicates(data, this.props.getFormData());
