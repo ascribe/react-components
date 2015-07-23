@@ -16,6 +16,8 @@ import GlobalNotificationActions from '../../actions/global_notification_actions
 
 import AppConstants from '../../constants/application_constants';
 
+import { computeHashOfFile } from '../../utils/file_utils';
+
 var ReactS3FineUploader = React.createClass({
 
     propTypes: {
@@ -489,9 +491,44 @@ var ReactS3FineUploader = React.createClass({
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
 
+        // As mentioned already in the propTypes declaration, in some instances we need to calculate the
+        // md5 hash of a file locally and just upload a txt file containing that hash.
+        // This if statement essentially takes care of that solution.
+        if(this.props.localHashing) {
+            
 
-        // routine for adding all the files submitted to fineuploader
+            let convertedFilePromises = [];
+            // "files" is not a classical Javascript array but a Javascript FileList, therefore
+            // we can not use map to convert values
+            for(let i = 0; i < files.length; i++) {
+
+                // since the actual computation of a file's hash is an async task ,
+                // we're using promises to handle that
+                let hashedFilePromise = computeHashOfFile(files[i]);
+                convertedFilePromises.push(hashedFilePromise);
+
+            }
+
+            // To react after the computation of all files, we define the resolvement
+            // with the all function for iterables and essentially replace all original files
+            // with their txt representative
+            Promise.all(convertedFilePromises)
+                .then((convertedFiles) => {
+                    // actually replacing all files with their txt-hash representative
+                    files = convertedFiles;
+                })
+                .catch((err) => {
+                    // if we're running into an error during the hash creation, we'll tell the user
+                    console.logGlobal(err);
+                    let notification = new GlobalNotificationModel(err.message, 'danger', 5000);
+                    GlobalNotificationActions.appendGlobalNotification(notification);
+                });
+        }
+
+        // routine for adding all the files submitted to fineuploader for actual uploading them
+        // to the server
         this.state.uploader.addFiles(files);
+
         let oldFiles = this.state.filesToUpload;
         let oldAndNewFiles = this.state.uploader.getUploads();
         // Add fineuploader specific information to new files
