@@ -5,6 +5,9 @@ import React from 'react';
 import FileDragAndDropDialog from './file_drag_and_drop_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
 
+import AppConstants from '../../constants/application_constants';
+
+import { getLangText } from '../../utils/lang_utils';
 
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDrop = React.createClass({
@@ -26,7 +29,10 @@ let FileDragAndDrop = React.createClass({
         multiple: React.PropTypes.bool,
         dropzoneInactive: React.PropTypes.bool,
         areAssetsDownloadable: React.PropTypes.bool,
-        areAssetsEditable: React.PropTypes.bool
+        areAssetsEditable: React.PropTypes.bool,
+
+        // triggers a FileDragAndDrop-global spinner
+        isLoading: React.PropTypes.bool
     },
 
     handleDragStart(event) {
@@ -113,7 +119,7 @@ let FileDragAndDrop = React.createClass({
         this.props.handleResumeFile(fileId);
     },
 
-    handleOnClick(event) {
+    handleOnClick() {
         // when multiple is set to false and the user already uploaded a piece,
         // do not propagate event
         if(this.props.dropzoneInactive) {
@@ -140,40 +146,53 @@ let FileDragAndDrop = React.createClass({
         className += this.props.dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';
         className += this.props.className ? ' ' + this.props.className : '';
 
-        return (
-            <div
-                className={className}
-                onDragStart={this.handleDragStart}
-                onDrag={this.handleDrop}
-                onDragEnter={this.handleDragEnter}
-                onDragLeave={this.handleDragLeave}
-                onDragOver={this.handleDragOver}
-                onDrop={this.handleDrop}
-                onDragEnd={this.handleDragEnd}>
-                    <FileDragAndDropDialog
-                        multipleFiles={this.props.multiple}
-                        hasFiles={hasFiles}
-                        onClick={this.handleOnClick}/>
-                    <FileDragAndDropPreviewIterator
-                        files={this.props.filesToUpload}
-                        handleDeleteFile={this.handleDeleteFile}
-                        handleCancelFile={this.handleCancelFile}
-                        handlePauseFile={this.handlePauseFile}
-                        handleResumeFile={this.handleResumeFile}
-                        areAssetsDownloadable={this.props.areAssetsDownloadable}
-                        areAssetsEditable={this.props.areAssetsEditable}/>
-                    <input
-                        multiple={this.props.multiple}
-                        ref="fileinput"
-                        type="file"
-                        style={{
-                            display: 'none',
-                            height: 0,
-                            width: 0
-                        }}
-                        onChange={this.handleDrop} />
-            </div>
-      );
+        // if true: triggers a FileDragAndDrop-global spinner
+        if(this.props.isLoading) {
+            return (
+                <div className={className}>
+                    <p>{getLangText('Computing hashes... This may take a few minutes.')}</p>
+                    <img
+                        height={35}
+                        className="action-file"
+                        src={AppConstants.baseUrl + 'static/img/ascribe_animated_medium.gif'} />
+                </div>
+            );
+        } else {
+            return (
+                <div
+                    className={className}
+                    onDragStart={this.handleDragStart}
+                    onDrag={this.handleDrop}
+                    onDragEnter={this.handleDragEnter}
+                    onDragLeave={this.handleDragLeave}
+                    onDragOver={this.handleDragOver}
+                    onDrop={this.handleDrop}
+                    onDragEnd={this.handleDragEnd}>
+                        <FileDragAndDropDialog
+                            multipleFiles={this.props.multiple}
+                            hasFiles={hasFiles}
+                            onClick={this.handleOnClick}/>
+                        <FileDragAndDropPreviewIterator
+                            files={this.props.filesToUpload}
+                            handleDeleteFile={this.handleDeleteFile}
+                            handleCancelFile={this.handleCancelFile}
+                            handlePauseFile={this.handlePauseFile}
+                            handleResumeFile={this.handleResumeFile}
+                            areAssetsDownloadable={this.props.areAssetsDownloadable}
+                            areAssetsEditable={this.props.areAssetsEditable}/>
+                        <input
+                            multiple={this.props.multiple}
+                            ref="fileinput"
+                            type="file"
+                            style={{
+                                display: 'none',
+                                height: 0,
+                                width: 0
+                            }}
+                            onChange={this.handleDrop} />
+                </div>
+          );
+        }
     }
 });
 

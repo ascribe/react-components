@@ -159,7 +159,8 @@ var ReactS3FineUploader = React.createClass({
         return {
             filesToUpload: [],
             uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
-            csrfToken: getCookie(AppConstants.csrftoken)
+            csrfToken: getCookie(AppConstants.csrftoken),
+            isLoading: false // for hashing feedback
         };
     },
 
@@ -495,7 +496,10 @@ var ReactS3FineUploader = React.createClass({
         // md5 hash of a file locally and just upload a txt file containing that hash.
         // This if statement essentially takes care of that solution.
         if(this.props.localHashing) {
-            
+
+            // hashing is very computationally heavy, therefore we're displaying the user a little
+            // spinner
+            this.setState({ isLoading: true });
 
             let convertedFilePromises = [];
             // "files" is not a classical Javascript array but a Javascript FileList, therefore
@@ -514,6 +518,7 @@ var ReactS3FineUploader = React.createClass({
             // with their txt representative
             Promise.all(convertedFilePromises)
                 .then((convertedFiles) => {
+
                     // actually replacing all files with their txt-hash representative
                     files = convertedFiles;
 
@@ -521,6 +526,10 @@ var ReactS3FineUploader = React.createClass({
                     // to the server
                     this.state.uploader.addFiles(files);
                     this.synchronizeFileLists(files);
+
+                    // we're done hashing so we can show the user his uploads
+                    this.setState({ isLoading: false });
+
                 })
                 .catch((err) => {
                     // if we're running into an error during the hash creation, we'll tell the user
@@ -623,7 +632,8 @@ var ReactS3FineUploader = React.createClass({
                     multiple={this.props.multiple}
                     areAssetsDownloadable={this.props.areAssetsDownloadable}
                     areAssetsEditable={this.props.areAssetsEditable}
-                    dropzoneInactive={!this.props.areAssetsEditable || !this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0} />
+                    dropzoneInactive={!this.props.areAssetsEditable || !this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0}
+                    isLoading={this.state.isLoading} />
             </div>
         );
     }
