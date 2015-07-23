@@ -95,7 +95,15 @@ var ReactS3FineUploader = React.createClass({
         isReadyForFormSubmission: React.PropTypes.func,
         areAssetsDownloadable: React.PropTypes.bool,
         areAssetsEditable: React.PropTypes.bool,
-        defaultErrorMessage: React.PropTypes.string
+        defaultErrorMessage: React.PropTypes.string,
+
+        // We encountered some cases where people had difficulties to upload their
+        // works to ascribe due to a slow internet connection.
+        // One solution we found in the process of tackling this problem was to hash
+        // the file in the browser using md5 and then uploading the resulting text document instead
+        // of the actual file.
+        // This boolean essentially enables that behavior
+        localHashing: React.PropTypes.bool
     },
 
     getDefaultProps() {
@@ -323,7 +331,7 @@ var ReactS3FineUploader = React.createClass({
     onValidate(data) {
         if(data.size > this.props.validation.sizeLimit) {
             this.state.uploader.cancelAll();
-            let notification = new GlobalNotificationModel('Your file is bigger than 10MB', 'danger', 5000);
+            let notification = new GlobalNotificationModel('Your file is bigger than ' + this.props.validation.sizeLimit / 1000000 + 'MB', 'danger', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
     },
@@ -481,6 +489,8 @@ var ReactS3FineUploader = React.createClass({
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
 
+
+        // routine for adding all the files submitted to fineuploader
         this.state.uploader.addFiles(files);
         let oldFiles = this.state.filesToUpload;
         let oldAndNewFiles = this.state.uploader.getUploads();
