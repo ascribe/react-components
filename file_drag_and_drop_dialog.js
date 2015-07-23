@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import { getLangText } from '../../utils/lang_utils';
+
 let FileDragAndDropDialog = React.createClass({
     propTypes: {
         hasFiles: React.PropTypes.bool,
@@ -15,17 +17,19 @@ let FileDragAndDropDialog = React.createClass({
         } else {
             if(this.props.multipleFiles) {
                 return (
-                    <span className="file-drag-and-drop-dialog">Click or drag to add files</span>
+                    <span className="file-drag-and-drop-dialog">
+                        {getLangText('Click or drag to add files')}
+                    </span>
                 );
             } else {
                 return (
                     <span className="file-drag-and-drop-dialog">
-                        <p>Drag a file here</p>
-                        <p>or</p>
+                        <p>{getLangText('Drag a file here')}</p>
+                        <p>{getLangText('or')}</p>
                         <span
                             className="btn btn-default"
                             onClick={this.props.onClick}>
-                                choose a file to upload
+                                {getLangText('choose a file to upload')}
                         </span>
                     </span>
                 );

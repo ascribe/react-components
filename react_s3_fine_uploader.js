@@ -142,7 +142,7 @@ var ReactS3FineUploader = React.createClass({
                 endpoint: null
             },
             messages: {
-                unsupportedBrowser: '<h3>Upload is not functional in IE7 as IE7 has no support for CORS!</h3>'
+                unsupportedBrowser: '<h3>' + getLangText('Upload is not functional in IE7 as IE7 has no support for CORS!') + '</h3>'
             },
             formatFileName: function(name){// fix maybe
                 if (name !== undefined && name.length > 26) {
@@ -151,7 +151,7 @@ var ReactS3FineUploader = React.createClass({
                 return name;
             },
             multiple: false,
-            defaultErrorMessage: 'Unexpected error. Please contact us if this happens repeatedly.'
+            defaultErrorMessage: getLangText('Unexpected error. Please contact us if this happens repeatedly.')
         };
     },
 
@@ -278,7 +278,7 @@ var ReactS3FineUploader = React.createClass({
                 file.s3Url = res.digitalwork.url_safe;
                 file.s3UrlSafe = res.digitalwork.url_safe;
             } else {
-                throw new Error('Could not find a url to download.');
+                throw new Error(getLangText('Could not find a url to download.'));
             }
             defer.success(res.key);
         })
@@ -334,7 +334,9 @@ var ReactS3FineUploader = React.createClass({
     onValidate(data) {
         if(data.size > this.props.validation.sizeLimit) {
             this.state.uploader.cancelAll();
-            let notification = new GlobalNotificationModel('Your file is bigger than ' + this.props.validation.sizeLimit / 1000000 + 'MB', 'danger', 5000);
+
+            let fileSizeInMegaBytes = this.props.validation.sizeLimit / 1000000;
+            let notification = new GlobalNotificationModel(getLangText('Your file is bigger than %d MB', fileSizeInMegaBytes), 'danger', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
     },
@@ -342,7 +344,7 @@ var ReactS3FineUploader = React.createClass({
     onCancel(id) {
         this.removeFileWithIdFromFilesToUpload(id);
 
-        let notification = new GlobalNotificationModel('File upload canceled', 'success', 5000);
+        let notification = new GlobalNotificationModel(getLangText('File upload canceled'), 'success', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
 
         // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitKey
@@ -459,7 +461,7 @@ var ReactS3FineUploader = React.createClass({
         if(this.state.uploader.pauseUpload(fileId)) {
             this.setStatusOfFile(fileId, 'paused');
         } else {
-            throw new Error('File upload could not be paused.');
+            throw new Error(getLangText('File upload could not be paused.'));
         }
         
     },
@@ -468,7 +470,7 @@ var ReactS3FineUploader = React.createClass({
         if(this.state.uploader.continueUpload(fileId)) {
             this.setStatusOfFile(fileId, 'uploading');
         } else {
-            throw new Error('File upload could not be resumed.');
+            throw new Error(getLangText('File upload could not be resumed.'));
         }
     },
 
