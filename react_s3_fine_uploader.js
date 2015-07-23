@@ -516,6 +516,11 @@ var ReactS3FineUploader = React.createClass({
                 .then((convertedFiles) => {
                     // actually replacing all files with their txt-hash representative
                     files = convertedFiles;
+
+                    // routine for adding all the files submitted to fineuploader for actual uploading them
+                    // to the server
+                    this.state.uploader.addFiles(files);
+                    this.synchronizeFileLists(files);
                 })
                 .catch((err) => {
                     // if we're running into an error during the hash creation, we'll tell the user
@@ -523,12 +528,26 @@ var ReactS3FineUploader = React.createClass({
                     let notification = new GlobalNotificationModel(err.message, 'danger', 5000);
                     GlobalNotificationActions.appendGlobalNotification(notification);
                 });
+
+        // if we're not hashing the files locally, we're just going to hand them over to fineuploader
+        // to upload them to the server
+        } else {
+            this.state.uploader.addFiles(files);
+            this.synchronizeFileLists(files);
         }
+    },
 
-        // routine for adding all the files submitted to fineuploader for actual uploading them
-        // to the server
-        this.state.uploader.addFiles(files);
-
+    // ReactFineUploader is essentially just a react layer around s3 fineuploader.
+    // However, since we need to display the status of a file (progress, uploading) as well as
+    // be able to execute actions on a currently uploading file we need to exactly sync the file list
+    // fineuploader is keeping internally.
+    //
+    // Unfortunately though fineuploader is not keeping all of a File object's properties after
+    // submitting them via .addFiles (it deletes the type, key as well as the ObjectUrl (which we need for
+    // displaying a thumbnail)), we need to readd them manually after each file that gets submitted
+    // to the dropzone.
+    // This method is essentially taking care of all these steps.
+    synchronizeFileLists(files) {
         let oldFiles = this.state.filesToUpload;
         let oldAndNewFiles = this.state.uploader.getUploads();
         // Add fineuploader specific information to new files
