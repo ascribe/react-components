@@ -2,6 +2,7 @@
 
 import React from 'react/addons';
 import Raven from 'raven-js';
+import SparkMD5 from 'spark-md5';
 
 import { getCookie } from '../../utils/fetch_api_utils';
 import { getLangText } from '../../utils/lang_utils';
@@ -484,7 +485,8 @@ var ReactS3FineUploader = React.createClass({
         this.state.uploader.addFiles(files);
         let oldFiles = this.state.filesToUpload;
         let oldAndNewFiles = this.state.uploader.getUploads();
-
+        // Compute the hash of the file instead of uploading... needs UX design!
+        // this.computeHashOfFile(0);
         // Add fineuploader specific information to new files
         for(let i = 0; i < oldAndNewFiles.length; i++) {
             for(let j = 0; j < files.length; j++) {
@@ -541,6 +543,48 @@ var ReactS3FineUploader = React.createClass({
             filesToUpload: { $set: filesToUpload }
         });
         this.setState(newState);
+    },
+    makeTextFile(text) {
+        let data = new Blob([text], {type: 'text/plain'});
+        return window.URL.createObjectURL(data);
+    },
+    computeHashOfFile(fileId) {
+        let blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
+            file = this.state.uploader.getFile(fileId),
+            chunkSize = 2097152,                             // Read in chunks of 2MB
+            chunks = Math.ceil(file.size / chunkSize),
+            currentChunk = 0,
+            spark = new SparkMD5.ArrayBuffer(),
+            fileReader = new FileReader();
+
+        let startTime = new Date();
+        fileReader.onload = function (e) {
+            //console.log('read chunk nr', currentChunk + 1, 'of', chunks);
+            spark.append(e.target.result);                   // Append array buffer
+            currentChunk++;
+
+            if (currentChunk < chunks) {
+                loadNext();
+            } else {
+                let fileHash = spark.end();
+                console.info('computed hash %s (took %d s)',
+                    fileHash,
+                    Math.round(((new Date() - startTime) / 1000) % 60));  // Compute hash
+                console.log(this.makeTextFile(fileHash));
+            }
+        }.bind(this);
+
+        fileReader.onerror = function () {
+            console.warn('oops, something went wrong.');
+        };
+        function loadNext() {
+            var start = currentChunk * chunkSize,
+                end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
+
+            fileReader.readAsArrayBuffer(blobSlice.call(file, start, end));
+        }
+        loadNext();
+
     },
 
     render() {
