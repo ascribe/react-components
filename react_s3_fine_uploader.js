@@ -2,6 +2,7 @@
 
 import React from 'react/addons';
 import Raven from 'raven-js';
+import Q from 'q';
 
 import { getCookie } from '../../utils/fetch_api_utils';
 import { getLangText } from '../../utils/lang_utils';
