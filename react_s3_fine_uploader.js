@@ -161,7 +161,9 @@ var ReactS3FineUploader = React.createClass({
             filesToUpload: [],
             uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
             csrfToken: getCookie(AppConstants.csrftoken),
-            hashingProgress: -1 // for hashing feedback
+            hashingProgress: -2
+            // -1: aborted
+            // -2: uninitialized
         };
     },
 
@@ -524,17 +526,31 @@ var ReactS3FineUploader = React.createClass({
             // with the all function for iterables and essentially replace all original files
             // with their txt representative
             Q.all(convertedFilePromises)
-                .progress(({index, value}) => {
+                .progress(({index, value: {progress, handleError}}) => {
+
+                    // hashing progress has been aborted from outside
+                    // To get out of the executing, we need to call reject from the
+                    // inside of the promise's execution.
+                    // This is why we're passing (along with value) a function that essentially
+                    // just does that (calling reject(err))
+                    //
+                    // In the promises catch method, we're then checking if the interruption
+                    // was due to that error or another generic one.
+                    if(this.state.hashingProgress === -1) {
+                        handleError(new Error(getLangText('Hashing canceled')));
+                    }
+
                     // update file's progress
-                    files[index].progress = value;
+                    files[index].progress = progress;
 
                     // calculate weighted average for overall progress of all
                     // currently hashing files
                     let overallHashingProgress = 0;
                     for(let i = 0; i < files.length; i++) {
-                        let filesSliceOfOverall = files[i].size / overallFileSize;
 
+                        let filesSliceOfOverall = files[i].size / overallFileSize;
                         overallHashingProgress += filesSliceOfOverall * files[i].progress;
+
                     }
 
                     // Multiply by 100, since react-progressbar expects decimal numbers
@@ -544,7 +560,7 @@ var ReactS3FineUploader = React.createClass({
                 .then((convertedFiles) => {
 
                     // clear hashing progress, since its done
-                    this.setState({ hashingProgress: -1});
+                    this.setState({ hashingProgress: -2});
 
                     // actually replacing all files with their txt-hash representative
                     files = convertedFiles;
@@ -556,9 +572,19 @@ var ReactS3FineUploader = React.createClass({
 
                 })
                 .catch((err) => {
-                    // if we're running into an error during the hash creation, we'll tell the user
-                    console.logGlobal(err);
-                    let notification = new GlobalNotificationModel(err.message, 'danger', 5000);
+                    // If the error is that hashing has been canceled, we want to display a success
+                    // message instead of a danger message
+                    let typeOfMessage = 'danger';
+
+                    if(err.message === getLangText('Hashing canceled')) {
+                        typeOfMessage = 'success';
+                        this.setState({ hashingProgress: -2 });
+                    } else {
+                        // if there was a more generic error, we also log it
+                        console.logGlobal(err);
+                    }
+
+                    let notification = new GlobalNotificationModel(err.message, typeOfMessage, 5000);
                     GlobalNotificationActions.appendGlobalNotification(notification);
                 });
 
@@ -568,6 +594,13 @@ var ReactS3FineUploader = React.createClass({
             this.state.uploader.addFiles(files);
             this.synchronizeFileLists(files);
         }
+    },
+
+    handleCancelHashing() {
+        // Every progress tick of the hashing function in handleUploadFile there is a
+        // check if this.state.hashingProgress is -1. If so, there is an error thrown that cancels
+        // the hashing of all files immediately.
+        this.setState({ hashingProgress: -1 });
     },
 
     // ReactFineUploader is essentially just a react layer around s3 fineuploader.
@@ -653,6 +686,7 @@ var ReactS3FineUploader = React.createClass({
                     handleCancelFile={this.handleCancelFile}
                     handlePauseFile={this.handlePauseFile}
                     handleResumeFile={this.handleResumeFile}
+                    handleCancelHashing={this.handleCancelHashing}
                     multiple={this.props.multiple}
                     areAssetsDownloadable={this.props.areAssetsDownloadable}
                     areAssetsEditable={this.props.areAssetsEditable}

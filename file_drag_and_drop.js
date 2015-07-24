@@ -6,8 +6,6 @@ import ProgressBar from 'react-progressbar';
 import FileDragAndDropDialog from './file_drag_and_drop_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
 
-import AppConstants from '../../constants/application_constants';
-
 import { getLangText } from '../../utils/lang_utils';
 
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
@@ -33,7 +31,10 @@ let FileDragAndDrop = React.createClass({
         areAssetsEditable: React.PropTypes.bool,
 
         // triggers a FileDragAndDrop-global spinner
-        hashingProgress: React.PropTypes.number
+        hashingProgress: React.PropTypes.number,
+        // sets the value of this.state.hashingProgress in reactfineuploader
+        // to -1 which is code for: aborted
+        handleCancelHashing: React.PropTypes.func
     },
 
     handleDragStart(event) {
@@ -147,12 +148,15 @@ let FileDragAndDrop = React.createClass({
         className += this.props.dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';
         className += this.props.className ? ' ' + this.props.className : '';
 
-        // if !== -1: triggers a FileDragAndDrop-global spinner
-        if(this.props.hashingProgress !== -1) {
+        // if !== -2: triggers a FileDragAndDrop-global spinner
+        if(this.props.hashingProgress !== -2) {
             return (
                 <div className={className}>
-                    <p>{getLangText('Computing hashes... This may take a few minutes.')}</p>
-                    <p>{Math.ceil(this.props.hashingProgress)}%</p>
+                    <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
+                    <p>
+                        <span>{Math.ceil(this.props.hashingProgress)}%</span>
+                        <span onClick={this.props.handleCancelHashing}> Abort hashing</span>
+                    </p>
                     <ProgressBar completed={this.props.hashingProgress} color="#48DACB"/>
                 </div>
             );
