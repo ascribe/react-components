@@ -526,7 +526,7 @@ var ReactS3FineUploader = React.createClass({
             // with the all function for iterables and essentially replace all original files
             // with their txt representative
             Q.all(convertedFilePromises)
-                .progress(({index, value: {progress, handleError}}) => {
+                .progress(({index, value: {progress, reject}}) => {
 
                     // hashing progress has been aborted from outside
                     // To get out of the executing, we need to call reject from the
@@ -537,7 +537,7 @@ var ReactS3FineUploader = React.createClass({
                     // In the promises catch method, we're then checking if the interruption
                     // was due to that error or another generic one.
                     if(this.state.hashingProgress === -1) {
-                        handleError(new Error(getLangText('Hashing canceled')));
+                        reject(new Error(getLangText('Hashing canceled')));
                     }
 
                     // update file's progress
