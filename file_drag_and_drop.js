@@ -155,7 +155,7 @@ let FileDragAndDrop = React.createClass({
                     <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
                     <p>
                         <span>{Math.ceil(this.props.hashingProgress)}%</span>
-                        <span onClick={this.props.handleCancelHashing}> Abort hashing</span>
+                        <span onClick={this.props.handleCancelHashing}> {getLangText('Cancel hashing')}</span>
                     </p>
                     <ProgressBar completed={this.props.hashingProgress} color="#48DACB"/>
                 </div>
