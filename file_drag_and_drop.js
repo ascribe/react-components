@@ -1,6 +1,7 @@
 'use strict';
 
 import React from 'react';
+import ProgressBar from 'react-progressbar';
 
 import FileDragAndDropDialog from './file_drag_and_drop_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
@@ -151,11 +152,8 @@ let FileDragAndDrop = React.createClass({
             return (
                 <div className={className}>
                     <p>{getLangText('Computing hashes... This may take a few minutes.')}</p>
-                    <p>{this.props.hashingProgress}</p>
-                    <img
-                        height={35}
-                        className="action-file"
-                        src={AppConstants.baseUrl + 'static/img/ascribe_animated_medium.gif'} />
+                    <p>{Math.ceil(this.props.hashingProgress)}%</p>
+                    <ProgressBar completed={this.props.hashingProgress} color="#48DACB"/>
                 </div>
             );
         } else {

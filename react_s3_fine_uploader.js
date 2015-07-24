@@ -151,7 +151,7 @@ var ReactS3FineUploader = React.createClass({
                 }
                 return name;
             },
-            multiple: true,
+            multiple: false,
             defaultErrorMessage: getLangText('Unexpected error. Please contact us if this happens repeatedly.')
         };
     },
@@ -528,7 +528,8 @@ var ReactS3FineUploader = React.createClass({
                     // update file's progress
                     files[index].progress = value;
 
-                    // calculate overall progress
+                    // calculate weighted average for overall progress of all
+                    // currently hashing files
                     let overallHashingProgress = 0;
                     for(let i = 0; i < files.length; i++) {
                         let filesSliceOfOverall = files[i].size / overallFileSize;
@@ -536,10 +537,14 @@ var ReactS3FineUploader = React.createClass({
                         overallHashingProgress += filesSliceOfOverall * files[i].progress;
                     }
 
-                    this.setState({ hashingProgress: overallHashingProgress });
+                    // Multiply by 100, since react-progressbar expects decimal numbers
+                    this.setState({ hashingProgress: overallHashingProgress * 100});
 
                 })
                 .then((convertedFiles) => {
+
+                    // clear hashing progress, since its done
+                    this.setState({ hashingProgress: -1});
 
                     // actually replacing all files with their txt-hash representative
                     files = convertedFiles;
