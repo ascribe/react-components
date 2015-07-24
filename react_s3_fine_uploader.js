@@ -151,7 +151,7 @@ var ReactS3FineUploader = React.createClass({
                 }
                 return name;
             },
-            multiple: false,
+            multiple: true,
             defaultErrorMessage: getLangText('Unexpected error. Please contact us if this happens repeatedly.')
         };
     },
@@ -161,7 +161,7 @@ var ReactS3FineUploader = React.createClass({
             filesToUpload: [],
             uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
             csrfToken: getCookie(AppConstants.csrftoken),
-            isLoading: false // for hashing feedback
+            hashingProgress: -1 // for hashing feedback
         };
     },
 
@@ -500,14 +500,18 @@ var ReactS3FineUploader = React.createClass({
         // This if statement essentially takes care of that solution.
         if(this.props.localHashing) {
 
-            // hashing is very computationally heavy, therefore we're displaying the user a little
-            // spinner
-            this.setState({ isLoading: true });
-
             let convertedFilePromises = [];
+            let overallFileSize = 0;
             // "files" is not a classical Javascript array but a Javascript FileList, therefore
             // we can not use map to convert values
             for(let i = 0; i < files.length; i++) {
+
+                // for calculating the overall progress of all submitted files
+                // we'll need to calculate the overall sum of all files' sizes
+                overallFileSize += files[i].size;
+
+                // also, we need to set the files' initial progress value
+                files[i].progress = 0;
 
                 // since the actual computation of a file's hash is an async task ,
                 // we're using promises to handle that
@@ -520,6 +524,21 @@ var ReactS3FineUploader = React.createClass({
             // with the all function for iterables and essentially replace all original files
             // with their txt representative
             Q.all(convertedFilePromises)
+                .progress(({index, value}) => {
+                    // update file's progress
+                    files[index].progress = value;
+
+                    // calculate overall progress
+                    let overallHashingProgress = 0;
+                    for(let i = 0; i < files.length; i++) {
+                        let filesSliceOfOverall = files[i].size / overallFileSize;
+
+                        overallHashingProgress += filesSliceOfOverall * files[i].progress;
+                    }
+
+                    this.setState({ hashingProgress: overallHashingProgress });
+
+                })
                 .then((convertedFiles) => {
 
                     // actually replacing all files with their txt-hash representative
@@ -529,9 +548,6 @@ var ReactS3FineUploader = React.createClass({
                     // to the server
                     this.state.uploader.addFiles(files);
                     this.synchronizeFileLists(files);
-
-                    // we're done hashing so we can show the user his uploads
-                    this.setState({ isLoading: false });
 
                 })
                 .catch((err) => {
@@ -636,7 +652,7 @@ var ReactS3FineUploader = React.createClass({
                     areAssetsDownloadable={this.props.areAssetsDownloadable}
                     areAssetsEditable={this.props.areAssetsEditable}
                     dropzoneInactive={!this.props.areAssetsEditable || !this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0}
-                    isLoading={this.state.isLoading} />
+                    hashingProgress={this.state.hashingProgress} />
             </div>
         );
     }

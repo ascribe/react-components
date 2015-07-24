@@ -32,7 +32,7 @@ let FileDragAndDrop = React.createClass({
         areAssetsEditable: React.PropTypes.bool,
 
         // triggers a FileDragAndDrop-global spinner
-        isLoading: React.PropTypes.bool
+        hashingProgress: React.PropTypes.number
     },
 
     handleDragStart(event) {
@@ -146,11 +146,12 @@ let FileDragAndDrop = React.createClass({
         className += this.props.dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';
         className += this.props.className ? ' ' + this.props.className : '';
 
-        // if true: triggers a FileDragAndDrop-global spinner
-        if(this.props.isLoading) {
+        // if !== -1: triggers a FileDragAndDrop-global spinner
+        if(this.props.hashingProgress !== -1) {
             return (
                 <div className={className}>
                     <p>{getLangText('Computing hashes... This may take a few minutes.')}</p>
+                    <p>{this.props.hashingProgress}</p>
                     <img
                         height={35}
                         className="action-file"
