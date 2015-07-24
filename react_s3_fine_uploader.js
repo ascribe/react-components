@@ -518,7 +518,7 @@ var ReactS3FineUploader = React.createClass({
             // To react after the computation of all files, we define the resolvement
             // with the all function for iterables and essentially replace all original files
             // with their txt representative
-            Promise.all(convertedFilePromises)
+            Q.all(convertedFilePromises)
                 .then((convertedFiles) => {
 
                     // actually replacing all files with their txt-hash representative
