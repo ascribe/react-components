@@ -82,6 +82,10 @@ let FileDragAndDrop = React.createClass({
         event.stopPropagation();
         let files;
 
+        if(this.props.dropzoneInactive) {
+            return;
+        }
+
         // handle Drag and Drop
         if(event.dataTransfer && event.dataTransfer.files.length > 0) {
             files = event.dataTransfer.files;

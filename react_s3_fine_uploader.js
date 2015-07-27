@@ -695,6 +695,17 @@ var ReactS3FineUploader = React.createClass({
         this.setState(newState);
     },
 
+    isDropzoneInactive() {
+        let filesToDisplay = this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1);
+        let queryParams = this.getQuery();
+
+        if((this.props.enableLocalHashing && !queryParams.method) || !this.props.areAssetsEditable || !this.props.multiple && filesToDisplay.length > 0) {
+            return true;
+        } else {
+            return false;
+        }
+
+    },
 
     render() {
         return (
@@ -711,7 +722,7 @@ var ReactS3FineUploader = React.createClass({
                     multiple={this.props.multiple}
                     areAssetsDownloadable={this.props.areAssetsDownloadable}
                     areAssetsEditable={this.props.areAssetsEditable}
-                    dropzoneInactive={!this.props.areAssetsEditable || !this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0}
+                    dropzoneInactive={this.isDropzoneInactive()}
                     hashingProgress={this.state.hashingProgress}
                     enableLocalHashing={this.props.enableLocalHashing} />
             </div>
