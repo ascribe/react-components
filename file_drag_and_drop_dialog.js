@@ -3,8 +3,6 @@
 import React from 'react';
 import Router from 'react-router';
 
-import ButtonLink from 'react-router-bootstrap/lib/ButtonLink';
-
 import { getLangText } from '../../utils/lang_utils';
 
 let Link = Router.Link;
@@ -14,7 +12,7 @@ let FileDragAndDropDialog = React.createClass({
         hasFiles: React.PropTypes.bool,
         multipleFiles: React.PropTypes.bool,
         onClick: React.PropTypes.func,
-        localHashing: React.PropTypes.bool
+        enableLocalHashing: React.PropTypes.bool
     },
 
     mixins: [Router.State],
@@ -25,7 +23,7 @@ let FileDragAndDropDialog = React.createClass({
         if(this.props.hasFiles) {
             return null;
         } else {
-            if(!queryParams.method) {
+            if(this.props.enableLocalHashing && !queryParams.method) {
 
                 let queryParamsHash = Object.assign({}, queryParams);
                 queryParamsHash.method = 'hash';

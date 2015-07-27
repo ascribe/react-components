@@ -30,7 +30,7 @@ let FileDragAndDrop = React.createClass({
         areAssetsDownloadable: React.PropTypes.bool,
         areAssetsEditable: React.PropTypes.bool,
 
-        localHashing: React.PropTypes.bool,
+        enableLocalHashing: React.PropTypes.bool,
 
         // triggers a FileDragAndDrop-global spinner
         hashingProgress: React.PropTypes.number,
@@ -177,7 +177,7 @@ let FileDragAndDrop = React.createClass({
                             multipleFiles={this.props.multiple}
                             hasFiles={hasFiles}
                             onClick={this.handleOnClick}
-                            localHashing={this.props.localHashing}/>
+                            enableLocalHashing={this.props.enableLocalHashing}/>
                         <FileDragAndDropPreviewIterator
                             files={this.props.filesToUpload}
                             handleDeleteFile={this.handleDeleteFile}

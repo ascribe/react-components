@@ -1,6 +1,7 @@
 'use strict';
 
 import React from 'react/addons';
+import Router from 'react-router';
 import Raven from 'raven-js';
 import Q from 'q';
 
@@ -106,8 +107,13 @@ var ReactS3FineUploader = React.createClass({
         // the file in the browser using md5 and then uploading the resulting text document instead
         // of the actual file.
         // This boolean essentially enables that behavior
-        localHashing: React.PropTypes.bool
+        enableLocalHashing: React.PropTypes.bool,
+
+        // automatically injected by React-Router
+        query: React.PropTypes.object
     },
+
+    mixins: [Router.State],
 
     getDefaultProps() {
         return {
@@ -167,10 +173,10 @@ var ReactS3FineUploader = React.createClass({
         };
     },
 
-    // since the csrf header is defined in this component's props,
-    // everytime the csrf cookie is changed we'll need to reinitalize
-    // fineuploader and update the actual csrf token
     componentWillUpdate() {
+        // since the csrf header is defined in this component's props,
+        // everytime the csrf cookie is changed we'll need to reinitalize
+        // fineuploader and update the actual csrf token
         let potentiallyNewCSRFToken = getCookie(AppConstants.csrftoken);
         if(this.state.csrfToken !== potentiallyNewCSRFToken) {
             this.setState({
@@ -511,8 +517,11 @@ var ReactS3FineUploader = React.createClass({
 
         // As mentioned already in the propTypes declaration, in some instances we need to calculate the
         // md5 hash of a file locally and just upload a txt file containing that hash.
-        // This if statement essentially takes care of that solution.
-        if(this.props.localHashing) {
+        //
+        // In the view this only happens when the user is allowed to do local hashing as well
+        // as when the correct query parameter is present in the url ('hash' and not 'upload')
+        let queryParams = this.getQuery();
+        if(this.props.enableLocalHashing && queryParams && queryParams.method === 'hash') {
 
             let convertedFilePromises = [];
             let overallFileSize = 0;
@@ -704,7 +713,7 @@ var ReactS3FineUploader = React.createClass({
                     areAssetsEditable={this.props.areAssetsEditable}
                     dropzoneInactive={!this.props.areAssetsEditable || !this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0}
                     hashingProgress={this.state.hashingProgress}
-                    localHashing={this.props.localHashing} />
+                    enableLocalHashing={this.props.enableLocalHashing} />
             </div>
         );
     }
