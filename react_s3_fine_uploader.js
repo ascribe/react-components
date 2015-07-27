@@ -281,8 +281,7 @@ var ReactS3FineUploader = React.createClass({
                 } else {
                     throw new Error(getLangText('Could not find a url to download.'));
                 }
-                console.log(res);
-                resolve(res.key);
+                resolve(res);
             })
             .catch((err) => {
                 reject(err);
