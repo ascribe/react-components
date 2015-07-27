@@ -8,7 +8,8 @@ let FileDragAndDropDialog = React.createClass({
     propTypes: {
         hasFiles: React.PropTypes.bool,
         multipleFiles: React.PropTypes.bool,
-        onClick: React.PropTypes.func
+        onClick: React.PropTypes.func,
+        localHashing: React.PropTypes.bool
     },
 
     render() {
@@ -22,6 +23,8 @@ let FileDragAndDropDialog = React.createClass({
                     </span>
                 );
             } else {
+                let dialog = this.props.localHashing ? getLangText('choose a file to hash') : getLangText('choose a file to upload');
+
                 return (
                     <span className="file-drag-and-drop-dialog">
                         <p>{getLangText('Drag a file here')}</p>
@@ -29,7 +32,7 @@ let FileDragAndDropDialog = React.createClass({
                         <span
                             className="btn btn-default"
                             onClick={this.props.onClick}>
-                                {getLangText('choose a file to upload')}
+                                {dialog}
                         </span>
                     </span>
                 );

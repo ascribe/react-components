@@ -691,7 +691,8 @@ var ReactS3FineUploader = React.createClass({
                     areAssetsDownloadable={this.props.areAssetsDownloadable}
                     areAssetsEditable={this.props.areAssetsEditable}
                     dropzoneInactive={!this.props.areAssetsEditable || !this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0}
-                    hashingProgress={this.state.hashingProgress} />
+                    hashingProgress={this.state.hashingProgress}
+                    localHashing={this.props.localHashing} />
             </div>
         );
     }
