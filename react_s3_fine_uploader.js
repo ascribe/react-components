@@ -221,75 +221,73 @@ var ReactS3FineUploader = React.createClass({
     },
 
     requestKey(fileId) {
-        let defer = new fineUploader.Promise();
         let filename = this.state.uploader.getName(fileId);
         let uuid = this.state.uploader.getUuid(fileId);
 
-        window.fetch(this.props.keyRoutine.url, {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie(AppConstants.csrftoken)
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                'filename': filename,
-                'category': this.props.keyRoutine.fileClass,
-                'uuid': uuid,
-                'piece_id': this.props.keyRoutine.pieceId
+        return Q.Promise((resolve, reject) => {
+            window.fetch(this.props.keyRoutine.url, {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie(AppConstants.csrftoken)
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    'filename': filename,
+                    'category': this.props.keyRoutine.fileClass,
+                    'uuid': uuid,
+                    'piece_id': this.props.keyRoutine.pieceId
+                })
             })
-        })
-        .then((res) => {
-            return res.json();
-        })
-        .then((res) =>{
-            defer.success(res.key);
-        })
-        .catch((err) => {
-            defer.failure(err);
+            .then((res) => {
+                return res.json();
+            })
+            .then((res) =>{
+                resolve(res.key);
+            })
+            .catch((err) => {
+                reject(err);
+            });
         });
-
-        return defer;
     },
 
     createBlob(file) {
-        let defer = new fineUploader.Promise();
-
-        window.fetch(this.props.createBlobRoutine.url, {
-            method: 'post',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie(AppConstants.csrftoken)
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                'filename': file.name,
-                'key': file.key,
-                'piece_id': this.props.createBlobRoutine.pieceId
+        return Q.Promise((resolve, reject) => {
+            window.fetch(this.props.createBlobRoutine.url, {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie(AppConstants.csrftoken)
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    'filename': file.name,
+                    'key': file.key,
+                    'piece_id': this.props.createBlobRoutine.pieceId
+                })
             })
-        })
-        .then((res) => {
-            return res.json();
-        })
-        .then((res) =>{
-            if(res.otherdata) {
-                file.s3Url = res.otherdata.url_safe;
-                file.s3UrlSafe = res.otherdata.url_safe;
-            } else if(res.digitalwork) {
-                file.s3Url = res.digitalwork.url_safe;
-                file.s3UrlSafe = res.digitalwork.url_safe;
-            } else {
-                throw new Error(getLangText('Could not find a url to download.'));
-            }
-            defer.success(res.key);
-        })
-        .catch((err) => {
-            defer.failure(err);
-            console.logGlobal(err);
+            .then((res) => {
+                return res.json();
+            })
+            .then((res) =>{
+                if(res.otherdata) {
+                    file.s3Url = res.otherdata.url_safe;
+                    file.s3UrlSafe = res.otherdata.url_safe;
+                } else if(res.digitalwork) {
+                    file.s3Url = res.digitalwork.url_safe;
+                    file.s3UrlSafe = res.digitalwork.url_safe;
+                } else {
+                    throw new Error(getLangText('Could not find a url to download.'));
+                }
+                resolve(res.key);
+            })
+            .catch((err) => {
+                reject(err);
+                console.logGlobal(err);
+            });
         });
-        return defer;
     },
 
     /* FineUploader specific callback function handlers */
