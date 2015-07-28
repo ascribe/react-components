@@ -9,36 +9,42 @@ let InputCheckbox = React.createClass({
         children: React.PropTypes.oneOfType([
             React.PropTypes.arrayOf(React.PropTypes.element),
             React.PropTypes.element
-        ]).isRequired
+        ])
     },
+
     getDefaultProps() {
         return {
-            defaultValue: false
+            defaultChecked: false
         };
     },
 
     getInitialState() {
         return {
-            value: this.props.defaultChecked
+            value: null
         };
     },
 
-    componentDidMount() {
-        this.props.onChange({
-            target: {
-                value: this.state.value
-            }
-        });
+    componentWillReceiveProps(nextProps) {
+        if(this.props.defaultValue) {
+            console.warn('InputCheckbox is of type checkbox. Therefore its value is represented by checked and defaultChecked.');
+        }
+
+        if(this.state.value === null) {
+            this.setState({value: !!nextProps.defaultChecked });
+        }
     },
 
     onChange() {
-        let value = !this.refs.checkbox.getDOMNode().checked;
-        this.setState({value: value});
+        let inverseValue = !this.refs.checkbox.getDOMNode().checked;
+
+        this.setState({value: inverseValue});
+        
         this.props.onChange({
             target: {
-                value: value
+                value: inverseValue
             }
         });
+
     },
 
     render() {
