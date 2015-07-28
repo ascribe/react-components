@@ -158,7 +158,6 @@ let Property = React.createClass({
     renderChildren() {
         return ReactAddons.Children.map(this.props.children, (child) => {
             return ReactAddons.addons.cloneWithProps(child, {
-                value: this.state.value,
                 onChange: this.handleChange,
                 onFocus: this.handleFocus,
                 onBlur: this.handleBlur,
