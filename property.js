@@ -39,6 +39,9 @@ let Property = React.createClass({
 
     getInitialState() {
         return {
+            // Please don't confuse initialValue with react's defaultValue.
+            // initialValue is set by us to ensure that a user can reset a specific
+            // property (after editing) to its initial value
             initialValue: null,
             value: null,
             isFocused: false,
@@ -158,7 +161,6 @@ let Property = React.createClass({
     renderChildren() {
         return ReactAddons.Children.map(this.props.children, (child) => {
             return ReactAddons.addons.cloneWithProps(child, {
-                //value: this.state.value,
                 onChange: this.handleChange,
                 onFocus: this.handleFocus,
                 onBlur: this.handleBlur,
