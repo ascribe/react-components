@@ -4,7 +4,6 @@ import React from 'react';
 
 let InputCheckbox = React.createClass({
     propTypes: {
-        required: React.PropTypes.string.isRequired,
         defaultValue: React.PropTypes.bool,
         children: React.PropTypes.oneOfType([
             React.PropTypes.arrayOf(React.PropTypes.element),
@@ -13,7 +12,7 @@ let InputCheckbox = React.createClass({
     },
     getDefaultProps() {
         return {
-            required: 'required'
+            defaultValue: false
         };
     },
 
