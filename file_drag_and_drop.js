@@ -18,6 +18,7 @@ let FileDragAndDrop = React.createClass({
         onDragLeave: React.PropTypes.func,
         onDragOver: React.PropTypes.func,
         onDragEnd: React.PropTypes.func,
+        onInactive: React.PropTypes.func,
         filesToUpload: React.PropTypes.array,
         handleDeleteFile: React.PropTypes.func,
         handleCancelFile: React.PropTypes.func,
@@ -72,6 +73,15 @@ let FileDragAndDrop = React.createClass({
         event.stopPropagation();
         let files;
 
+        if(this.props.dropzoneInactive) {
+            // if there is a handle function for doing stuff
+            // when the dropzone is inactive, then call it
+            if(this.props.onInactive) {
+                this.props.onInactive();
+            }
+            return;
+        }
+
         // handle Drag and Drop
         if(event.dataTransfer && event.dataTransfer.files.length > 0) {
             files = event.dataTransfer.files;
@@ -113,10 +123,15 @@ let FileDragAndDrop = React.createClass({
         this.props.handleResumeFile(fileId);
     },
 
-    handleOnClick(event) {
+    handleOnClick() {
         // when multiple is set to false and the user already uploaded a piece,
         // do not propagate event
         if(this.props.dropzoneInactive) {
+            // if there is a handle function for doing stuff
+            // when the dropzone is inactive, then call it
+            if(this.props.onInactive) {
+                this.props.onInactive();
+            }
             return;
         }
 
