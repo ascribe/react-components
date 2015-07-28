@@ -137,7 +137,10 @@ var ReactS3FineUploader = React.createClass({
                 sendCredentials: true
             },
             chunking: {
-                enabled: true
+                enabled: true,
+                concurrent: {
+                    enabled: true
+                }
             },
             resume: {
                 enabled: true
