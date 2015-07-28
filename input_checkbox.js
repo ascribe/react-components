@@ -4,35 +4,40 @@ import React from 'react';
 
 let InputCheckbox = React.createClass({
     propTypes: {
-        required: React.PropTypes.string.isRequired,
-        defaultValue: React.PropTypes.bool,
+        required: React.PropTypes.bool,
+        defaultChecked: React.PropTypes.bool,
         children: React.PropTypes.oneOfType([
             React.PropTypes.arrayOf(React.PropTypes.element),
             React.PropTypes.element
         ]).isRequired
     },
-    getDefaultProps() {
-        return {
-            required: 'required'
-        };
-    },
 
     getInitialState() {
         return {
-            //show: false
-            value: this.props.defaultValue
+            value: this.props.defaultChecked
         };
     },
 
-    onChange: function(event) {
-        let newValue = !this.state.value;
-        event.target.value = newValue;
-        this.props.onChange(event);
-        event.stopPropagation();
-        this.setState({value: newValue});
+    componentDidMount() {
+        this.props.onChange({
+            target: {
+                value: this.state.value
+            }
+        });
+    },
+
+    onChange() {
+        let value = !this.refs.checkbox.getDOMNode().checked;
+        this.setState({value: value});
+        this.props.onChange({
+            target: {
+                value: value
+            }
+        });
     },
 
     render() {
+        console.log(this.state.value);
         return (
             <span
                 onClick={this.onChange}>
@@ -40,7 +45,8 @@ let InputCheckbox = React.createClass({
                     type="checkbox"
                     ref="checkbox"
                     onChange={this.onChange}
-                    checked={this.state.value}/>
+                    checked={this.state.value}
+                    defaultChecked={this.props.defaultChecked}/>
                 <span className="checkbox">
                     {this.props.children}
                 </span>

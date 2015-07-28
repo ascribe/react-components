@@ -39,6 +39,9 @@ let Property = React.createClass({
 
     getInitialState() {
         return {
+            // Please don't confuse initialValue with react's defaultValue.
+            // initialValue is set by us to ensure that a user can reset a specific
+            // property (after editing) to its initial value
             initialValue: null,
             value: null,
             isFocused: false,
