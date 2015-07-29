@@ -32,7 +32,7 @@ let InputDate = React.createClass({
 
     render: function () {
         return (
-            <div className="form-group">
+            <div>
                 <DatePicker
                     dateFormat="YYYY-MM-DD"
                     selected={this.state.value_moment}
