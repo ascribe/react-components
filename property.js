@@ -39,6 +39,9 @@ let Property = React.createClass({
 
     getInitialState() {
         return {
+            // Please don't confuse initialValue with react's defaultValue.
+            // initialValue is set by us to ensure that a user can reset a specific
+            // property (after editing) to its initial value
             initialValue: null,
             value: null,
             isFocused: false,
@@ -47,19 +50,29 @@ let Property = React.createClass({
     },
 
     componentWillReceiveProps() {
+        let childInput = this.refs.input;
 
         // In order to set this.state.value from another component
         // the state of value should only be set if its not undefined and
         // actually references something
-        if(typeof this.refs.input.getDOMNode().value !== 'undefined') {
+        if(typeof childInput.getDOMNode().value !== 'undefined') {
             this.setState({
-                value: this.refs.input.getDOMNode().value
+                value: childInput.getDOMNode().value
+            });
+
+        // When implementing custom input components, their value isn't exposed like the one
+        // from native HTML elements.
+        // To enable developers to create input elements, they can expose a property called value
+        // in their state that will be picked up by property.js
+        } else if(childInput.state && typeof childInput.state.value !== 'undefined') {
+            this.setState({
+                value: childInput.state.value
             });
         }
 
         if(!this.state.initialValue) {
             this.setState({
-                initialValue: this.refs.input.getDOMNode().defaultValue
+                initialValue: childInput.defaultValue
             });
         }
     },
@@ -158,7 +171,6 @@ let Property = React.createClass({
     renderChildren() {
         return ReactAddons.Children.map(this.props.children, (child) => {
             return ReactAddons.addons.cloneWithProps(child, {
-                value: this.state.value,
                 onChange: this.handleChange,
                 onFocus: this.handleFocus,
                 onBlur: this.handleBlur,
