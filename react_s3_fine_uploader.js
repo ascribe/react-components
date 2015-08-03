@@ -356,7 +356,10 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onError(id, name, errorReason) {
-        Raven.captureException(errorReason, false, this.state.filesToUpload);
+
+        console.logGlobal(errorReason, false, this.state.filesToUpload);
+        this.state.uploader.cancelAll();
+
         let notification = new GlobalNotificationModel(this.props.defaultErrorMessage, 'danger', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
     },
