@@ -2,7 +2,6 @@
 
 import React from 'react/addons';
 import Router from 'react-router';
-import Raven from 'raven-js';
 import Q from 'q';
 
 import { getCookie } from '../../utils/fetch_api_utils';
@@ -356,7 +355,6 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onError(id, name, errorReason) {
-
         console.logGlobal(errorReason, false, this.state.filesToUpload);
         this.state.uploader.cancelAll();
 
