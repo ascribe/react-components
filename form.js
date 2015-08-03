@@ -4,11 +4,12 @@ import React from 'react';
 import ReactAddons from 'react/addons';
 
 import Button from 'react-bootstrap/lib/Button';
+import AlertDismissable from './alert';
 
 import requests from '../../utils/requests';
+
 import { getLangText } from '../../utils/lang_utils';
 import { mergeOptionsWithDuplicates } from '../../utils/general_utils';
-import AlertDismissable from './alert';
 
 
 let Form = React.createClass({
@@ -91,7 +92,14 @@ let Form = React.createClass({
             }
         }
         else {
-            console.logGlobal(err, false, this.getFormData());
+            let formData = this.getFormData();
+
+            // sentry shouldn't post the user's password
+            if(formData.password) {
+                delete formData.password;
+            }
+
+            console.logGlobal(err, false, formData);
             this.setState({errors: [getLangText('Something went wrong, please try again later')]});
         }
         this.setState({submitted: false});
