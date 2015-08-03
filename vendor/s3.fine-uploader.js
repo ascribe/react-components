@@ -9489,7 +9489,6 @@ qq.s3.XhrUploadHandler = function(spec, proxy) {
                     result.success,
 
                     function failure(reason, xhr) {
-
                         console.logGlobal(reason + 'in chunked.combine', false, {
                             uploadId,
                             etagMap,

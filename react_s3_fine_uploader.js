@@ -256,6 +256,7 @@ var ReactS3FineUploader = React.createClass({
                 resolve(res.key);
             })
             .catch((err) => {
+                console.logGlobal(err, false, this.state.filesToUpload);
                 reject(err);
             });
         });
@@ -293,8 +294,8 @@ var ReactS3FineUploader = React.createClass({
                 resolve(res);
             })
             .catch((err) => {
+                console.logGlobal(err, false, this.state.filesToUpload);
                 reject(err);
-                console.logGlobal(err);
             });
         });
     },
@@ -346,7 +347,7 @@ var ReactS3FineUploader = React.createClass({
                 }
             })
             .catch((err) => {
-                console.logGlobal(err);
+                console.logGlobal(err, false, this.state.filesToUpload);
                 let notification = new GlobalNotificationModel(err.message, 'danger', 5000);
                 GlobalNotificationActions.appendGlobalNotification(notification);
             });
