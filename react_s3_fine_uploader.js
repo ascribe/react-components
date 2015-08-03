@@ -354,6 +354,12 @@ var ReactS3FineUploader = React.createClass({
     onComplete(id, name, res, xhr) {
         // there has been an issue with the server's connection
         if(xhr.status === 0) {
+
+            console.logGlobal(new Error('Complete was called but there wasn\t a success'), false, {
+                files: this.state.filesToUpload,
+                chunks: this.state.chunks
+            });
+
             return;
         }
 
