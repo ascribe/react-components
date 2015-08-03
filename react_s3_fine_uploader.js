@@ -170,9 +170,13 @@ var ReactS3FineUploader = React.createClass({
             filesToUpload: [],
             uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
             csrfToken: getCookie(AppConstants.csrftoken),
-            hashingProgress: -2
+            
             // -1: aborted
             // -2: uninitialized
+            hashingProgress: -2,
+            
+            // this is for logging
+            chunks: {}
         };
     },
 
@@ -224,7 +228,9 @@ var ReactS3FineUploader = React.createClass({
                 onDeleteComplete: this.onDeleteComplete,
                 onSessionRequestComplete: this.onSessionRequestComplete,
                 onError: this.onError,
-                onValidate: this.onValidate
+                onValidate: this.onValidate,
+                onUploadChunk: this.onUploadChunk,
+                onUploadChunkSuccess: this.onUploadChunkSuccess
             }
         };
     },
@@ -256,7 +262,10 @@ var ReactS3FineUploader = React.createClass({
                 resolve(res.key);
             })
             .catch((err) => {
-                console.logGlobal(err, false, this.state.filesToUpload);
+                console.logGlobal(err, false, {
+                    files: this.state.filesToUpload,
+                    chunks: this.state.chunks
+                });
                 reject(err);
             });
         });
@@ -294,13 +303,53 @@ var ReactS3FineUploader = React.createClass({
                 resolve(res);
             })
             .catch((err) => {
-                console.logGlobal(err, false, this.state.filesToUpload);
+                console.logGlobal(err, false, {
+                    files: this.state.filesToUpload,
+                    chunks: this.state.chunks
+                });
                 reject(err);
             });
         });
     },
 
     /* FineUploader specific callback function handlers */
+
+    onUploadChunk(id, name, chunkData) {
+
+        let chunks = this.state.chunks;
+
+        chunks[id + '-' + chunkData.startByte + '-' + chunkData.endByte] = {
+            id,
+            name,
+            chunkData,
+            completed: false
+        };
+
+        let newState = React.addons.update(this.state, {
+            startedChunks: { $set: chunks }
+        });
+
+        this.setState(newState);
+    },
+
+    onUploadChunkSuccess(id, chunkData, responseJson, xhr) {
+
+        let chunks = this.state.chunks;
+        let chunkKey = id + '-' + chunkData.startByte + '-' + chunkData.endByte;
+        
+        if(chunks[chunkKey]) {
+            chunks[chunkKey].completed = true;
+            chunks[chunkKey].responseJson = responseJson;
+            chunks[chunkKey].xhr = xhr;
+
+            let newState = React.addons.update(this.state, {
+                startedChunks: { $set: chunks }
+            });
+
+            this.setState(newState);
+        }
+
+    },
 
     onComplete(id, name, res, xhr) {
         // there has been an issue with the server's connection
@@ -347,7 +396,10 @@ var ReactS3FineUploader = React.createClass({
                 }
             })
             .catch((err) => {
-                console.logGlobal(err, false, this.state.filesToUpload);
+                console.logGlobal(err, false, {
+                    files: this.state.filesToUpload,
+                    chunks: this.state.chunks
+                });
                 let notification = new GlobalNotificationModel(err.message, 'danger', 5000);
                 GlobalNotificationActions.appendGlobalNotification(notification);
             });
@@ -356,7 +408,10 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onError(id, name, errorReason) {
-        console.logGlobal(errorReason, false, this.state.filesToUpload);
+        console.logGlobal(errorReason, false, {
+            files: this.state.filesToUpload,
+            chunks: this.state.chunks
+        });
         this.state.uploader.cancelAll();
 
         let notification = new GlobalNotificationModel(this.props.defaultErrorMessage, 'danger', 5000);
