@@ -302,7 +302,12 @@ var ReactS3FineUploader = React.createClass({
 
     /* FineUploader specific callback function handlers */
 
-    onComplete(id) {
+    onComplete(id, name, res, xhr) {
+        // there has been an issue with the server's connection
+        if(xhr.status === 0) {
+            return;
+        }
+
         let files = this.state.filesToUpload;
 
         // Set the state of the completed file to 'upload successful' in order to
