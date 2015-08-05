@@ -15,6 +15,9 @@ import { mergeOptionsWithDuplicates } from '../../utils/general_utils';
 let Form = React.createClass({
     propTypes: {
         url: React.PropTypes.string,
+        buttons: React.PropTypes.object,
+        buttonSubmitText: React.PropTypes.string,
+        spinner: React.PropTypes.object,
         handleSuccess: React.PropTypes.func,
         getFormData: React.PropTypes.func,
         children: React.PropTypes.oneOfType([
@@ -22,6 +25,12 @@ let Form = React.createClass({
             React.PropTypes.array
         ]),
         className: React.PropTypes.string
+    },
+
+    getDefaultProps() {
+        return {
+            buttonSubmitText: 'SAVE'
+        };
     },
 
     getInitialState() {
@@ -125,7 +134,7 @@ let Form = React.createClass({
             buttons = (
                 <div className="row" style={{margin: 0}}>
                     <p className="pull-right">
-                        <Button className="btn btn-default btn-sm ascribe-margin-1px" type="submit">SAVE</Button>
+                        <Button className="btn btn-default btn-sm ascribe-margin-1px" type="submit">{this.props.buttonSubmitText}</Button>
                         <Button className="btn btn-danger btn-delete btn-sm ascribe-margin-1px" onClick={this.reset}>CANCEL</Button>
                     </p>
                 </div>
