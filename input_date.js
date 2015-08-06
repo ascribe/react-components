@@ -7,7 +7,8 @@ import DatePicker from 'react-datepicker/dist/react-datepicker';
 let InputDate = React.createClass({
     propTypes: {
         submitted: React.PropTypes.bool,
-        placeholderText: React.PropTypes.string
+        placeholderText: React.PropTypes.string,
+        onChange: React.PropTypes.func
     },
 
     getInitialState() {

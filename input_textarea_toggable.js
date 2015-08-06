@@ -5,7 +5,6 @@ import React from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
 let InputTextAreaToggable = React.createClass({
-
     propTypes: {
         editable: React.PropTypes.bool.isRequired,
         rows: React.PropTypes.number.isRequired,
