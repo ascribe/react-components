@@ -16,6 +16,7 @@ let Form = React.createClass({
     propTypes: {
         url: React.PropTypes.string,
         method: React.PropTypes.string,
+        buttonSubmitText: React.PropTypes.string,
         handleSuccess: React.PropTypes.func,
         getFormData: React.PropTypes.func,
         children: React.PropTypes.oneOfType([
@@ -32,7 +33,8 @@ let Form = React.createClass({
 
     getDefaultProps() {
         return {
-            method: 'post'
+            method: 'post',
+            buttonSubmitText: 'SAVE'
         };
     },
 
@@ -161,7 +163,7 @@ let Form = React.createClass({
             buttons = (
                 <div className="row" style={{margin: 0}}>
                     <p className="pull-right">
-                        <Button className="btn btn-default btn-sm ascribe-margin-1px" type="submit">SAVE</Button>
+                        <Button className="btn btn-default btn-sm ascribe-margin-1px" type="submit">{this.props.buttonSubmitText}</Button>
                         <Button className="btn btn-danger btn-delete btn-sm ascribe-margin-1px" onClick={this.reset}>CANCEL</Button>
                     </p>
                 </div>

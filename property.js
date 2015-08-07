@@ -70,23 +70,22 @@ let Property = React.createClass({
             });
         }
 
-        if(!this.state.initialValue) {
+        if(!this.state.initialValue && childInput.props.defaultValue) {
             this.setState({
-                initialValue: childInput.defaultValue
+                initialValue: childInput.props.defaultValue
             });
         }
     },
 
-    reset(){
+    reset() {
         // maybe do reset by reload instead of front end state?
         this.setState({value: this.state.initialValue});
-        if (this.refs.input.state){
-            // This is probably not the right way but easy fix
-            this.refs.input.state.value = this.state.initialValue;
-        }
-        else{
-            this.refs.input.getDOMNode().value = this.state.initialValue;
-        }
+
+        // resets the value of a custom react component input
+        this.refs.input.state.value = this.state.initialValue;
+
+        // resets the value of a plain HTML5 input
+        this.refs.input.getDOMNode().value = this.state.initialValue;
 
     },
 
