@@ -6,6 +6,9 @@ import ReactAddons from 'react/addons';
 import Button from 'react-bootstrap/lib/Button';
 import AlertDismissable from './alert';
 
+import GlobalNotificationModel from '../../models/global_notification_model';
+import GlobalNotificationActions from '../../actions/global_notification_actions';
+
 import requests from '../../utils/requests';
 
 import { getLangText } from '../../utils/lang_utils';
@@ -28,7 +31,12 @@ let Form = React.createClass({
         buttons: React.PropTypes.oneOfType([
             React.PropTypes.element,
             React.PropTypes.arrayOf(React.PropTypes.element)
-        ])
+        ]),
+
+        // You can use the form for inline requests, like the submit click on a button.
+        // For the form to then not display the error on top, you need to enable this option.
+        // It will make use of the GlobalNotification
+        isInline: React.PropTypes.bool
     },
 
     getDefaultProps() {
@@ -136,7 +144,14 @@ let Form = React.createClass({
             }
 
             console.logGlobal(err, false, formData);
-            this.setState({errors: [getLangText('Something went wrong, please try again later')]});
+
+            if(this.props.isInline) {
+                let notification = new GlobalNotificationModel(getLangText('Something went wrong, please try again later'), 'danger');
+                GlobalNotificationActions.appendGlobalNotification(notification);
+            } else {
+                this.setState({errors: [getLangText('Something went wrong, please try again later')]});
+            }
+
         }
         this.setState({submitted: false});
     },
