@@ -57,7 +57,13 @@ let FileDragAndDropDialog = React.createClass({
                 if(this.props.multipleFiles) {
                     return (
                         <span className="file-drag-and-drop-dialog">
-                            {getLangText('Click or drag to add files')}
+                            <p>{getLangText('Drag files here')}</p>
+                            <p>{getLangText('or')}</p>
+                            <span
+                                className="btn btn-default"
+                                onClick={this.props.onClick}>
+                                    {getLangText('choose files to upload')}
+                            </span>
                         </span>
                     );
                 } else {
