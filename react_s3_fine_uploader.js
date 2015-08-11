@@ -435,7 +435,9 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onCancel(id) {
-        this.removeFileWithIdFromFilesToUpload(id);
+
+        // when a upload is canceled, we need to update this components file array
+        this.setStatusOfFile(id, 'canceled');
 
         let notification = new GlobalNotificationModel(getLangText('File upload canceled'), 'success', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
@@ -455,6 +457,7 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onProgress(id, name, uploadedBytes, totalBytes) {
+
         let newState = React.addons.update(this.state, {
             filesToUpload: { [id]: {
                 progress: { $set: (uploadedBytes / totalBytes) * 100} }
@@ -498,7 +501,9 @@ var ReactS3FineUploader = React.createClass({
             let notification = new GlobalNotificationModel(getLangText('Couldn\'t delete file'), 'danger', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         } else {
-            this.removeFileWithIdFromFilesToUpload(id);
+
+            // To hide the file in this component, we need to set it's status to "deleted"
+            this.setStatusOfFile(id, 'deleted');
 
             let notification = new GlobalNotificationModel(getLangText('File deleted'), 'success', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
@@ -521,7 +526,8 @@ var ReactS3FineUploader = React.createClass({
     },
 
     handleDeleteFile(fileId) {
-        // In some instances (when the file was already uploaded and is just displayed to the user)
+        // In some instances (when the file was already uploaded and is just displayed to the user 
+        // - for example in the loan contract or additional files dialog)
         // fineuploader does not register an id on the file (we do, don't be confused by this!).
         // Since you can only delete a file by its id, we have to implement this method ourselves
         //
@@ -532,7 +538,7 @@ var ReactS3FineUploader = React.createClass({
         if(this.state.filesToUpload[fileId].status !== 'online') {
             // delete file from server
             this.state.uploader.deleteFile(fileId);
-            // this is being continues in onDeleteFile, as
+            // this is being continued in onDeleteFile, as
             // fineuploaders deleteFile does not return a correct callback or
             // promise
         } else {
@@ -739,31 +745,23 @@ var ReactS3FineUploader = React.createClass({
         this.setState(newState);
     },
 
-    removeFileWithIdFromFilesToUpload(fileId) {
-        // also, sync files from state with the ones from fineuploader
-        let filesToUpload = JSON.parse(JSON.stringify(this.state.filesToUpload));
-
-        // splice because I can
-        filesToUpload.splice(fileId, 1);
-
-        // set state
-        let newState = React.addons.update(this.state, {
-            filesToUpload: { $set: filesToUpload }
-        });
-        this.setState(newState);
-    },
-
     setStatusOfFile(fileId, status) {
         // also, sync files from state with the ones from fineuploader
         let filesToUpload = JSON.parse(JSON.stringify(this.state.filesToUpload));
 
-        // splice because I can
         filesToUpload[fileId].status = status;
+
+        // is status is set to deleted or canceled, we also need to reset the progress
+        // back to zero
+        if(status === 'deleted' || status === 'canceled') {
+            filesToUpload[fileId].progress = 0;
+        }
 
         // set state
         let newState = React.addons.update(this.state, {
             filesToUpload: { $set: filesToUpload }
         });
+
         this.setState(newState);
     },
 
