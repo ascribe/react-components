@@ -8,13 +8,20 @@ let InputDate = React.createClass({
     propTypes: {
         submitted: React.PropTypes.bool,
         placeholderText: React.PropTypes.string,
-        onChange: React.PropTypes.func
+        onChange: React.PropTypes.func,
+        defaultValue: React.PropTypes.object
     },
 
     getInitialState() {
         return {
             value: null
         };
+    },
+
+    componentWillReceiveProps(nextProps) {
+        if(!this.state.value && !this.state.value_moment && nextProps.defaultValue) {
+            this.handleChange(this.props.defaultValue);
+        }
     },
 
     handleChange(date) {
