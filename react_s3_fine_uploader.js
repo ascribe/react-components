@@ -160,7 +160,7 @@ var ReactS3FineUploader = React.createClass({
                 }
                 return name;
             },
-            multiple: true,
+            multiple: false,
             defaultErrorMessage: getLangText('Unexpected error. Please contact us if this happens repeatedly.')
         };
     },
