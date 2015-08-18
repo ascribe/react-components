@@ -26,14 +26,19 @@ let Property = React.createClass({
             React.PropTypes.arrayOf(React.PropTypes.element),
             React.PropTypes.element
         ]),
-        style: React.PropTypes.object
+        style: React.PropTypes.object,
+        required: React.PropTypes.bool,
+
+        // is a std reg exp as seen from HTML inputs
+        pattern: React.PropTypes.string
     },
 
     getDefaultProps() {
         return {
             editable: true,
             hidden: false,
-            className: ''
+            className: '',
+            required: false
         };
     },
 
@@ -45,7 +50,8 @@ let Property = React.createClass({
             initialValue: null,
             value: null,
             isFocused: false,
-            errors: null
+            errors: null,
+            isValid: false
         };
     },
 
@@ -56,8 +62,10 @@ let Property = React.createClass({
         // the state of value should only be set if its not undefined and
         // actually references something
         if(typeof childInput.getDOMNode().value !== 'undefined') {
+
             this.setState({
-                value: childInput.getDOMNode().value
+                value: childInput.getDOMNode().value,
+                isValid: this.checkValidity(childInput.getDOMNode().value)
             });
 
         // When implementing custom input components, their value isn't exposed like the one
@@ -65,8 +73,10 @@ let Property = React.createClass({
         // To enable developers to create input elements, they can expose a property called value
         // in their state that will be picked up by property.js
         } else if(childInput.state && typeof childInput.state.value !== 'undefined') {
+
             this.setState({
-                value: childInput.state.value
+                value: childInput.state.value,
+                isValid: this.checkValidity(childInput.state.value)
             });
         }
 
@@ -74,6 +84,24 @@ let Property = React.createClass({
             this.setState({
                 initialValue: childInput.props.defaultValue
             });
+        }
+
+    },
+
+    checkValidity(value) {
+        if(this.props.required && value) {
+            if(this.props.pattern && value && value.match(this.props.pattern)) {
+                // if the value is matching the provided pattern
+                return true;
+            } else if(!this.props.pattern) {
+                // if no pattern was provided, everything is evaluated to true
+                return true;
+            } else {
+                // if the pattern was provided but the input didn't match it
+                return false;
+            }
+        } else {
+            return false;
         }
     },
 
@@ -90,13 +118,14 @@ let Property = React.createClass({
     },
 
     handleChange(event) {
-
         this.props.handleChange(event);
         if ('onChange' in this.props) {
             this.props.onChange(event);
         }
 
-        this.setState({value: event.target.value});
+        this.setState({
+            value: event.target.value
+        });
     },
 
     handleFocus() {

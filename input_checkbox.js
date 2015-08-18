@@ -21,7 +21,8 @@ let InputCheckbox = React.createClass({
         children: React.PropTypes.oneOfType([
             React.PropTypes.arrayOf(React.PropTypes.element),
             React.PropTypes.element
-        ])
+        ]),
+        onChange: React.PropTypes.bool
     },
 
     // As HTML inputs, we're setting the default value for an input to checked === false
@@ -55,21 +56,27 @@ let InputCheckbox = React.createClass({
         }
     },
 
+    // after the component was updated and the state value changed,
+    // we need to call onChange from property to refresh the state.value of property
+    componentDidUpdate(prevProps, prevState) {
+        if(prevState.value !== this.state.value) {
+            // and also call Property's onChange method
+            // (in this case we're mocking event.target.value, since we can not use the event
+            // coming from onChange. Its coming from the span (user is clicking on the span) and not the input)
+            this.props.onChange({
+                target: {
+                    value: this.state.value
+                }
+            });
+        }
+    },
+
     onChange() {
         // On every change, we're inversing the input's value
         let inverseValue = !this.refs.checkbox.getDOMNode().checked;
 
         // pass it to the state
         this.setState({value: inverseValue});
-
-        // and also call Property's onChange method
-        // (in this case we're mocking event.target.value, since we can not use the event
-        // coming from onChange. Its coming from the span (user is clicking on the span) and not the input)
-        this.props.onChange({
-            target: {
-                value: inverseValue
-            }
-        });
 
     },
 
