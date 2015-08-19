@@ -6,6 +6,8 @@ import ReactAddons from 'react/addons';
 import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
 import Tooltip from 'react-bootstrap/lib/Tooltip';
 
+import { mergeOptions } from '../../utils/general_utils';
+
 let Property = React.createClass({
     propTypes: {
         hidden: React.PropTypes.bool,
@@ -167,9 +169,10 @@ let Property = React.createClass({
         }
     },
 
-    renderChildren() {
+    renderChildren(style) {
         return ReactAddons.Children.map(this.props.children, (child) => {
             return ReactAddons.addons.cloneWithProps(child, {
+                style,
                 onChange: this.handleChange,
                 onFocus: this.handleFocus,
                 onBlur: this.handleBlur,
@@ -181,25 +184,32 @@ let Property = React.createClass({
 
     render() {
         let tooltip = <span/>;
-        if (this.props.tooltip){
+        let style = this.props.style ? mergeOptions({}, this.props.style) : {};
+
+        if(this.props.tooltip){
             tooltip = (
                 <Tooltip>
                     {this.props.tooltip}
                 </Tooltip>);
         }
         let footer = null;
-        if (this.props.footer){
+        if(this.props.footer){
             footer = (
                 <div className="ascribe-property-footer">
                     {this.props.footer}
                 </div>);
         }
+
+        if(!this.props.editable) {
+            style.cursor = 'not-allowed';
+        }
+
         return (
             <div
                 className={'ascribe-settings-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
                 onFocus={this.handleFocus}
-                style={this.props.style}>
+                style={style}>
                 <OverlayTrigger
                     delay={500}
                     placement="top"
@@ -207,7 +217,7 @@ let Property = React.createClass({
                     <div className={'ascribe-settings-property ' + this.props.className}>
                         {this.state.errors}
                         <span>{ this.props.label}</span>
-                        {this.renderChildren()}
+                        {this.renderChildren(style)}
                         {footer}
                     </div>
                 </OverlayTrigger>

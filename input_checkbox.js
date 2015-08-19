@@ -21,7 +21,11 @@ let InputCheckbox = React.createClass({
         children: React.PropTypes.oneOfType([
             React.PropTypes.arrayOf(React.PropTypes.element),
             React.PropTypes.element
-        ])
+        ]),
+
+        // provided by Property
+        disabled: React.PropTypes.bool,
+        onChange: React.PropTypes.func
     },
 
     // As HTML inputs, we're setting the default value for an input to checked === false
@@ -56,6 +60,12 @@ let InputCheckbox = React.createClass({
     },
 
     onChange() {
+        // if this.props.disabled is true, we're just going to ignore every click,
+        // as the value should then not be changable by the user
+        if(this.props.disabled) {
+            return;
+        }
+
         // On every change, we're inversing the input's value
         let inverseValue = !this.refs.checkbox.getDOMNode().checked;
 
@@ -74,6 +84,18 @@ let InputCheckbox = React.createClass({
     },
 
     render() {
+
+        let style = {};
+
+        // Some conditional styling if the component is disabled
+        if(!this.props.disabled) {
+            style.cursor = 'pointer';
+            style.color = 'rgba(0, 0, 0, 0.5)';
+        } else {
+            style.cursor = 'not-allowed';
+            style.color = 'rgba(0, 0, 0, 0.35)';
+        }
+
         return (
             <span
                 onClick={this.onChange}>
@@ -83,7 +105,9 @@ let InputCheckbox = React.createClass({
                     onChange={this.onChange}
                     checked={this.state.value}
                     defaultChecked={this.props.defaultChecked}/>
-                <span className="checkbox">
+                <span
+                    className="checkbox"
+                    style={style}>
                     {this.props.children}
                 </span>
             </span>
