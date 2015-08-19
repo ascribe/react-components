@@ -207,7 +207,10 @@ let Form = React.createClass({
                 return ReactAddons.addons.cloneWithProps(child, {
                     handleChange: this.handleChangeChild,
                     ref: child.props.name,
-                    editable: !this.props.disabled
+
+                    // We need this in order to make editable be overridable when setting it directly
+                    // on Property
+                    editable: typeof child.props.editable !== 'undefined' ? child.props.editable : !this.props.disabled
                 });
             }
         });
