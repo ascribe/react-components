@@ -23,8 +23,8 @@ let Form = React.createClass({
         handleSuccess: React.PropTypes.func,
         getFormData: React.PropTypes.func,
         children: React.PropTypes.oneOfType([
-            React.PropTypes.arrayOf(React.PropTypes.element),
-            React.PropTypes.element
+            React.PropTypes.object,
+            React.PropTypes.array
         ]),
         className: React.PropTypes.string,
         spinner: React.PropTypes.element,
@@ -165,43 +165,14 @@ let Form = React.createClass({
         this.setState({errors: []});
     },
 
-    checkFormValidity() {
-        let requiredProps = [];
-
-        Object
-            .keys(this.refs)
-            .forEach((refName) => {
-                if(this.refs[refName].props.required) {
-                    requiredProps.push(this.refs[refName]);
-                }
-            });
-
-        let validProps = requiredProps.filter((property) => property.state.isValid);
-
-        if(requiredProps.length === validProps.length) {
-            return true;
-        } else {
-            return false;
-        }
-
-    },
-
     getButtons() {
-        let buttons = null;
-        let isFormValid = this.checkFormValidity();
-
-        if(this.state.submitted) {
+        if (this.state.submitted){
             return this.props.spinner;
         }
-        if(this.props.buttons) {
-
-            buttons = React.cloneElement(this.props.buttons, {
-                disabled: !isFormValid
-            });
-
-            return buttons;
+        if (this.props.buttons){
+            return this.props.buttons;
         }
-        
+        let buttons = null;
 
         if (this.state.edited){
             buttons = (
