@@ -11,7 +11,14 @@ import { mergeOptions } from '../../utils/general_utils';
 let Property = React.createClass({
     propTypes: {
         hidden: React.PropTypes.bool,
+
         editable: React.PropTypes.bool,
+
+        // If we want Form to have a different value for disabled as Property has one for
+        // editable, we need to set overrideForm to true, as it will then override Form's
+        // disabled value for individual Properties
+        overrideForm: React.PropTypes.bool,
+
         tooltip: React.PropTypes.element,
         label: React.PropTypes.string,
         value: React.PropTypes.oneOfType([

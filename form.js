@@ -210,7 +210,7 @@ let Form = React.createClass({
 
                     // We need this in order to make editable be overridable when setting it directly
                     // on Property
-                    editable: typeof child.props.editable !== 'undefined' ? child.props.editable : !this.props.disabled
+                    editable: child.props.overrideForm ? child.props.editable : !this.props.disabled
                 });
             }
         });
