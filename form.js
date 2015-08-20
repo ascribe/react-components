@@ -33,6 +33,9 @@ let Form = React.createClass({
             React.PropTypes.arrayOf(React.PropTypes.element)
         ]),
 
+        // Can be used to freeze the whole form
+        disabled: React.PropTypes.bool,
+
         // You can use the form for inline requests, like the submit click on a button.
         // For the form to then not display the error on top, you need to enable this option.
         // It will make use of the GlobalNotification
@@ -203,7 +206,11 @@ let Form = React.createClass({
             if (child) {
                 return ReactAddons.addons.cloneWithProps(child, {
                     handleChange: this.handleChangeChild,
-                    ref: child.props.name
+                    ref: child.props.name,
+
+                    // We need this in order to make editable be overridable when setting it directly
+                    // on Property
+                    editable: child.props.overrideForm ? child.props.editable : !this.props.disabled
                 });
             }
         });
