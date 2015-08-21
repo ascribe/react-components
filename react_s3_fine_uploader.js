@@ -94,6 +94,7 @@ var ReactS3FineUploader = React.createClass({
         retry: React.PropTypes.shape({
             enableAuto: React.PropTypes.bool
         }),
+        uploadStarted: React.PropTypes.func,
         setIsUploadReady: React.PropTypes.func,
         isReadyForFormSubmission: React.PropTypes.func,
         areAssetsDownloadable: React.PropTypes.bool,
@@ -578,6 +579,11 @@ var ReactS3FineUploader = React.createClass({
         // cancel upload
         if(!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0) {
             return;
+        }
+
+        // Call this method to signal the outside component that an upload is in progress
+        if(this.props.uploadStarted && typeof this.props.uploadStarted === 'function') {
+            this.props.uploadStarted();
         }
 
         // if multiple is set to false and user drops multiple files into the dropzone,
