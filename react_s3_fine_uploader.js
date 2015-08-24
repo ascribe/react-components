@@ -430,7 +430,7 @@ var ReactS3FineUploader = React.createClass({
             this.state.uploader.cancelAll();
 
             let fileSizeInMegaBytes = this.props.validation.sizeLimit / 1000000;
-            let notification = new GlobalNotificationModel(getLangText('Your file is bigger than %d MB', fileSizeInMegaBytes), 'danger', 5000);
+            let notification = new GlobalNotificationModel(getLangText('Your file is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
     },
