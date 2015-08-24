@@ -709,8 +709,10 @@ var ReactS3FineUploader = React.createClass({
         // if we're not hashing the files locally, we're just going to hand them over to fineuploader
         // to upload them to the server
         } else {
-            this.state.uploader.addFiles(files);
-            this.synchronizeFileLists(files);
+            if(files.length > 0) {
+                this.state.uploader.addFiles(files);
+                this.synchronizeFileLists(files);
+            }
         }
     },
 
