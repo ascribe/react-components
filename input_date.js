@@ -9,7 +9,11 @@ let InputDate = React.createClass({
         submitted: React.PropTypes.bool,
         placeholderText: React.PropTypes.string,
         onChange: React.PropTypes.func,
-        defaultValue: React.PropTypes.object
+        defaultValue: React.PropTypes.object,
+
+        // DatePicker implements the disabled attribute
+        // https://github.com/Hacker0x01/react-datepicker/blob/master/src/datepicker.jsx#L30
+        disabled: React.PropTypes.bool
     },
 
     getInitialState() {
@@ -41,10 +45,12 @@ let InputDate = React.createClass({
         });
     },
 
-    render: function () {
+    render() {
+        console.log(this.props.disabled);
         return (
             <div>
                 <DatePicker
+                    disabled={this.props.disabled}
                     dateFormat="YYYY-MM-DD"
                     selected={this.state.value_moment}
                     onChange={this.handleChange}
