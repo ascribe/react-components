@@ -39,13 +39,16 @@ let Form = React.createClass({
         // You can use the form for inline requests, like the submit click on a button.
         // For the form to then not display the error on top, you need to enable this option.
         // It will make use of the GlobalNotification
-        isInline: React.PropTypes.bool
+        isInline: React.PropTypes.bool,
+
+        autoComplete: React.PropTypes.string
     },
 
     getDefaultProps() {
         return {
             method: 'post',
-            buttonSubmitText: 'SAVE'
+            buttonSubmitText: 'SAVE',
+            autoComplete: 'off'
         };
     },
 
@@ -217,6 +220,25 @@ let Form = React.createClass({
         });
     },
 
+    /**
+     * All webkit-based browsers are ignoring the attribute autoComplete="off",
+     * as stated here: http://stackoverflow.com/questions/15738259/disabling-chrome-autofill/15917221#15917221
+     * So what we actually have to do is depended on whether or not this.props.autoComplete is set to "on" or "off"
+     * insert two fake hidden inputs that mock password and username so that chrome/safari is filling those
+     */
+    getFakeAutocompletableInputs() {
+        if(this.props.autoComplete === 'off') {
+            return (
+                <span>
+                    <input style={{display: 'none'}} type="text" name="fakeusernameremembered"/>
+                    <input style={{display: 'none'}} type="password" name="fakepasswordremembered"/>
+                </span>
+            );
+        } else {
+            return null;
+        }
+    },
+
     render() {
         let className = 'ascribe-form';
 
@@ -229,7 +251,8 @@ let Form = React.createClass({
                 role="form"
                 className={className}
                 onSubmit={this.submit}
-                autoComplete="on">
+                autoComplete={this.props.autoComplete}>
+                {this.getFakeAutocompletableInputs()}
                 {this.getErrors()}
                 {this.renderChildren()}
                 {this.getButtons()}
