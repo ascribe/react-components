@@ -46,7 +46,6 @@ let InputDate = React.createClass({
     },
 
     render() {
-        console.log(this.props.disabled);
         return (
             <div>
                 <DatePicker
