@@ -531,7 +531,7 @@ var ReactS3FineUploader = React.createClass({
 
     handleDeleteFile(fileId) {
         // In some instances (when the file was already uploaded and is just displayed to the user
-        // - for example in the loan contract or additional files dialog)
+        // - for example in the contract or additional files dialog)
         // fineuploader does not register an id on the file (we do, don't be confused by this!).
         // Since you can only delete a file by its id, we have to implement this method ourselves
         //
