@@ -297,6 +297,9 @@ var ReactS3FineUploader = React.createClass({
                 } else if(res.digitalwork) {
                     file.s3Url = res.digitalwork.url_safe;
                     file.s3UrlSafe = res.digitalwork.url_safe;
+                } else if(res.contractblob) {
+                    file.s3Url = res.contractblob.url_safe;
+                    file.s3UrlSafe = res.contractblob.url_safe;
                 } else {
                     throw new Error(getLangText('Could not find a url to download.'));
                 }
