@@ -125,7 +125,8 @@ var ReactS3FineUploader = React.createClass({
                 bucket: 'exampleBucket'
             },
             request: {
-                endpoint: 'http://example-amazons3-bucket.com',
+                endpoint: 'http://example-cdn-endpoint.com',
+                //endpoint: 'http://example-amazons3-bucket.com',
                 accessKey: 'exampleAccessKey'
             },
             uploadSuccess: {
