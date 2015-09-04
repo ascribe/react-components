@@ -461,7 +461,6 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onProgress(id, name, uploadedBytes, totalBytes) {
-
         let newState = React.addons.update(this.state, {
             filesToUpload: { [id]: {
                 progress: { $set: (uploadedBytes / totalBytes) * 100} }
