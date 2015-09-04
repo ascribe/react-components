@@ -20,7 +20,6 @@ import AppConstants from '../../constants/application_constants';
 import { computeHashOfFile } from '../../utils/file_utils';
 
 var ReactS3FineUploader = React.createClass({
-
     propTypes: {
         keyRoutine: React.PropTypes.shape({
             url: React.PropTypes.string,
@@ -125,6 +124,7 @@ var ReactS3FineUploader = React.createClass({
                 bucket: 'exampleBucket'
             },
             request: {
+                //endpoint: 'http://example-cdn-endpoint.com',
                 endpoint: 'http://example-amazons3-bucket.com',
                 accessKey: 'exampleAccessKey'
             },
@@ -352,10 +352,11 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onComplete(id, name, res, xhr) {
+        console.log(xhr);
         // there has been an issue with the server's connection
-        if(xhr.status === 0) {
-
-            console.logGlobal(new Error('Complete was called but there wasn\t a success'), false, {
+        if((xhr && xhr.status === 0) || res.error) {
+            console.log('asdasdas');
+            console.logGlobal(new Error(res.error || 'Complete was called but there wasn\t a success'), false, {
                 files: this.state.filesToUpload,
                 chunks: this.state.chunks
             });
