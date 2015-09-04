@@ -439,7 +439,6 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onCancel(id) {
-
         // when a upload is canceled, we need to update this components file array
         this.setStatusOfFile(id, 'canceled');
 
@@ -766,22 +765,18 @@ var ReactS3FineUploader = React.createClass({
     },
 
     setStatusOfFile(fileId, status) {
-        // also, sync files from state with the ones from fineuploader
-        let filesToUpload = JSON.parse(JSON.stringify(this.state.filesToUpload));
+        let changeSet = {};
 
-        filesToUpload[fileId].status = status;
-
-        // is status is set to deleted or canceled, we also need to reset the progress
-        // back to zero
         if(status === 'deleted' || status === 'canceled') {
-            filesToUpload[fileId].progress = 0;
+            changeSet.progress = { $set: 0 };
         }
 
-        // set state
-        let newState = React.addons.update(this.state, {
-            filesToUpload: { $set: filesToUpload }
-        });
+        changeSet.status = { $set: status };
 
+        let newState = React.addons.update(this.state, {
+            filesToUpload: { [fileId]: changeSet}
+        });
+        
         this.setState(newState);
     },
 
