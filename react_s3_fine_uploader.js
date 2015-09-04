@@ -3,7 +3,6 @@
 import React from 'react/addons';
 import Router from 'react-router';
 import Q from 'q';
-import Raven from 'raven-js';
 
 import { getCookie } from '../../utils/fetch_api_utils';
 import { getLangText } from '../../utils/lang_utils';
