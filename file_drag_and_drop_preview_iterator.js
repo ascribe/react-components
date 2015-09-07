@@ -3,7 +3,7 @@
 import React from 'react';
 
 import FileDragAndDropPreview from './file_drag_and_drop_preview';
-//import FileDragAndDropPreviewProgress from './file_drag_and_drop_preview_progress';
+import FileDragAndDropPreviewProgress from './file_drag_and_drop_preview_progress';
 
 
 let FileDragAndDropPreviewIterator = React.createClass({
@@ -40,7 +40,7 @@ let FileDragAndDropPreviewIterator = React.createClass({
                             }
                         })}
                     </div>
-                    {/* <FileDragAndDropPreviewProgress files={this.props.files} /> */}
+                    <FileDragAndDropPreviewProgress files={this.props.files} />
                 </div>
             );
         } else {

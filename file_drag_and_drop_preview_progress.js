@@ -10,8 +10,7 @@ let FileDragAndDropPreviewProgress = React.createClass({
     calcOverallProgress() {
         let overallProgress = 0;
         let sizeOfAllFiles = 0;
-        let files = this.props.files.filter((file) => file.status !== 'deleted' || file.status !== 'canceled');
-        console.log(this.props.files.filter);
+        let files = this.props.files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled');
 
         for(let i = 0; i < files.length; i++) {
             sizeOfAllFiles += files[i].size;
@@ -22,16 +21,22 @@ let FileDragAndDropPreviewProgress = React.createClass({
         }
 
 
-        return overallProgress.toFixed(2);
+        return overallProgress;
     },
 
     render() {
-        return (
-            <span
-                className="file-drag-and-drop-progress-time">
-                Overall progress: {this.calcOverallProgress()}%
-            </span>
-        );
+        let overallProgress = this.calcOverallProgress();
+
+        if(overallProgress !== 0) {
+            return (
+                <span
+                    className="file-drag-and-drop-progress-time">
+                    Overall progress: {overallProgress.toFixed(2)}%
+                </span>
+            );
+        } else {
+            return null;
+        }
     }
 });
 
