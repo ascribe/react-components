@@ -325,11 +325,9 @@ var ReactS3FineUploader = React.createClass({
             completed: false
         };
 
-        let newState = React.addons.update(this.state, {
-            startedChunks: { $set: chunks }
-        });
+        let startedChunks = React.addons.update(this.state.startedChunks, { $set: chunks });
 
-        this.setState(newState);
+        this.setState({ startedChunks });
     },
 
     onUploadChunkSuccess(id, chunkData, responseJson, xhr) {
@@ -342,11 +340,9 @@ var ReactS3FineUploader = React.createClass({
             chunks[chunkKey].responseJson = responseJson;
             chunks[chunkKey].xhr = xhr;
 
-            let newState = React.addons.update(this.state, {
-                startedChunks: { $set: chunks }
-            });
+            let startedChunks = React.addons.update(this.state.startedChunks, { $set: chunks });
 
-            this.setState(newState);
+            this.setState({ startedChunks });
         }
 
     },
@@ -370,11 +366,9 @@ var ReactS3FineUploader = React.createClass({
         files[id].status = 'upload successful';
         files[id].key = this.state.uploader.getKey(id);
 
-        let newState = React.addons.update(this.state, {
-            filesToUpload: { $set: files }
-        });
+        let filesToUpload = React.addons.update(this.state.filesToUpload, { $set: files });
 
-        this.setState(newState);
+        this.setState({ filesToUpload });
 
         // Only after the blob has been created server-side, we can make the form submittable.
         this.createBlob(files[id])
@@ -457,15 +451,17 @@ var ReactS3FineUploader = React.createClass({
         } else {
             console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
         }
+
+        return true;
     },
 
     onProgress(id, name, uploadedBytes, totalBytes) {
-        let newState = React.addons.update(this.state, {
-            filesToUpload: { [id]: {
-                progress: { $set: (uploadedBytes / totalBytes) * 100} }
+        let filesToUpload = React.addons.update(this.state.filesToUpload, {
+            [id]: {
+                progress: { $set: (uploadedBytes / totalBytes) * 100}
             }
         });
-        this.setState(newState);
+        this.setState({ filesToUpload });
     },
 
     onSessionRequestComplete(response, success) {
@@ -487,8 +483,9 @@ var ReactS3FineUploader = React.createClass({
                 return file;
             });
 
-            let newState = React.addons.update(this.state, {filesToUpload: {$set: updatedFilesToUpload}});
-            this.setState(newState);
+            let filesToUpload = React.addons.update(this.state.filesToUpload, {$set: updatedFilesToUpload});
+
+            this.setState({filesToUpload });
         } else {
             // server has to respond with 204
             //let notification = new GlobalNotificationModel('Could not load attached files (Further data)', 'danger', 10000);
@@ -758,10 +755,9 @@ var ReactS3FineUploader = React.createClass({
         }
 
         // set the new file array
-        let newState = React.addons.update(this.state, {
-            filesToUpload: { $set: oldAndNewFiles }
-        });
-        this.setState(newState);
+        let filesToUpload = React.addons.update(this.state.filesToUpload, { $set: oldAndNewFiles });
+
+        this.setState({ filesToUpload });
     },
 
     setStatusOfFile(fileId, status) {
@@ -773,11 +769,9 @@ var ReactS3FineUploader = React.createClass({
 
         changeSet.status = { $set: status };
 
-        let newState = React.addons.update(this.state, {
-            filesToUpload: { [fileId]: changeSet}
-        });
+        let filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
         
-        this.setState(newState);
+        this.setState({ filesToUpload });
     },
 
     isDropzoneInactive() {
