@@ -25,13 +25,27 @@ let FileDragAndDropPreviewProgress = React.createClass({
         return overallProgress;
     },
 
+    calcOverallFileSize() {
+        let overallFileSize = 0;
+        let files = this.props.files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.status !== 'online');
+
+        for(let i = 0; i < files.length; i++) {
+            overallFileSize += files[i].size;
+        }
+
+        return overallFileSize;
+    },
+
     render() {
         let overallProgress = this.calcOverallProgress();
+        let overallFileSize = this.calcOverallFileSize();
         let style = {
             visibility: 'hidden'
         };
 
-        if(overallProgress !== 0) {
+        // only visible if overallProgress is over zero
+        // or the overallFileSize is greater than 10MB
+        if(overallProgress !== 0 && overallFileSize > 10000000) {
             style.visibility = 'visible';
         }
 
