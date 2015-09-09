@@ -90,8 +90,10 @@ let Property = React.createClass({
         // maybe do reset by reload instead of front end state?
         this.setState({value: this.state.initialValue});
 
-        // resets the value of a custom react component input
-        this.refs.input.state.value = this.state.initialValue;
+        if (this.refs.input.state && this.refs.input.state.value) {
+            // resets the value of a custom react component input
+            this.refs.input.state.value = this.state.initialValue;
+        }
 
         // resets the value of a plain HTML5 input
         this.refs.input.getDOMNode().value = this.state.initialValue;
