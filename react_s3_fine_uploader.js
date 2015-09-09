@@ -497,13 +497,11 @@ var ReactS3FineUploader = React.createClass({
 
     onDeleteComplete(id, xhr, isError) {
         if(isError) {
-            let notification = new GlobalNotificationModel(getLangText('Couldn\'t delete file'), 'danger', 10000);
+            this.setStatusOfFile(id, 'online');
+
+            let notification = new GlobalNotificationModel(getLangText('There was an error deleting your file.'), 'danger', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         } else {
-
-            // To hide the file in this component, we need to set it's status to "deleted"
-            this.setStatusOfFile(id, 'deleted');
-
             let notification = new GlobalNotificationModel(getLangText('File deleted'), 'success', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
@@ -525,6 +523,13 @@ var ReactS3FineUploader = React.createClass({
     },
 
     handleDeleteFile(fileId) {
+        // We set the files state to 'deleted' immediately, so that the user is not confused with
+        // the unresponsiveness of the UI
+        //
+        // If there is an error during the deletion, we will just change the status back to 'online'
+        // and display an error message
+        this.setStatusOfFile(fileId, 'deleted');
+
         // In some instances (when the file was already uploaded and is just displayed to the user
         // - for example in the loan contract or additional files dialog)
         // fineuploader does not register an id on the file (we do, don't be confused by this!).
@@ -542,8 +547,6 @@ var ReactS3FineUploader = React.createClass({
             // promise
         } else {
             let fileToDelete = this.state.filesToUpload[fileId];
-            fileToDelete.status = 'deleted';
-
             S3Fetcher
                 .deleteFile(fileToDelete.s3Key, fileToDelete.s3Bucket)
                 .then(() => this.onDeleteComplete(fileToDelete.id, null, false))
@@ -731,6 +734,7 @@ var ReactS3FineUploader = React.createClass({
     synchronizeFileLists(files) {
         let oldFiles = this.state.filesToUpload;
         let oldAndNewFiles = this.state.uploader.getUploads();
+
         // Add fineuploader specific information to new files
         for(let i = 0; i < oldAndNewFiles.length; i++) {
             for(let j = 0; j < files.length; j++) {
@@ -745,6 +749,22 @@ var ReactS3FineUploader = React.createClass({
         // and re-add fineuploader specific information for old files as well
         for(let i = 0; i < oldAndNewFiles.length; i++) {
             for(let j = 0; j < oldFiles.length; j++) {
+
+                // EXCEPTION:
+                //
+                // Files do not necessarily come from the user's hard drive but can also be fetched
+                // from Amazon S3. This is handled in onSessionRequestComplete.
+                //
+                // If the user deletes one of those files, then fineuploader will still keep it in his
+                // files array but with key, progress undefined and size === -1 but
+                // status === 'upload successful'.
+                // This poses a problem as we depend on the amount of files that have
+                // status === 'upload successful', therefore once the file is synced,
+                // we need to tag its status as 'deleted' (which basically happens here)
+                if(oldAndNewFiles[i].size === -1 && (!oldAndNewFiles[i].progress || oldAndNewFiles[i].progress === 0)) {
+                    oldAndNewFiles[i].status = 'deleted';
+                }
+
                 if(oldAndNewFiles[i].originalName === oldFiles[j].name) {
                     oldAndNewFiles[i].progress = oldFiles[j].progress;
                     oldAndNewFiles[i].type = oldFiles[j].type;
