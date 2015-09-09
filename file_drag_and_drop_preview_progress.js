@@ -22,23 +22,28 @@ let FileDragAndDropPreviewProgress = React.createClass({
             overallProgress += files[i].size / sizeOfAllFiles * files[i].progress;
         }
 
-
         return overallProgress;
     },
 
     render() {
         let overallProgress = this.calcOverallProgress();
+        let style = {
+            visibility: 'hidden'
+        };
 
         if(overallProgress !== 0) {
-            return (
-                <ProgressBar
-                    now={Math.ceil(overallProgress)}
-                    label="Overall progress: %(percent)s%"
-                    className="ascribe-progress-bar" />
-            );
-        } else {
-            return null;
+            style.visibility = 'visible';
         }
+
+        console.log(overallProgress, style);
+
+        return (
+            <ProgressBar
+                now={Math.ceil(overallProgress)}
+                label="Overall progress: %(percent)s%"
+                className="ascribe-progress-bar"
+                style={style} />
+        );
     }
 });
 

@@ -169,14 +169,16 @@ let FileDragAndDrop = React.createClass({
         if(this.props.hashingProgress !== -2) {
             return (
                 <div className={className}>
-                    <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
-                    <p>
-                        <a onClick={this.props.handleCancelHashing}> {getLangText('Cancel hashing')}</a>
-                    </p>
-                    <ProgressBar
-                        now={Math.ceil(this.props.hashingProgress)}
-                        label="%(percent)s%"
-                        className="ascribe-progress-bar"/>
+                    <div className="file-drag-and-drop-hashing-dialog">
+                        <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
+                        <p>
+                            <a onClick={this.props.handleCancelHashing}> {getLangText('Cancel hashing')}</a>
+                        </p>
+                        <ProgressBar
+                            now={Math.ceil(this.props.hashingProgress)}
+                            label="%(percent)s%"
+                            className="ascribe-progress-bar"/>
+                    </div>
                 </div>
             );
         } else {
