@@ -93,6 +93,20 @@ let Form = React.createClass({
             .catch(this.handleError);
     },
 
+    put() {
+        requests
+            .put(this.props.url, { body: this.getFormData() })
+            .then(this.handleSuccess)
+            .catch(this.handleError);
+    },
+
+    patch() {
+        requests
+            .patch(this.props.url, { body: this.getFormData() })
+            .then(this.handleSuccess)
+            .catch(this.handleError);
+    },
+
     delete() {
         requests
             .delete(this.props.url, this.getFormData())
