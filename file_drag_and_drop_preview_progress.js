@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import ProgressBar from 'react-bootstrap/lib/ProgressBar';
+
 let FileDragAndDropPreviewProgress = React.createClass({
     propTypes: {
         files: React.PropTypes.array
@@ -10,7 +12,7 @@ let FileDragAndDropPreviewProgress = React.createClass({
     calcOverallProgress() {
         let overallProgress = 0;
         let sizeOfAllFiles = 0;
-        let files = this.props.files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled');
+        let files = this.props.files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.status !== 'online');
 
         for(let i = 0; i < files.length; i++) {
             sizeOfAllFiles += files[i].size;
@@ -29,10 +31,10 @@ let FileDragAndDropPreviewProgress = React.createClass({
 
         if(overallProgress !== 0) {
             return (
-                <span
-                    className="file-drag-and-drop-progress-time">
-                    Overall progress: {overallProgress.toFixed(2)}%
-                </span>
+                <ProgressBar
+                    now={Math.ceil(overallProgress)}
+                    label="Overall progress: %(percent)s%"
+                    className="ascribe-progress-bar" />
             );
         } else {
             return null;
