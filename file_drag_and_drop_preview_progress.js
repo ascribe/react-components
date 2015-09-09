@@ -35,8 +35,6 @@ let FileDragAndDropPreviewProgress = React.createClass({
             style.visibility = 'visible';
         }
 
-        console.log(overallProgress, style);
-
         return (
             <ProgressBar
                 now={Math.ceil(overallProgress)}
