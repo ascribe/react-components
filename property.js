@@ -96,6 +96,14 @@ let Property = React.createClass({
         // resets the value of a plain HTML5 input
         this.refs.input.getDOMNode().value = this.state.initialValue;
 
+        // For some inputs, reseting state.value is not enough to visually reset the
+        // component.
+        //
+        // So if the input actually needs a visual reset, it needs to implement
+        // a dedicated reset method.
+        if(this.refs.input.reset && typeof this.refs.input.reset === 'function') {
+            this.refs.input.reset();
+        }
     },
 
     handleChange(event) {
