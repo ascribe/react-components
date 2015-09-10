@@ -70,7 +70,7 @@ let Form = React.createClass({
         }
 
         for(let ref in this.refs) {
-            if (typeof this.refs[ref].reset === 'function'){
+            if (this.refs[ref].reset && typeof this.refs[ref].reset === 'function'){
                 this.refs[ref].reset();
             }
         }
@@ -86,7 +86,7 @@ let Form = React.createClass({
         this.clearErrors();
 
         // selecting http method based on props
-        if(this[this.props.method]) {
+        if(this[this.props.method] && typeof this[this.props.method] === 'function') {
             window.setTimeout(() => this[this.props.method](), 100);
         } else {
             throw new Error('This HTTP method is not supported by form.js (' + this.props.method + ')');
@@ -109,11 +109,11 @@ let Form = React.createClass({
 
     getFormData() {
         let data = {};
-        for (let ref in this.refs){
+        for(let ref in this.refs){
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
         }
 
-        if (this.props.getFormData){
+        if (this.props.getFormData && typeof this.props.getFormData === 'function'){
             data = mergeOptionsWithDuplicates(data, this.props.getFormData());
         }
 
@@ -125,11 +125,12 @@ let Form = React.createClass({
     },
 
     handleSuccess(response){
-        if ('handleSuccess' in this.props){
+        if(this.props.handleSuccess && typeof this.props.handleSuccess === 'function') {
             this.props.handleSuccess(response);
         }
-        for (var ref in this.refs){
-            if ('handleSuccess' in this.refs[ref]){
+
+        for(let ref in this.refs) {
+            if(this.refs[ref] && this.refs[ref].handleSuccess && typeof this.refs[ref].handleSuccess === 'function'){
                 this.refs[ref].handleSuccess();
             }
         }
@@ -141,7 +142,7 @@ let Form = React.createClass({
 
     handleError(err){
         if (err.json) {
-            for (var input in err.json.errors){
+            for (let input in err.json.errors){
                 if (this.refs && this.refs[input] && this.refs[input].state) {
                     this.refs[input].setErrors(err.json.errors[input]);
                 } else {
@@ -171,8 +172,8 @@ let Form = React.createClass({
     },
 
     clearErrors(){
-        for (var ref in this.refs){
-            if ('clearErrors' in this.refs[ref]){
+        for(let ref in this.refs){
+            if (this.refs[ref] && this.refs[ref].clearErrors && typeof this.refs[ref].clearErrors === 'function'){
                 this.refs[ref].clearErrors();
             }
         }
@@ -221,7 +222,7 @@ let Form = React.createClass({
     },
 
     renderChildren() {
-        return ReactAddons.Children.map(this.props.children, (child, i) => {
+        return ReactAddons.Children.map(this.props.children, (child) => {
             if (child) {
                 return ReactAddons.addons.cloneWithProps(child, {
                     handleChange: this.handleChangeChild,
