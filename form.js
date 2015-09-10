@@ -41,7 +41,9 @@ let Form = React.createClass({
         // It will make use of the GlobalNotification
         isInline: React.PropTypes.bool,
 
-        autoComplete: React.PropTypes.string
+        autoComplete: React.PropTypes.string,
+
+        onReset: React.PropTypes.func
     },
 
     getDefaultProps() {
@@ -61,6 +63,12 @@ let Form = React.createClass({
     },
 
     reset() {
+        // If onReset prop is defined from outside,
+        // notify component that a form reset is happening.
+        if(this.props.onReset && typeof this.props.onReset === 'function') {
+            this.props.onReset();
+        }
+
         for(let ref in this.refs) {
             if (typeof this.refs[ref].reset === 'function'){
                 this.refs[ref].reset();
@@ -184,8 +192,16 @@ let Form = React.createClass({
             buttons = (
                 <div className="row" style={{margin: 0}}>
                     <p className="pull-right">
-                        <Button className="btn btn-default btn-sm ascribe-margin-1px" type="submit">{this.props.buttonSubmitText}</Button>
-                        <Button className="btn btn-danger btn-delete btn-sm ascribe-margin-1px" onClick={this.reset}>CANCEL</Button>
+                        <Button
+                            className="btn btn-default btn-sm ascribe-margin-1px"
+                            type="submit">
+                            {this.props.buttonSubmitText}
+                        </Button>
+                        <Button
+                            className="btn btn-danger btn-delete btn-sm ascribe-margin-1px"
+                            type="reset">
+                            CANCEL
+                        </Button>
                     </p>
                 </div>
             );

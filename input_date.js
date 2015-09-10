@@ -18,7 +18,8 @@ let InputDate = React.createClass({
 
     getInitialState() {
         return {
-            value: null
+            value: null,
+            value_moment: null
         };
     },
 
@@ -43,6 +44,10 @@ let InputDate = React.createClass({
                 value: formattedDate
             }
         });
+    },
+
+    reset() {
+        this.setState(this.getInitialState());
     },
 
     render() {
