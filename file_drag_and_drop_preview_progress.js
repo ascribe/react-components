@@ -4,6 +4,9 @@ import React from 'react';
 
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 
+import { displayValidProgressFilesFilter } from './react_s3_fine_uploader_utils';
+
+
 let FileDragAndDropPreviewProgress = React.createClass({
     propTypes: {
         files: React.PropTypes.array
@@ -11,7 +14,7 @@ let FileDragAndDropPreviewProgress = React.createClass({
 
     calcOverallFileSize() {
         let overallFileSize = 0;
-        let files = this.props.files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.status !== 'online');
+        let files = this.props.files.filter(displayValidProgressFilesFilter);
 
         // We just sum up all files' sizes
         for(let i = 0; i < files.length; i++) {
@@ -24,7 +27,7 @@ let FileDragAndDropPreviewProgress = React.createClass({
     calcOverallProgress() {
         let overallProgress = 0;
         let overallFileSize = this.calcOverallFileSize();
-        let files = this.props.files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.status !== 'online');
+        let files = this.props.files.filter(displayValidProgressFilesFilter);
 
         // We calculate the overall progress by summing the individuals
         // files' progresses in relation to their size

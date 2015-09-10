@@ -17,7 +17,7 @@ import GlobalNotificationActions from '../../actions/global_notification_actions
 
 import AppConstants from '../../constants/application_constants';
 
-import { computeHashOfFile } from '../../utils/file_utils';
+import { computeHashOfFile, displayValidFilesFilter  } from '../../utils/file_utils';
 
 var ReactS3FineUploader = React.createClass({
 
@@ -578,7 +578,7 @@ var ReactS3FineUploader = React.createClass({
     handleUploadFile(files) {
         // If multiple set and user already uploaded its work,
         // cancel upload
-        if(!this.props.multiple && this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled').length > 0) {
+        if(!this.props.multiple && this.state.filesToUpload.filter(displayValidFilesFilter).length > 0) {
             return;
         }
 

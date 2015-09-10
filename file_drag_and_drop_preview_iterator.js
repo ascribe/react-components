@@ -5,6 +5,8 @@ import React from 'react';
 import FileDragAndDropPreview from './file_drag_and_drop_preview';
 import FileDragAndDropPreviewProgress from './file_drag_and_drop_preview_progress';
 
+import { displayValidFilesFilter } from './react_s3_fine_uploader_utils';
+
 
 let FileDragAndDropPreviewIterator = React.createClass({
     propTypes: {
@@ -28,28 +30,24 @@ let FileDragAndDropPreviewIterator = React.createClass({
             areAssetsEditable
         } = this.props;
 
-        files = files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled');
+        files = files.filter(displayValidFilesFilter);
 
         if(files && files.length > 0) {
             return (
                 <div className="file-drag-and-drop-preview-iterator">
                     <div className="file-drag-and-drop-preview-iterator-spacing">
                         {files.map((file, i) => {
-                            if(file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1) {
-                                return (
-                                    <FileDragAndDropPreview
-                                        key={i}
-                                        file={file}
-                                        handleDeleteFile={handleDeleteFile}
-                                        handleCancelFile={handleCancelFile}
-                                        handlePauseFile={handlePauseFile}
-                                        handleResumeFile={handleResumeFile}
-                                        areAssetsDownloadable={areAssetsDownloadable}
-                                        areAssetsEditable={areAssetsEditable}/>
-                                );
-                            } else {
-                                return null;
-                            }
+                            return (
+                                <FileDragAndDropPreview
+                                    key={i}
+                                    file={file}
+                                    handleDeleteFile={handleDeleteFile}
+                                    handleCancelFile={handleCancelFile}
+                                    handlePauseFile={handlePauseFile}
+                                    handleResumeFile={handleResumeFile}
+                                    areAssetsDownloadable={areAssetsDownloadable}
+                                    areAssetsEditable={areAssetsEditable}/>
+                            );
                         })}
                     </div>
                     <FileDragAndDropPreviewProgress files={files} />
