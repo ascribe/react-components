@@ -9,31 +9,30 @@ let FileDragAndDropPreviewProgress = React.createClass({
         files: React.PropTypes.array
     },
 
-    calcOverallProgress() {
-        let overallProgress = 0;
-        let sizeOfAllFiles = 0;
-        let files = this.props.files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.status !== 'online');
-
-        for(let i = 0; i < files.length; i++) {
-            sizeOfAllFiles += files[i].size;
-        }
-
-        for(let i = 0; i < files.length; i++) {
-            overallProgress += files[i].size / sizeOfAllFiles * files[i].progress;
-        }
-
-        return overallProgress;
-    },
-
     calcOverallFileSize() {
         let overallFileSize = 0;
         let files = this.props.files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.status !== 'online');
 
+        // We just sum up all files' sizes
         for(let i = 0; i < files.length; i++) {
             overallFileSize += files[i].size;
         }
 
         return overallFileSize;
+    },
+
+    calcOverallProgress() {
+        let overallProgress = 0;
+        let overallFileSize = this.calcOverallFileSize();
+        let files = this.props.files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.status !== 'online');
+
+        // We calculate the overall progress by summing the individuals
+        // files' progresses in relation to their size
+        for(let i = 0; i < files.length; i++) {
+            overallProgress += files[i].size / overallFileSize * files[i].progress;
+        }
+
+        return overallProgress;
     },
 
     render() {
