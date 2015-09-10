@@ -61,7 +61,6 @@ let Form = React.createClass({
     },
 
     reset() {
-        console.log(this.refs);
         for(let ref in this.refs) {
             if (typeof this.refs[ref].reset === 'function'){
                 this.refs[ref].reset();
@@ -106,12 +105,10 @@ let Form = React.createClass({
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
         }
 
-        console.log(this.props);
         if (this.props.getFormData){
             data = mergeOptionsWithDuplicates(data, this.props.getFormData());
         }
 
-        console.log(data);
         return data;
     },
 
