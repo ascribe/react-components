@@ -41,7 +41,9 @@ let Form = React.createClass({
         // It will make use of the GlobalNotification
         isInline: React.PropTypes.bool,
 
-        autoComplete: React.PropTypes.string
+        autoComplete: React.PropTypes.string,
+
+        onReset: React.PropTypes.func
     },
 
     getDefaultProps() {
@@ -60,9 +62,15 @@ let Form = React.createClass({
         };
     },
 
-    reset(){
-        for (let ref in this.refs){
-            if (typeof this.refs[ref].reset === 'function'){
+    reset() {
+        // If onReset prop is defined from outside,
+        // notify component that a form reset is happening.
+        if(this.props.onReset && typeof this.props.onReset === 'function') {
+            this.props.onReset();
+        }
+
+        for(let ref in this.refs) {
+            if (this.refs[ref].reset && typeof this.refs[ref].reset === 'function'){
                 this.refs[ref].reset();
             }
         }
@@ -70,7 +78,6 @@ let Form = React.createClass({
     },
 
     submit(event){
-        
         if(event) {
             event.preventDefault();
         }
@@ -79,7 +86,7 @@ let Form = React.createClass({
         this.clearErrors();
 
         // selecting http method based on props
-        if(this[this.props.method]) {
+        if(this[this.props.method] && typeof this[this.props.method] === 'function') {
             window.setTimeout(() => this[this.props.method](), 100);
         } else {
             throw new Error('This HTTP method is not supported by form.js (' + this.props.method + ')');
@@ -114,13 +121,13 @@ let Form = React.createClass({
             .catch(this.handleError);
     },
 
-    getFormData(){
+    getFormData() {
         let data = {};
-        for (let ref in this.refs){
+        for(let ref in this.refs){
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
         }
 
-        if ('getFormData' in this.props){
+        if (this.props.getFormData && typeof this.props.getFormData === 'function'){
             data = mergeOptionsWithDuplicates(data, this.props.getFormData());
         }
 
@@ -132,11 +139,12 @@ let Form = React.createClass({
     },
 
     handleSuccess(response){
-        if ('handleSuccess' in this.props){
+        if(this.props.handleSuccess && typeof this.props.handleSuccess === 'function') {
             this.props.handleSuccess(response);
         }
-        for (var ref in this.refs){
-            if ('handleSuccess' in this.refs[ref]){
+
+        for(let ref in this.refs) {
+            if(this.refs[ref] && this.refs[ref].handleSuccess && typeof this.refs[ref].handleSuccess === 'function'){
                 this.refs[ref].handleSuccess();
             }
         }
@@ -148,9 +156,9 @@ let Form = React.createClass({
 
     handleError(err){
         if (err.json) {
-            for (var input in err.json.errors){
+            for (let input in err.json.errors){
                 if (this.refs && this.refs[input] && this.refs[input].state) {
-                    this.refs[input].setErrors( err.json.errors[input]);
+                    this.refs[input].setErrors(err.json.errors[input]);
                 } else {
                     this.setState({errors: this.state.errors.concat(err.json.errors[input])});
                 }
@@ -178,8 +186,8 @@ let Form = React.createClass({
     },
 
     clearErrors(){
-        for (var ref in this.refs){
-            if ('clearErrors' in this.refs[ref]){
+        for(let ref in this.refs){
+            if (this.refs[ref] && this.refs[ref].clearErrors && typeof this.refs[ref].clearErrors === 'function'){
                 this.refs[ref].clearErrors();
             }
         }
@@ -199,8 +207,16 @@ let Form = React.createClass({
             buttons = (
                 <div className="row" style={{margin: 0}}>
                     <p className="pull-right">
-                        <Button className="btn btn-default btn-sm ascribe-margin-1px" type="submit">{this.props.buttonSubmitText}</Button>
-                        <Button className="btn btn-danger btn-delete btn-sm ascribe-margin-1px" onClick={this.reset}>CANCEL</Button>
+                        <Button
+                            className="btn btn-default btn-sm ascribe-margin-1px"
+                            type="submit">
+                            {this.props.buttonSubmitText}
+                        </Button>
+                        <Button
+                            className="btn btn-danger btn-delete btn-sm ascribe-margin-1px"
+                            type="reset">
+                            CANCEL
+                        </Button>
                     </p>
                 </div>
             );
@@ -265,6 +281,7 @@ let Form = React.createClass({
                 role="form"
                 className={className}
                 onSubmit={this.submit}
+                onReset={this.reset}
                 autoComplete={this.props.autoComplete}>
                 {this.getFakeAutocompletableInputs()}
                 {this.getErrors()}
