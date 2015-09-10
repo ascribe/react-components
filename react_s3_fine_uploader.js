@@ -235,6 +235,21 @@ var ReactS3FineUploader = React.createClass({
         };
     },
 
+    // Resets the whole react fineuploader component to its initial state
+    reset() {
+        // Cancel all currently ongoing uploads
+        this.state.uploader.cancelAll();
+
+        // and reset component in general
+        this.state.uploader.reset();
+
+        // proclaim that upload is not ready
+        this.props.setIsUploadReady(false);
+
+        // reset internal data structures of component
+        this.setState(this.getInitialState());
+    },
+
     requestKey(fileId) {
         let filename = this.state.uploader.getName(fileId);
         let uuid = this.state.uploader.getUuid(fileId);
@@ -434,7 +449,6 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onCancel(id) {
-
         // when a upload is canceled, we need to update this components file array
         this.setStatusOfFile(id, 'canceled');
 
@@ -456,7 +470,6 @@ var ReactS3FineUploader = React.createClass({
     },
 
     onProgress(id, name, uploadedBytes, totalBytes) {
-
         let newState = React.addons.update(this.state, {
             filesToUpload: { [id]: {
                 progress: { $set: (uploadedBytes / totalBytes) * 100} }
