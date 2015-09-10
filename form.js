@@ -60,8 +60,9 @@ let Form = React.createClass({
         };
     },
 
-    reset(){
-        for (let ref in this.refs){
+    reset() {
+        console.log(this.refs);
+        for(let ref in this.refs) {
             if (typeof this.refs[ref].reset === 'function'){
                 this.refs[ref].reset();
             }
@@ -70,7 +71,6 @@ let Form = React.createClass({
     },
 
     submit(event){
-        
         if(event) {
             event.preventDefault();
         }
@@ -100,16 +100,18 @@ let Form = React.createClass({
             .catch(this.handleError);
     },
 
-    getFormData(){
+    getFormData() {
         let data = {};
         for (let ref in this.refs){
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
         }
 
-        if ('getFormData' in this.props){
+        console.log(this.props);
+        if (this.props.getFormData){
             data = mergeOptionsWithDuplicates(data, this.props.getFormData());
         }
 
+        console.log(data);
         return data;
     },
 
@@ -136,7 +138,7 @@ let Form = React.createClass({
         if (err.json) {
             for (var input in err.json.errors){
                 if (this.refs && this.refs[input] && this.refs[input].state) {
-                    this.refs[input].setErrors( err.json.errors[input]);
+                    this.refs[input].setErrors(err.json.errors[input]);
                 } else {
                     this.setState({errors: this.state.errors.concat(err.json.errors[input])});
                 }
@@ -206,7 +208,7 @@ let Form = React.createClass({
     },
 
     renderChildren() {
-        return ReactAddons.Children.map(this.props.children, (child) => {
+        return ReactAddons.Children.map(this.props.children, (child, i) => {
             if (child) {
                 return ReactAddons.addons.cloneWithProps(child, {
                     handleChange: this.handleChangeChild,
@@ -251,6 +253,7 @@ let Form = React.createClass({
                 role="form"
                 className={className}
                 onSubmit={this.submit}
+                onReset={this.reset}
                 autoComplete={this.props.autoComplete}>
                 {this.getFakeAutocompletableInputs()}
                 {this.getErrors()}
