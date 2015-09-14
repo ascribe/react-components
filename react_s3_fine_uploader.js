@@ -20,7 +20,6 @@ import AppConstants from '../../constants/application_constants';
 import { computeHashOfFile, displayValidFilesFilter  } from '../../utils/file_utils';
 
 var ReactS3FineUploader = React.createClass({
-
     propTypes: {
         keyRoutine: React.PropTypes.shape({
             url: React.PropTypes.string,
@@ -125,6 +124,7 @@ var ReactS3FineUploader = React.createClass({
                 bucket: 'exampleBucket'
             },
             request: {
+                //endpoint: 'http://example-cdn-endpoint.com',
                 endpoint: 'http://example-amazons3-bucket.com',
                 accessKey: 'exampleAccessKey'
             },
@@ -233,6 +233,21 @@ var ReactS3FineUploader = React.createClass({
                 onUploadChunkSuccess: this.onUploadChunkSuccess
             }
         };
+    },
+
+    // Resets the whole react fineuploader component to its initial state
+    reset() {
+        // Cancel all currently ongoing uploads
+        this.state.uploader.cancelAll();
+
+        // and reset component in general
+        this.state.uploader.reset();
+
+        // proclaim that upload is not ready
+        this.props.setIsUploadReady(false);
+
+        // reset internal data structures of component
+        this.setState(this.getInitialState());
     },
 
     requestKey(fileId) {
@@ -349,62 +364,56 @@ var ReactS3FineUploader = React.createClass({
 
     onComplete(id, name, res, xhr) {
         // there has been an issue with the server's connection
-        if(xhr.status === 0) {
-
-            console.logGlobal(new Error('Complete was called but there wasn\t a success'), false, {
+        if((xhr && xhr.status === 0) || res.error) {
+            console.logGlobal(new Error(res.error || 'Complete was called but there wasn\t a success'), false, {
                 files: this.state.filesToUpload,
                 chunks: this.state.chunks
             });
+        } else {
+            let files = this.state.filesToUpload;
 
-            return;
-        }
+            // Set the state of the completed file to 'upload successful' in order to
+            // remove it from the GUI
+            files[id].status = 'upload successful';
+            files[id].key = this.state.uploader.getKey(id);
 
-        let files = this.state.filesToUpload;
+            let filesToUpload = React.addons.update(this.state.filesToUpload, { $set: files });
+            this.setState({ filesToUpload });
 
-        // Set the state of the completed file to 'upload successful' in order to
-        // remove it from the GUI
-        files[id].status = 'upload successful';
-        files[id].key = this.state.uploader.getKey(id);
-
-        let filesToUpload = React.addons.update(this.state.filesToUpload, { $set: files });
-
-        this.setState({ filesToUpload });
-
-        // Only after the blob has been created server-side, we can make the form submittable.
-        this.createBlob(files[id])
-            .then(() => {
-                // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitKey
-                // are optional, we'll only trigger them when they're actually defined
-                if(this.props.submitKey) {
-                    this.props.submitKey(files[id].key);
-                } else {
-                    console.warn('You didn\'t define submitKey in as a prop in react-s3-fine-uploader');
-                }
-                
-                // for explanation, check comment of if statement above
-                if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
-                    // also, lets check if after the completion of this upload,
-                    // the form is ready for submission or not
-                    if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
-                        // if so, set uploadstatus to true
-                        this.props.setIsUploadReady(true);
+            // Only after the blob has been created server-side, we can make the form submittable.
+            this.createBlob(files[id])
+                .then(() => {
+                    // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitKey
+                    // are optional, we'll only trigger them when they're actually defined
+                    if(this.props.submitKey) {
+                        this.props.submitKey(files[id].key);
                     } else {
-                        this.props.setIsUploadReady(false);
+                        console.warn('You didn\'t define submitKey in as a prop in react-s3-fine-uploader');
                     }
-                } else {
-                    console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
-                }
-            })
-            .catch((err) => {
-                console.logGlobal(err, false, {
-                    files: this.state.filesToUpload,
-                    chunks: this.state.chunks
+                    
+                    // for explanation, check comment of if statement above
+                    if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
+                        // also, lets check if after the completion of this upload,
+                        // the form is ready for submission or not
+                        if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+                            // if so, set uploadstatus to true
+                            this.props.setIsUploadReady(true);
+                        } else {
+                            this.props.setIsUploadReady(false);
+                        }
+                    } else {
+                        console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
+                    }
+                })
+                .catch((err) => {
+                    console.logGlobal(err, false, {
+                        files: this.state.filesToUpload,
+                        chunks: this.state.chunks
+                    });
+                    let notification = new GlobalNotificationModel(err.message, 'danger', 5000);
+                    GlobalNotificationActions.appendGlobalNotification(notification);
                 });
-                let notification = new GlobalNotificationModel(err.message, 'danger', 5000);
-                GlobalNotificationActions.appendGlobalNotification(notification);
-            });
-
-        
+        }
     },
 
     onError(id, name, errorReason) {
