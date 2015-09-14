@@ -105,11 +105,13 @@ let Property = React.createClass({
 
         // For some reason, if we set the value of a non HTML element (but a custom input),
         // after a reset, the value will be be propagated to this component.
+        //
         // Therefore we have to make sure only to reset the initial value
-        // of HTML inputs.
+        // of HTML inputs (which we determine by checking if there 'type' attribute matches
+        // the ones included in AppConstants.possibleInputTypes).
         let inputDOMNode = input.getDOMNode();
-        if(inputDOMNode.type && typeof inputDOMNode.type === 'string' && inputDOMNode.type.toLowerCase() &&
-           AppConstants.possibleInputTypes.indexOf(inputDOMNode.type) > -1) {
+        if(inputDOMNode.type && typeof inputDOMNode.type === 'string' &&
+           AppConstants.possibleInputTypes.indexOf(inputDOMNode.type.toLowerCase()) > -1) {
             inputDOMNode.value = this.state.initialValue;
         }
 
@@ -118,14 +120,14 @@ let Property = React.createClass({
         //
         // So if the input actually needs a visual reset, it needs to implement
         // a dedicated reset method.
-        if(input.reset && typeof input.reset === 'function') {
+        if(typeof input.reset === 'function') {
             input.reset();
         }
     },
 
     handleChange(event) {
         this.props.handleChange(event);
-        if (this.props.onChange && typeof this.props.onChange === 'function') {
+        if (typeof this.props.onChange === 'function') {
             this.props.onChange(event);
         }
 
@@ -141,7 +143,7 @@ let Property = React.createClass({
 
         // if onClick is defined from the outside,
         // just call it
-        if(this.props.onClick && typeof this.props.onClick === 'function') {
+        if(typeof this.props.onClick === 'function') {
             this.props.onClick();
         }
 
@@ -156,7 +158,7 @@ let Property = React.createClass({
             isFocused: false
         });
 
-        if(this.props.onBlur && typeof this.props.onBlur === 'function') {
+        if(typeof this.props.onBlur === 'function') {
             this.props.onBlur(event);
         }
     },
