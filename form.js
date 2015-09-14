@@ -109,11 +109,12 @@ let Form = React.createClass({
 
     getFormData() {
         let data = {};
-        for(let ref in this.refs){
+
+        for(let ref in this.refs) {
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
         }
 
-        if (this.props.getFormData && typeof this.props.getFormData === 'function'){
+        if(this.props.getFormData && typeof this.props.getFormData === 'function') {
             data = mergeOptionsWithDuplicates(data, this.props.getFormData());
         }
 
@@ -121,7 +122,7 @@ let Form = React.createClass({
     },
 
     handleChangeChild(){
-        this.setState({edited: true});
+        this.setState({ edited: true });
     },
 
     handleSuccess(response){
@@ -149,8 +150,7 @@ let Form = React.createClass({
                     this.setState({errors: this.state.errors.concat(err.json.errors[input])});
                 }
             }
-        }
-        else {
+        } else {
             let formData = this.getFormData();
 
             // sentry shouldn't post the user's password
