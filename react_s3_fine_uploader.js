@@ -36,7 +36,7 @@ var ReactS3FineUploader = React.createClass({
                 React.PropTypes.number
             ])
         }),
-        submitKey: React.PropTypes.func,
+        submitFile: React.PropTypes.func,
         autoUpload: React.PropTypes.bool,
         debug: React.PropTypes.bool,
         objectProperties: React.PropTypes.shape({
@@ -393,12 +393,12 @@ var ReactS3FineUploader = React.createClass({
             // Only after the blob has been created server-side, we can make the form submittable.
             this.createBlob(files[id])
                 .then(() => {
-                    // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitKey
+                    // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitFile
                     // are optional, we'll only trigger them when they're actually defined
-                    if(this.props.submitKey) {
-                        this.props.submitKey(files[id].key);
+                    if(this.props.submitFile) {
+                        this.props.submitFile(files[id]);
                     } else {
-                        console.warn('You didn\'t define submitKey in as a prop in react-s3-fine-uploader');
+                        console.warn('You didn\'t define submitFile in as a prop in react-s3-fine-uploader');
                     }
                     
                     // for explanation, check comment of if statement above
@@ -458,7 +458,7 @@ var ReactS3FineUploader = React.createClass({
         let notification = new GlobalNotificationModel(getLangText('File upload canceled'), 'success', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
 
-        // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitKey
+        // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitFile
         // are optional, we'll only trigger them when they're actually defined
         if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
             if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
@@ -524,7 +524,7 @@ var ReactS3FineUploader = React.createClass({
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
 
-        // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitKey
+        // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitFile
         // are optional, we'll only trigger them when they're actually defined
         if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
             // also, lets check if after the completion of this upload,
