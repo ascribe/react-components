@@ -111,7 +111,14 @@ var ReactS3FineUploader = React.createClass({
         enableLocalHashing: React.PropTypes.bool,
 
         // automatically injected by React-Router
-        query: React.PropTypes.object
+        query: React.PropTypes.object,
+
+        // A class of a file the user has to upload
+        // Needs to be defined both in singular as well as in plural
+        fileClassToUpload: React.PropTypes.shape({
+            singular: React.PropTypes.string,
+            plural: React.PropTypes.string
+        })
     },
 
     mixins: [Router.State],
@@ -163,7 +170,11 @@ var ReactS3FineUploader = React.createClass({
                 return name;
             },
             multiple: false,
-            defaultErrorMessage: getLangText('Unexpected error. Please contact us if this happens repeatedly.')
+            defaultErrorMessage: getLangText('Unexpected error. Please contact us if this happens repeatedly.'),
+            fileClassToUpload: {
+                singular: getLangText('file'),
+                plural: getLangText('files')
+            }
         };
     },
 
@@ -828,7 +839,8 @@ var ReactS3FineUploader = React.createClass({
                     onInactive={this.props.onInactive}
                     dropzoneInactive={this.isDropzoneInactive()}
                     hashingProgress={this.state.hashingProgress}
-                    enableLocalHashing={this.props.enableLocalHashing} />
+                    enableLocalHashing={this.props.enableLocalHashing}
+                    fileClassToUpload={this.props.fileClassToUpload}/>
             </div>
         );
     }

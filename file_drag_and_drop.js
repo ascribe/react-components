@@ -37,7 +37,14 @@ let FileDragAndDrop = React.createClass({
         hashingProgress: React.PropTypes.number,
         // sets the value of this.state.hashingProgress in reactfineuploader
         // to -1 which is code for: aborted
-        handleCancelHashing: React.PropTypes.func
+        handleCancelHashing: React.PropTypes.func,
+
+        // A class of a file the user has to upload
+        // Needs to be defined both in singular as well as in plural
+        fileClassToUpload: React.PropTypes.shape({
+            singular: React.PropTypes.string,
+            plural: React.PropTypes.string
+        })
     },
 
     handleDragStart(event) {
@@ -192,7 +199,8 @@ let FileDragAndDrop = React.createClass({
                             multipleFiles={this.props.multiple}
                             hasFiles={hasFiles}
                             onClick={this.handleOnClick}
-                            enableLocalHashing={this.props.enableLocalHashing}/>
+                            enableLocalHashing={this.props.enableLocalHashing}
+                            fileClassToUpload={this.props.fileClassToUpload}/>
                         <FileDragAndDropPreviewIterator
                             files={this.props.filesToUpload}
                             handleDeleteFile={this.handleDeleteFile}
