@@ -83,7 +83,8 @@ var ReactS3FineUploader = React.createClass({
         }),
         validation: React.PropTypes.shape({
             itemLimit: React.PropTypes.number,
-            sizeLimit: React.PropTypes.string
+            sizeLimit: React.PropTypes.string,
+            allowedExtensions: React.PropTypes.arrayOf(React.PropTypes.string)
         }),
         messages: React.PropTypes.shape({
             unsupportedBrowser: React.PropTypes.string
@@ -433,7 +434,7 @@ var ReactS3FineUploader = React.createClass({
         });
         this.state.uploader.cancelAll();
 
-        let notification = new GlobalNotificationModel(this.props.defaultErrorMessage, 'danger', 5000);
+        let notification = new GlobalNotificationModel(errorReason || this.props.defaultErrorMessage, 'danger', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
     },
 
