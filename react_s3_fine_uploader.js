@@ -603,7 +603,7 @@ var ReactS3FineUploader = React.createClass({
         files = validFiles;
 
         // Call this method to signal the outside component that an upload is in progress
-        if(this.props.uploadStarted && typeof this.props.uploadStarted === 'function' && files.length > 0) {
+        if(typeof this.props.uploadStarted === 'function' && files.length > 0) {
             this.props.uploadStarted();
         }
 
