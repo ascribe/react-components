@@ -74,7 +74,7 @@ let FileDragAndDropDialog = React.createClass({
                         </span>
                     );
                 } else {
-                    let dialog = queryParams.method === 'hash' ? getLangText('choose a %s to hash', this.props.fileClassToUpload.singular) : getLangText('choose a file to upload');
+                    let dialog = queryParams.method === 'hash' ? getLangText('choose a %s to hash', this.props.fileClassToUpload.singular) : getLangText('choose a %s to upload', this.props.fileClassToUpload.singular);
 
                     return (
                         <span className="file-drag-and-drop-dialog">
