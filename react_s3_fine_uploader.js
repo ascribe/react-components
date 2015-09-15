@@ -118,7 +118,12 @@ var ReactS3FineUploader = React.createClass({
         fileClassToUpload: React.PropTypes.shape({
             singular: React.PropTypes.string,
             plural: React.PropTypes.string
-        })
+        }),
+
+        // Uploading functionality of react fineuploader is disconnected from its UI
+        // layer, which means that literally every (properly adjusted) react element
+        // can handle the UI handling.
+        fileInputElement: React.PropTypes.func
     },
 
     mixins: [Router.State],
@@ -174,7 +179,8 @@ var ReactS3FineUploader = React.createClass({
             fileClassToUpload: {
                 singular: getLangText('file'),
                 plural: getLangText('files')
-            }
+            },
+            fileInputElement: FileDragAndDrop
         };
     },
 
@@ -822,28 +828,38 @@ var ReactS3FineUploader = React.createClass({
     },
 
     render() {
-        return (
-            <div>
-                <FileDragAndDrop
-                    className="file-drag-and-drop"
-                    onDrop={this.handleUploadFile}
-                    filesToUpload={this.state.filesToUpload}
-                    handleDeleteFile={this.handleDeleteFile}
-                    handleCancelFile={this.handleCancelFile}
-                    handlePauseFile={this.handlePauseFile}
-                    handleResumeFile={this.handleResumeFile}
-                    handleCancelHashing={this.handleCancelHashing}
-                    multiple={this.props.multiple}
-                    areAssetsDownloadable={this.props.areAssetsDownloadable}
-                    areAssetsEditable={this.props.areAssetsEditable}
-                    onInactive={this.props.onInactive}
-                    dropzoneInactive={this.isDropzoneInactive()}
-                    hashingProgress={this.state.hashingProgress}
-                    enableLocalHashing={this.props.enableLocalHashing}
-                    fileClassToUpload={this.props.fileClassToUpload}
-                    validation={this.props.validation}/>
-            </div>
-        );
+        let {
+             multiple,
+             areAssetsDownloadable,
+             areAssetsEditable,
+             onInactive,
+             enableLocalHashing,
+             fileClassToUpload,
+             validation,
+             fileInputElement
+            } = this.props;
+
+        // Here we initialize the template that has been either provided from the outside
+        // or the default input that is FileDragAndDrop.
+        return React.createElement(fileInputElement, {
+            className: 'file-drag-and-drop',
+            onDrop: this.handleUploadFile,
+            filesToUpload: this.state.filesToUpload,
+            handleDeleteFile: this.handleDeleteFile,
+            handleCancelFile: this.handleCancelFile,
+            handlePauseFile: this.handlePauseFile,
+            handleResumeFile: this.handleResumeFile,
+            handleCancelHashing: this.handleCancelHashing,
+            multiple: multiple,
+            areAssetsDownloadable: areAssetsDownloadable,
+            areAssetsEditable: areAssetsEditable,
+            onInactive: onInactive,
+            dropzoneInactive: this.isDropzoneInactive(),
+            hashingProgress: this.state.hashingProgress,
+            enableLocalHashing: enableLocalHashing,
+            fileClassToUpload: fileClassToUpload,
+            validation: validation
+        });
     }
 
 });
