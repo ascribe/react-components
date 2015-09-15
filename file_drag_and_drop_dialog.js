@@ -32,7 +32,7 @@ let FileDragAndDropDialog = React.createClass({
                 queryParamsUpload.method = 'upload';
 
                 return (
-                    <span className="file-drag-and-drop-dialog present-options">
+                    <div className="file-drag-and-drop-dialog present-options">
                         <p>{getLangText('Would you rather')}</p>
                         <Link
                             to={this.getPath()}
@@ -51,12 +51,12 @@ let FileDragAndDropDialog = React.createClass({
                                 {getLangText('Upload and hash your work')}
                             </span>
                         </Link>
-                    </span>
+                    </div>
                 );
             } else {
                 if(this.props.multipleFiles) {
                     return (
-                        <span className="file-drag-and-drop-dialog">
+                        <div className="file-drag-and-drop-dialog">
                             <p>{getLangText('Drag files here')}</p>
                             <p>{getLangText('or')}</p>
                             <span
@@ -64,13 +64,13 @@ let FileDragAndDropDialog = React.createClass({
                                 onClick={this.props.onClick}>
                                     {getLangText('choose files to upload')}
                             </span>
-                        </span>
+                        </div>
                     );
                 } else {
                     let dialog = queryParams.method === 'hash' ? getLangText('choose a file to hash') : getLangText('choose a file to upload');
 
                     return (
-                        <span className="file-drag-and-drop-dialog">
+                        <div className="file-drag-and-drop-dialog">
                             <p>{getLangText('Drag a file here')}</p>
                             <p>{getLangText('or')}</p>
                             <span
@@ -78,7 +78,7 @@ let FileDragAndDropDialog = React.createClass({
                                 onClick={this.props.onClick}>
                                     {dialog}
                             </span>
-                        </span>
+                        </div>
                     );
                 }
             }
