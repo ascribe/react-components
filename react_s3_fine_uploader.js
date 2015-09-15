@@ -840,7 +840,8 @@ var ReactS3FineUploader = React.createClass({
                     dropzoneInactive={this.isDropzoneInactive()}
                     hashingProgress={this.state.hashingProgress}
                     enableLocalHashing={this.props.enableLocalHashing}
-                    fileClassToUpload={this.props.fileClassToUpload}/>
+                    fileClassToUpload={this.props.fileClassToUpload}
+                    validation={this.props.validation}/>
             </div>
         );
     }

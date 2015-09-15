@@ -44,6 +44,12 @@ let FileDragAndDrop = React.createClass({
         fileClassToUpload: React.PropTypes.shape({
             singular: React.PropTypes.string,
             plural: React.PropTypes.string
+        }),
+
+        validation: React.PropTypes.shape({
+            itemLimit: React.PropTypes.number,
+            sizeLimit: React.PropTypes.string,
+            allowedExtensions: React.PropTypes.arrayOf(React.PropTypes.string)
         })
     },
 
@@ -166,28 +172,57 @@ let FileDragAndDrop = React.createClass({
     },
 
     render: function () {
+        let { filesToUpload,
+              dropzoneInactive,
+              className,
+              hashingProgress,
+              handleCancelHashing,
+              multiple,
+              enableLocalHashing,
+              fileClassToUpload,
+              areAssetsDownloadable,
+              areAssetsEditable,
+              validation
+            } = this.props;
+
         // has files only is true if there are files that do not have the status deleted or canceled
-        let hasFiles = this.props.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0;
-        let className = hasFiles ? 'has-files ' : '';
-        className += this.props.dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';
-        className += this.props.className ? ' ' + this.props.className : '';
+        let hasFiles = filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0;
+        let updatedClassName = hasFiles ? 'has-files ' : '';
+        updatedClassName += dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';
+        updatedClassName += className ? ' ' + className : '';
 
         // if !== -2: triggers a FileDragAndDrop-global spinner
-        if(this.props.hashingProgress !== -2) {
+        if(hashingProgress !== -2) {
             return (
                 <div className={className}>
                     <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
                     <p>
-                        <span>{Math.ceil(this.props.hashingProgress)}%</span>
-                        <a onClick={this.props.handleCancelHashing}> {getLangText('Cancel hashing')}</a>
+                        <span>{Math.ceil(hashingProgress)}%</span>
+                        <a onClick={handleCancelHashing}> {getLangText('Cancel hashing')}</a>
                     </p>
-                    <ProgressBar completed={this.props.hashingProgress} color="#48DACB"/>
+                    <ProgressBar completed={hashingProgress} color="#48DACB"/>
                 </div>
             );
         } else {
+            let accept = '';
+
+            /**
+             * Fineuploader allows to specify the file extensions that are allowed to upload.
+             * For our self defined input, we can reuse those declarations to restrict which files
+             * the user can pick from his hard drive.
+             */
+            if(validation && validation.allowedExtensions.length > 0) {
+                // add a dot in front of the extension
+                let prefixedAllowedExtensions = validation.allowedExtensions.map((ext) => '.' + ext);
+
+                // generate a comma separated list to add them to the DOM element
+                // See: http://stackoverflow.com/questions/4328947/limit-file-format-when-using-input-type-file
+                accept = prefixedAllowedExtensions.join(', ');
+            }
+
             return (
                 <div
-                    className={className}
+                    className={updatedClassName}
                     onDragStart={this.handleDragStart}
                     onDrag={this.handleDrop}
                     onDragEnter={this.handleDragEnter}
@@ -196,21 +231,21 @@ let FileDragAndDrop = React.createClass({
                     onDrop={this.handleDrop}
                     onDragEnd={this.handleDragEnd}>
                         <FileDragAndDropDialog
-                            multipleFiles={this.props.multiple}
+                            multipleFiles={multiple}
                             hasFiles={hasFiles}
                             onClick={this.handleOnClick}
-                            enableLocalHashing={this.props.enableLocalHashing}
-                            fileClassToUpload={this.props.fileClassToUpload}/>
+                            enableLocalHashing={enableLocalHashing}
+                            fileClassToUpload={fileClassToUpload}/>
                         <FileDragAndDropPreviewIterator
-                            files={this.props.filesToUpload}
+                            files={filesToUpload}
                             handleDeleteFile={this.handleDeleteFile}
                             handleCancelFile={this.handleCancelFile}
                             handlePauseFile={this.handlePauseFile}
                             handleResumeFile={this.handleResumeFile}
-                            areAssetsDownloadable={this.props.areAssetsDownloadable}
-                            areAssetsEditable={this.props.areAssetsEditable}/>
+                            areAssetsDownloadable={areAssetsDownloadable}
+                            areAssetsEditable={areAssetsEditable}/>
                         <input
-                            multiple={this.props.multiple}
+                            multiple={multiple}
                             ref="fileinput"
                             type="file"
                             style={{
@@ -218,7 +253,8 @@ let FileDragAndDrop = React.createClass({
                                 height: 0,
                                 width: 0
                             }}
-                            onChange={this.handleDrop} />
+                            onChange={this.handleDrop}
+                            accept={accept}/>
                 </div>
           );
         }
