@@ -39,7 +39,7 @@ let FileDragAndDropDialog = React.createClass({
                 queryParamsUpload.method = 'upload';
 
                 return (
-                    <span className="file-drag-and-drop-dialog present-options">
+                    <div className="file-drag-and-drop-dialog present-options">
                         <p>{getLangText('Would you rather')}</p>
                         <Link
                             to={this.getPath()}
@@ -58,7 +58,7 @@ let FileDragAndDropDialog = React.createClass({
                                 {getLangText('Upload and hash your work')}
                             </span>
                         </Link>
-                    </span>
+                    </div>
                 );
             } else {
                 if(this.props.multipleFiles) {

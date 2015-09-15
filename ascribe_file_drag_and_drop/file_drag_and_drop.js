@@ -1,12 +1,13 @@
 'use strict';
 
 import React from 'react';
-import ProgressBar from 'react-progressbar';
+import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 
 import FileDragAndDropDialog from './file_drag_and_drop_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
 
 import { getLangText } from '../../../utils/lang_utils';
+
 
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDrop = React.createClass({
@@ -195,12 +196,16 @@ let FileDragAndDrop = React.createClass({
         if(hashingProgress !== -2) {
             return (
                 <div className={className}>
-                    <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
-                    <p>
-                        <span>{Math.ceil(hashingProgress)}%</span>
-                        <a onClick={handleCancelHashing}> {getLangText('Cancel hashing')}</a>
-                    </p>
-                    <ProgressBar completed={hashingProgress} color="#48DACB"/>
+                    <div className="file-drag-and-drop-hashing-dialog">
+                        <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
+                        <p>
+                            <a onClick={this.props.handleCancelHashing}> {getLangText('Cancel hashing')}</a>
+                        </p>
+                        <ProgressBar
+                            now={Math.ceil(this.props.hashingProgress)}
+                            label="%(percent)s%"
+                            className="ascribe-progress-bar"/>
+                    </div>
                 </div>
             );
         } else {

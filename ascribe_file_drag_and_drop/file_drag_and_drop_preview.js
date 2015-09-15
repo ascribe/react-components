@@ -4,6 +4,8 @@ import React from 'react';
 
 import FileDragAndDropPreviewImage from './file_drag_and_drop_preview_image';
 import FileDragAndDropPreviewOther from './file_drag_and_drop_preview_other';
+
+
 import { getLangText } from '../../../utils/lang_utils';
 
 let FileDragAndDropPreview = React.createClass({
@@ -72,7 +74,7 @@ let FileDragAndDropPreview = React.createClass({
 
         if(this.props.areAssetsEditable) {
            removeBtn = (<div className="delete-file">
-                            <span 
+                            <span
                                 className="glyphicon glyphicon-remove text-center"
                                 aria-hidden="true"
                                 title={getLangText('Remove file')}

@@ -32,3 +32,23 @@ export const formSubmissionValidation = {
         }
     }
 };
+
+/**
+ * Filter function for filtering all deleted and canceled files
+ * @param  {object} file A file from filesToUpload that has status as a prop.
+ * @return {boolean}
+ */
+export function displayValidFilesFilter(file) {
+    return file.status !== 'deleted' && file.status !== 'canceled';
+}
+
+
+/**
+ * Filter function for which files to integrate in the progress process
+ * @param  {object} file A file from filesToUpload, that has a status as a prop.
+ * @return {boolean}
+ */
+export function displayValidProgressFilesFilter(file) {
+    return file.status !== 'deleted' && file.status !== 'canceled' && file.status !== 'online';
+}
+

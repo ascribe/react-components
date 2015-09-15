@@ -3,6 +3,10 @@
 import React from 'react';
 
 import FileDragAndDropPreview from './file_drag_and_drop_preview';
+import FileDragAndDropPreviewProgress from './file_drag_and_drop_preview_progress';
+
+import { displayValidFilesFilter } from '../react_s3_fine_uploader_utils';
+
 
 let FileDragAndDropPreviewIterator = React.createClass({
     propTypes: {
@@ -16,26 +20,37 @@ let FileDragAndDropPreviewIterator = React.createClass({
     },
 
     render() {
-        if(this.props.files) {
+        let {
+            files,
+            handleDeleteFile,
+            handleCancelFile,
+            handlePauseFile,
+            handleResumeFile,
+            areAssetsDownloadable,
+            areAssetsEditable
+        } = this.props;
+
+        files = files.filter(displayValidFilesFilter);
+
+        if(files && files.length > 0) {
             return (
-                <div>
-                    {this.props.files.map((file, i) => {
-                        if(file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1) {
+                <div className="file-drag-and-drop-preview-iterator">
+                    <div className="file-drag-and-drop-preview-iterator-spacing">
+                        {files.map((file, i) => {
                             return (
                                 <FileDragAndDropPreview
                                     key={i}
                                     file={file}
-                                    handleDeleteFile={this.props.handleDeleteFile}
-                                    handleCancelFile={this.props.handleCancelFile}
-                                    handlePauseFile={this.props.handlePauseFile}
-                                    handleResumeFile={this.props.handleResumeFile}
-                                    areAssetsDownloadable={this.props.areAssetsDownloadable}
-                                    areAssetsEditable={this.props.areAssetsEditable}/>
+                                    handleDeleteFile={handleDeleteFile}
+                                    handleCancelFile={handleCancelFile}
+                                    handlePauseFile={handlePauseFile}
+                                    handleResumeFile={handleResumeFile}
+                                    areAssetsDownloadable={areAssetsDownloadable}
+                                    areAssetsEditable={areAssetsEditable}/>
                             );
-                        } else {
-                            return null;
-                        }
-                    })}
+                        })}
+                    </div>
+                    <FileDragAndDropPreviewProgress files={files} />
                 </div>
             );
         } else {

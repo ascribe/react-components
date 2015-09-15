@@ -1,7 +1,7 @@
 'use strict';
 
 import React from 'react';
-import ProgressBar from 'react-progressbar';
+import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 
 import AppConstants from '../../../constants/application_constants';
 import { getLangText } from '../../../utils/lang_utils';
@@ -60,7 +60,9 @@ let FileDragAndDropPreviewImage = React.createClass({
             <div
                 className="file-drag-and-drop-preview-image"
                 style={imageStyle}>
-                    <ProgressBar completed={this.props.progress} color="black"/>
+                    <ProgressBar
+                        now={Math.ceil(this.props.progress)}
+                        className="ascribe-progress-bar ascribe-progress-bar-xs"/>
                     {actionSymbol}
             </div>
         );
