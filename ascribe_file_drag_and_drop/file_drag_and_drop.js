@@ -12,7 +12,6 @@ import { getLangText } from '../../../utils/lang_utils';
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDrop = React.createClass({
     propTypes: {
-        className: React.PropTypes.string,
         onDragStart: React.PropTypes.func,
         onDrop: React.PropTypes.func.isRequired,
         onDrag: React.PropTypes.func,
@@ -47,11 +46,7 @@ let FileDragAndDrop = React.createClass({
             plural: React.PropTypes.string
         }),
 
-        validation: React.PropTypes.shape({
-            itemLimit: React.PropTypes.number,
-            sizeLimit: React.PropTypes.string,
-            allowedExtensions: React.PropTypes.arrayOf(React.PropTypes.string)
-        })
+        allowedExtensions: React.PropTypes.string
     },
 
     handleDragStart(event) {
@@ -183,7 +178,7 @@ let FileDragAndDrop = React.createClass({
               fileClassToUpload,
               areAssetsDownloadable,
               areAssetsEditable,
-              validation
+              allowedExtensions
             } = this.props;
 
         // has files only is true if there are files that do not have the status deleted or canceled
@@ -209,22 +204,6 @@ let FileDragAndDrop = React.createClass({
                 </div>
             );
         } else {
-            let accept = '';
-
-            /**
-             * Fineuploader allows to specify the file extensions that are allowed to upload.
-             * For our self defined input, we can reuse those declarations to restrict which files
-             * the user can pick from his hard drive.
-             */
-            if(validation && validation.allowedExtensions && validation.allowedExtensions.length > 0) {
-                // add a dot in front of the extension
-                let prefixedAllowedExtensions = validation.allowedExtensions.map((ext) => '.' + ext);
-
-                // generate a comma separated list to add them to the DOM element
-                // See: http://stackoverflow.com/questions/4328947/limit-file-format-when-using-input-type-file
-                accept = prefixedAllowedExtensions.join(', ');
-            }
-
             return (
                 <div
                     className={updatedClassName}
@@ -259,7 +238,7 @@ let FileDragAndDrop = React.createClass({
                                 width: 0
                             }}
                             onChange={this.handleDrop}
-                            accept={accept}/>
+                            accept={allowedExtensions}/>
                 </div>
           );
         }

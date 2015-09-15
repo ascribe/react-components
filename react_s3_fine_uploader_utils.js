@@ -52,3 +52,22 @@ export function displayValidProgressFilesFilter(file) {
     return file.status !== 'deleted' && file.status !== 'canceled' && file.status !== 'online';
 }
 
+
+/**
+ * Fineuploader allows to specify the file extensions that are allowed to upload.
+ * For our self defined input, we can reuse those declarations to restrict which files
+ * the user can pick from his hard drive.
+ *
+ * Takes an array of file extensions (['pdf', 'png', ...]) and transforms them into a string
+ * that can be passed into an html5 input via its 'accept' prop.
+ * @param  {array} allowedExtensions Array of strings without a dot prefixed
+ * @return {string}                   Joined string (comma-separated) of the passed-in array
+ */
+export function transformAllowedExtensionsToInputAcceptProp(allowedExtensions) {
+    // add a dot in front of the extension
+    let prefixedAllowedExtensions = allowedExtensions.map((ext) => '.' + ext);
+
+    // generate a comma separated list to add them to the DOM element
+    // See: http://stackoverflow.com/questions/4328947/limit-file-format-when-using-input-type-file
+    return prefixedAllowedExtensions.join(', ');
+}

@@ -16,7 +16,7 @@ import AppConstants from '../../constants/application_constants';
 
 
 import { computeHashOfFile } from '../../utils/file_utils';
-import { displayValidFilesFilter } from './react_s3_fine_uploader_utils';
+import { displayValidFilesFilter, transformAllowedExtensionsToInputAcceptProp } from './react_s3_fine_uploader_utils';
 import { getCookie } from '../../utils/fetch_api_utils';
 import { getLangText } from '../../utils/lang_utils';
 
@@ -125,7 +125,10 @@ let ReactS3FineUploader = React.createClass({
         // Uploading functionality of react fineuploader is disconnected from its UI
         // layer, which means that literally every (properly adjusted) react element
         // can handle the UI handling.
-        fileInputElement: React.PropTypes.func
+        fileInputElement: React.PropTypes.oneOfType([
+            React.PropTypes.func,
+            React.PropTypes.element
+        ])
     },
 
     mixins: [Router.State],
@@ -838,6 +841,16 @@ let ReactS3FineUploader = React.createClass({
 
     },
 
+    getAllowedExtensions() {
+        let { validation } = this.props;
+
+        if(validation && validation.allowedExtensions && validation.allowedExtensions.length > 0) {
+            return transformAllowedExtensionsToInputAcceptProp(validation.allowedExtensions);
+        } else {
+            return null;
+        }
+    },
+
     render() {
         let {
              multiple,
@@ -868,7 +881,7 @@ let ReactS3FineUploader = React.createClass({
             hashingProgress: this.state.hashingProgress,
             enableLocalHashing: enableLocalHashing,
             fileClassToUpload: fileClassToUpload,
-            validation: validation
+            allowedExtensions: this.getAllowedExtensions()
         });
     }
 
