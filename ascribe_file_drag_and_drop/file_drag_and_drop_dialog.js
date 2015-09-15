@@ -3,7 +3,7 @@
 import React from 'react';
 import Router from 'react-router';
 
-import { getLangText } from '../../utils/lang_utils';
+import { getLangText } from '../../../utils/lang_utils';
 
 let Link = Router.Link;
 

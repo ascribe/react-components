@@ -6,7 +6,7 @@ import ProgressBar from 'react-progressbar';
 import FileDragAndDropDialog from './file_drag_and_drop_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
 
-import { getLangText } from '../../utils/lang_utils';
+import { getLangText } from '../../../utils/lang_utils';
 
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDrop = React.createClass({
@@ -189,7 +189,7 @@ let FileDragAndDrop = React.createClass({
         let hasFiles = filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0;
         let updatedClassName = hasFiles ? 'has-files ' : '';
         updatedClassName += dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';
-        updatedClassName += className ? ' ' + className : '';
+        updatedClassName += ' file-drag-and-drop';
 
         // if !== -2: triggers a FileDragAndDrop-global spinner
         if(hashingProgress !== -2) {
