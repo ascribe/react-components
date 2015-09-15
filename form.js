@@ -65,12 +65,12 @@ let Form = React.createClass({
     reset() {
         // If onReset prop is defined from outside,
         // notify component that a form reset is happening.
-        if(this.props.onReset && typeof this.props.onReset === 'function') {
+        if(typeof this.props.onReset === 'function') {
             this.props.onReset();
         }
 
         for(let ref in this.refs) {
-            if (this.refs[ref].reset && typeof this.refs[ref].reset === 'function'){
+            if(typeof this.refs[ref].reset === 'function') {
                 this.refs[ref].reset();
             }
         }
@@ -123,11 +123,12 @@ let Form = React.createClass({
 
     getFormData() {
         let data = {};
-        for(let ref in this.refs){
+
+        for(let ref in this.refs) {
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
         }
 
-        if (this.props.getFormData && typeof this.props.getFormData === 'function'){
+        if(typeof this.props.getFormData === 'function') {
             data = mergeOptionsWithDuplicates(data, this.props.getFormData());
         }
 
@@ -135,16 +136,16 @@ let Form = React.createClass({
     },
 
     handleChangeChild(){
-        this.setState({edited: true});
+        this.setState({ edited: true });
     },
 
     handleSuccess(response){
-        if(this.props.handleSuccess && typeof this.props.handleSuccess === 'function') {
+        if(typeof this.props.handleSuccess === 'function') {
             this.props.handleSuccess(response);
         }
 
         for(let ref in this.refs) {
-            if(this.refs[ref] && this.refs[ref].handleSuccess && typeof this.refs[ref].handleSuccess === 'function'){
+            if(this.refs[ref] && typeof this.refs[ref].handleSuccess === 'function'){
                 this.refs[ref].handleSuccess();
             }
         }
@@ -163,8 +164,7 @@ let Form = React.createClass({
                     this.setState({errors: this.state.errors.concat(err.json.errors[input])});
                 }
             }
-        }
-        else {
+        } else {
             let formData = this.getFormData();
 
             // sentry shouldn't post the user's password
@@ -187,7 +187,7 @@ let Form = React.createClass({
 
     clearErrors(){
         for(let ref in this.refs){
-            if (this.refs[ref] && this.refs[ref].clearErrors && typeof this.refs[ref].clearErrors === 'function'){
+            if (this.refs[ref] && typeof this.refs[ref].clearErrors === 'function'){
                 this.refs[ref].clearErrors();
             }
         }
