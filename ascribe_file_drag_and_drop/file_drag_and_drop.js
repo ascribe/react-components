@@ -211,7 +211,7 @@ let FileDragAndDrop = React.createClass({
              * For our self defined input, we can reuse those declarations to restrict which files
              * the user can pick from his hard drive.
              */
-            if(validation && validation.allowedExtensions.length > 0) {
+            if(validation && validation.allowedExtensions && validation.allowedExtensions.length > 0) {
                 // add a dot in front of the extension
                 let prefixedAllowedExtensions = validation.allowedExtensions.map((ext) => '.' + ext);
 
