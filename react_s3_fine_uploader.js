@@ -1,15 +1,12 @@
 'use strict';
 
 import React from 'react/addons';
+import fineUploader from 'fineUploader';
 import Router from 'react-router';
 import Q from 'q';
 
-import { getCookie } from '../../utils/fetch_api_utils';
-import { getLangText } from '../../utils/lang_utils';
-
 import S3Fetcher from '../../fetchers/s3_fetcher';
 
-import fineUploader from 'fineUploader';
 import FileDragAndDrop from './file_drag_and_drop';
 
 import GlobalNotificationModel from '../../models/global_notification_model';
@@ -17,7 +14,11 @@ import GlobalNotificationActions from '../../actions/global_notification_actions
 
 import AppConstants from '../../constants/application_constants';
 
-import { computeHashOfFile, displayValidFilesFilter  } from '../../utils/file_utils';
+import { computeHashOfFile } from '../../utils/file_utils';
+import { displayValidFilesFilter } from './react_s3_fine_uploader_utils';
+import { getCookie } from '../../utils/fetch_api_utils';
+import { getLangText } from '../../utils/lang_utils';
+
 
 var ReactS3FineUploader = React.createClass({
     propTypes: {
