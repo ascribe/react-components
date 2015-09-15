@@ -72,7 +72,7 @@ let FileDragAndDropPreview = React.createClass({
 
         if(this.props.areAssetsEditable) {
            removeBtn = (<div className="delete-file">
-                            <span 
+                            <span
                                 className="glyphicon glyphicon-remove text-center"
                                 aria-hidden="true"
                                 title={getLangText('Remove file')}

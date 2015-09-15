@@ -1,7 +1,7 @@
 'use strict';
 
 import React from 'react';
-import ProgressBar from 'react-progressbar';
+import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 
 import FileDragAndDropDialog from './file_drag_and_drop_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
@@ -169,12 +169,16 @@ let FileDragAndDrop = React.createClass({
         if(this.props.hashingProgress !== -2) {
             return (
                 <div className={className}>
-                    <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
-                    <p>
-                        <span>{Math.ceil(this.props.hashingProgress)}%</span>
-                        <a onClick={this.props.handleCancelHashing}> {getLangText('Cancel hashing')}</a>
-                    </p>
-                    <ProgressBar completed={this.props.hashingProgress} color="#48DACB"/>
+                    <div className="file-drag-and-drop-hashing-dialog">
+                        <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
+                        <p>
+                            <a onClick={this.props.handleCancelHashing}> {getLangText('Cancel hashing')}</a>
+                        </p>
+                        <ProgressBar
+                            now={Math.ceil(this.props.hashingProgress)}
+                            label="%(percent)s%"
+                            className="ascribe-progress-bar"/>
+                    </div>
                 </div>
             );
         } else {
