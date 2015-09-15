@@ -70,7 +70,7 @@ let Property = React.createClass({
         // In order to set this.state.value from another component
         // the state of value should only be set if its not undefined and
         // actually references something
-        if(typeof childInput.getDOMNode().value !== 'undefined') {
+        if(childInput && typeof childInput.getDOMNode().value !== 'undefined') {
             this.setState({
                 value: childInput.getDOMNode().value
             });
