@@ -2,14 +2,11 @@
 
 import React from 'react/addons';
 import Router from 'react-router';
+import fineUploader from 'fineUploader';
 import Q from 'q';
-
-import { getCookie } from '../../utils/fetch_api_utils';
-import { getLangText } from '../../utils/lang_utils';
 
 import S3Fetcher from '../../fetchers/s3_fetcher';
 
-import fineUploader from 'fineUploader';
 import FileDragAndDrop from './ascribe_file_drag_and_drop/file_drag_and_drop';
 
 import GlobalNotificationModel from '../../models/global_notification_model';
@@ -17,7 +14,10 @@ import GlobalNotificationActions from '../../actions/global_notification_actions
 
 import AppConstants from '../../constants/application_constants';
 
+import { getCookie } from '../../utils/fetch_api_utils';
+import { getLangText } from '../../utils/lang_utils';
 import { computeHashOfFile } from '../../utils/file_utils';
+
 
 var ReactS3FineUploader = React.createClass({
     propTypes: {
