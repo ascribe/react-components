@@ -3,7 +3,6 @@
 import React from 'react/addons';
 import fineUploader from 'fineUploader';
 import Router from 'react-router';
-import fineUploader from 'fineUploader';
 import Q from 'q';
 
 import S3Fetcher from '../../fetchers/s3_fetcher';

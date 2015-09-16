@@ -45,6 +45,7 @@ let FileDragAndDropPreview = React.createClass({
 
     handleDownloadFile() {
         if(this.props.file.s3Url) {
+            // This simply opens a new browser tab with the url provided
             open(this.props.file.s3Url);
         }
     },

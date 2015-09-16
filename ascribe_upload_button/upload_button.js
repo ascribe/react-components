@@ -8,20 +8,8 @@ import { getLangText } from '../../../utils/lang_utils';
 
 let UploadButton = React.createClass({
     propTypes: {
-        onDragStart: React.PropTypes.func,
         onDrop: React.PropTypes.func.isRequired,
-        onDrag: React.PropTypes.func,
-        onDragEnter: React.PropTypes.func,
-        onLeave: React.PropTypes.func,
-        onDragLeave: React.PropTypes.func,
-        onDragOver: React.PropTypes.func,
-        onDragEnd: React.PropTypes.func,
-        onInactive: React.PropTypes.func,
         filesToUpload: React.PropTypes.array,
-        handleDeleteFile: React.PropTypes.func,
-        handleCancelFile: React.PropTypes.func,
-        handlePauseFile: React.PropTypes.func,
-        handleResumeFile: React.PropTypes.func,
         multiple: React.PropTypes.bool,
 
         // For simplification purposes we're just going to use this prop as a
@@ -77,7 +65,7 @@ let UploadButton = React.createClass({
         // Depending on wether there is an upload going on or not we
         // display the progress
         if(filesToUpload.length > 0) {
-            return  getLangText('Upload progress') + ': ' + Math.ceil(filesToUpload[0].progress) + '%';
+            return getLangText('Upload progress') + ': ' + Math.ceil(filesToUpload[0].progress) + '%';
         } else {
             return fileClassToUpload.singular;
         }
