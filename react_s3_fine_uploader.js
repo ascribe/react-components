@@ -1,6 +1,7 @@
 'use strict';
 
 import React from 'react/addons';
+import fineUploader from 'fineUploader';
 import Router from 'react-router';
 import fineUploader from 'fineUploader';
 import Q from 'q';
@@ -13,7 +14,6 @@ import GlobalNotificationModel from '../../models/global_notification_model';
 import GlobalNotificationActions from '../../actions/global_notification_actions';
 
 import AppConstants from '../../constants/application_constants';
-
 
 import { computeHashOfFile } from '../../utils/file_utils';
 import { displayValidFilesFilter, transformAllowedExtensionsToInputAcceptProp } from './react_s3_fine_uploader_utils';
