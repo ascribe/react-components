@@ -5,6 +5,7 @@ import React from 'react';
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 
 import { displayValidProgressFilesFilter } from '../react_s3_fine_uploader_utils';
+import { getLangText } from '../../../utils/lang_utils';
 
 
 let FileDragAndDropPreviewProgress = React.createClass({
@@ -54,7 +55,7 @@ let FileDragAndDropPreviewProgress = React.createClass({
         return (
             <ProgressBar
                 now={Math.ceil(overallProgress)}
-                label="Overall progress: %(percent)s%"
+                label={getLangText('Overall progress%s', ': %(percent)s%')}
                 className="ascribe-progress-bar"
                 style={style} />
         );
