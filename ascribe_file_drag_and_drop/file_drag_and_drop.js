@@ -12,14 +12,8 @@ import { getLangText } from '../../../utils/lang_utils';
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDrop = React.createClass({
     propTypes: {
-        onDragStart: React.PropTypes.func,
         onDrop: React.PropTypes.func.isRequired,
-        onDrag: React.PropTypes.func,
-        onDragEnter: React.PropTypes.func,
-        onLeave: React.PropTypes.func,
-        onDragLeave: React.PropTypes.func,
         onDragOver: React.PropTypes.func,
-        onDragEnd: React.PropTypes.func,
         onInactive: React.PropTypes.func,
         filesToUpload: React.PropTypes.array,
         handleDeleteFile: React.PropTypes.func,
@@ -47,36 +41,6 @@ let FileDragAndDrop = React.createClass({
         }),
 
         allowedExtensions: React.PropTypes.string
-    },
-
-    handleDragStart(event) {
-        if (typeof this.props.onDragStart === 'function') {
-            this.props.onDragStart(event);
-        }
-    },
-
-    handleDrag(event) {
-        if (typeof this.props.onDrag === 'function') {
-            this.props.onDrag(event);
-        }
-    },
-
-    handleDragEnd(event) {
-        if (typeof this.props.onDragEnd === 'function') {
-          this.props.onDragEnd(event);
-        }
-    },
-
-    handleDragEnter(event) {
-        if (typeof this.props.onDragEnter === 'function') {
-            this.props.onDragEnter(event);
-        }
-    },
-
-    handleDragLeave(event) {
-        if (typeof this.props.onDragLeave === 'function') {
-            this.props.onDragLeave(event);
-        }
     },
 
     handleDragOver(event) {
@@ -207,13 +171,9 @@ let FileDragAndDrop = React.createClass({
             return (
                 <div
                     className={updatedClassName}
-                    onDragStart={this.handleDragStart}
                     onDrag={this.handleDrop}
-                    onDragEnter={this.handleDragEnter}
-                    onDragLeave={this.handleDragLeave}
                     onDragOver={this.handleDragOver}
-                    onDrop={this.handleDrop}
-                    onDragEnd={this.handleDragEnd}>
+                    onDrop={this.handleDrop}>
                         <FileDragAndDropDialog
                             multipleFiles={multiple}
                             hasFiles={hasFiles}
