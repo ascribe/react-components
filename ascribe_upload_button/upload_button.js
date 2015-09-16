@@ -3,6 +3,8 @@
 import React from 'react';
 
 import { displayValidProgressFilesFilter } from '../react_s3_fine_uploader_utils';
+import { getLangText } from '../../../utils/lang_utils';
+
 
 let UploadButton = React.createClass({
     propTypes: {
@@ -21,7 +23,6 @@ let UploadButton = React.createClass({
         handlePauseFile: React.PropTypes.func,
         handleResumeFile: React.PropTypes.func,
         multiple: React.PropTypes.bool,
-
 
         // For simplification purposes we're just going to use this prop as a
         // label for the upload button
@@ -76,7 +77,7 @@ let UploadButton = React.createClass({
         // Depending on wether there is an upload going on or not we
         // display the progress
         if(filesToUpload.length > 0) {
-            return 'Upload progress: ' + Math.ceil(filesToUpload[0].progress) + '%';
+            return  getLangText('Upload progress') + ': ' + Math.ceil(filesToUpload[0].progress) + '%';
         } else {
             return fileClassToUpload.singular;
         }
