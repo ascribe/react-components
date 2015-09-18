@@ -15,8 +15,30 @@ let InputTextAreaToggable = React.createClass({
 
     getInitialState() {
         return {
-            value: this.props.defaultValue
+            value: null
         };
+    },
+
+    componentDidUpdate(prevProps, prevState) {
+        if(this.state.value !== prevState.value) {
+            this.handleChange({
+                target: {
+                    value: this.state.value
+                }
+            });
+        }
+
+        if(!this.state.value && this.props.defaultValue) {
+            this.handleChange({
+                target: {
+                    value: this.props.defaultValue
+                }
+            });
+        }
+    },
+
+    componentWillUnmount() {
+        this.setState({value: null});
     },
 
     handleChange(event) {
