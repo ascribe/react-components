@@ -7,7 +7,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 
 let InputTextAreaToggable = React.createClass({
     propTypes: {
-        editable: React.PropTypes.bool.isRequired,
+        disabled: React.PropTypes.bool,
         rows: React.PropTypes.number.isRequired,
         required: React.PropTypes.string,
         defaultValue: React.PropTypes.string
@@ -54,7 +54,7 @@ let InputTextAreaToggable = React.createClass({
         let className = 'form-control ascribe-textarea';
         let textarea = null;
 
-        if(this.props.editable) {
+        if(!this.props.disabled) {
             className = className + ' ascribe-textarea-editable';
             textarea = (
                 <TextareaAutosize
