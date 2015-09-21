@@ -20,6 +20,8 @@ let InputTextAreaToggable = React.createClass({
     },
 
     componentDidUpdate(prevProps, prevState) {
+        // if the components state value was changed during an update, we want to refresh it
+        // in this component as well as in the parent Property
         if(this.state.value !== prevState.value) {
             this.handleChange({
                 target: {
@@ -28,6 +30,8 @@ let InputTextAreaToggable = React.createClass({
             });
         }
 
+        // Otherwise, if state wasn't defined beforehand and defaultValue is defined from the outside
+        // we set it as the component's state and update Property by calling handleChange
         if(!this.state.value && this.props.defaultValue) {
             this.handleChange({
                 target: {
