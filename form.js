@@ -203,7 +203,7 @@ let Form = React.createClass({
         }
         let buttons = null;
 
-        if (this.state.edited){
+        if (this.state.edited && !this.props.disabled){
             buttons = (
                 <div className="row" style={{margin: 0}}>
                     <p className="pull-right">
