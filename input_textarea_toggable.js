@@ -19,20 +19,10 @@ let InputTextAreaToggable = React.createClass({
         };
     },
 
-    componentDidUpdate(prevProps, prevState) {
-        // if the components state value was changed during an update, we want to refresh it
-        // in this component as well as in the parent Property
-        if(!this.state.value && this.state.value !== prevState.value) {
-            this.handleChange({
-                target: {
-                    value: this.state.value
-                }
-            });
-        }
-
-        // Otherwise, if state wasn't defined beforehand and defaultValue is defined from the outside
-        // we set it as the component's state and update Property by calling handleChange
-        if(!this.state.value && this.props.defaultValue) {
+    componentDidUpdate() {
+        // If the initial value of state.value is null, we want to set props.defaultValue
+        // as a value. In all other cases TextareaAutosize.onChange is updating.handleChange already
+        if(this.state.value === null && this.props.defaultValue) {
             this.setState({
                 value: this.props.defaultValue
             });
