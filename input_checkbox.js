@@ -25,7 +25,10 @@ let InputCheckbox = React.createClass({
 
         // provided by Property
         disabled: React.PropTypes.bool,
-        onChange: React.PropTypes.func
+        onChange: React.PropTypes.func,
+
+        // can be used to style the component from the outside
+        style: React.PropTypes.object
     },
 
     // As HTML inputs, we're setting the default value for an input to checked === false
@@ -98,6 +101,7 @@ let InputCheckbox = React.createClass({
 
         return (
             <span
+                style={this.props.style}
                 onClick={this.onChange}>
                 <input
                     type="checkbox"
