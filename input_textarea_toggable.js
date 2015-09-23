@@ -19,6 +19,12 @@ let InputTextAreaToggable = React.createClass({
         };
     },
 
+    componentDidMount() {
+        this.setState({
+            value: this.props.defaultValue
+        });
+    },
+
     componentDidUpdate() {
         // If the initial value of state.value is null, we want to set props.defaultValue
         // as a value. In all other cases TextareaAutosize.onChange is updating.handleChange already
