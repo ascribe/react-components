@@ -1,11 +1,10 @@
 'use strict';
 
 import React from 'react';
-import Router from 'react-router';
+import { Link } from 'react-router';
 
 import { getLangText } from '../../../utils/lang_utils';
 
-let Link = Router.Link;
 
 let FileDragAndDropDialog = React.createClass({
     propTypes: {
@@ -19,7 +18,9 @@ let FileDragAndDropDialog = React.createClass({
         fileClassToUpload: React.PropTypes.shape({
             singular: React.PropTypes.string,
             plural: React.PropTypes.string
-        })
+        }),
+
+        location: React.PropTypes.object
     },
 
     mixins: [Router.State],
@@ -38,11 +39,13 @@ let FileDragAndDropDialog = React.createClass({
                 let queryParamsUpload = Object.assign({}, queryParams);
                 queryParamsUpload.method = 'upload';
 
+                let { location } = this.props;
+
                 return (
                     <div className="file-drag-and-drop-dialog present-options">
                         <p>{getLangText('Would you rather')}</p>
                         <Link
-                            to={this.getPath()}
+                            to={location.pathname + location.query}
                             query={queryParamsHash}>
                             <span className="btn btn-default btn-sm">
                                 {getLangText('Hash your work')}
@@ -52,7 +55,7 @@ let FileDragAndDropDialog = React.createClass({
                         <span> or </span>
                        
                        <Link
-                            to={this.getPath()}
+                            to={location.pathname + location.query}
                             query={queryParamsUpload}>
                             <span className="btn btn-default btn-sm">
                                 {getLangText('Upload and hash your work')}

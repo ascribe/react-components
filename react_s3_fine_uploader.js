@@ -127,7 +127,9 @@ let ReactS3FineUploader = React.createClass({
         fileInputElement: React.PropTypes.oneOfType([
             React.PropTypes.func,
             React.PropTypes.element
-        ])
+        ]),
+
+        location: React.PropTypes.object
     },
 
     mixins: [Router.State],
@@ -859,12 +861,20 @@ let ReactS3FineUploader = React.createClass({
              enableLocalHashing,
              fileClassToUpload,
              validation,
-             fileInputElement
+             fileInputElement,
+             location
             } = this.props;
 
         // Here we initialize the template that has been either provided from the outside
         // or the default input that is FileDragAndDrop.
         return React.createElement(fileInputElement, {
+            multiple,
+            areAssetsDownloadable,
+            areAssetsEditable,
+            onInactive,
+            enableLocalHashing,
+            fileClassToUpload,
+            location,
             onDrop: this.handleUploadFile,
             filesToUpload: this.state.filesToUpload,
             handleDeleteFile: this.handleDeleteFile,
@@ -872,14 +882,8 @@ let ReactS3FineUploader = React.createClass({
             handlePauseFile: this.handlePauseFile,
             handleResumeFile: this.handleResumeFile,
             handleCancelHashing: this.handleCancelHashing,
-            multiple: multiple,
-            areAssetsDownloadable: areAssetsDownloadable,
-            areAssetsEditable: areAssetsEditable,
-            onInactive: onInactive,
             dropzoneInactive: this.isDropzoneInactive(),
             hashingProgress: this.state.hashingProgress,
-            enableLocalHashing: enableLocalHashing,
-            fileClassToUpload: fileClassToUpload,
             allowedExtensions: this.getAllowedExtensions()
         });
     }
