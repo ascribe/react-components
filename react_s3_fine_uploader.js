@@ -2,7 +2,6 @@
 
 import React from 'react/addons';
 import fineUploader from 'fineUploader';
-import Router from 'react-router';
 import Q from 'q';
 
 import S3Fetcher from '../../fetchers/s3_fetcher';
@@ -131,8 +130,6 @@ let ReactS3FineUploader = React.createClass({
 
         location: React.PropTypes.object
     },
-
-    mixins: [Router.State],
 
     getDefaultProps() {
         return {
@@ -651,7 +648,7 @@ let ReactS3FineUploader = React.createClass({
         //
         // In the view this only happens when the user is allowed to do local hashing as well
         // as when the correct query parameter is present in the url ('hash' and not 'upload')
-        let queryParams = this.getQuery();
+        let queryParams = this.props.location.query;
         if(this.props.enableLocalHashing && queryParams && queryParams.method === 'hash') {
 
             let convertedFilePromises = [];
@@ -832,7 +829,7 @@ let ReactS3FineUploader = React.createClass({
 
     isDropzoneInactive() {
         let filesToDisplay = this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1);
-        let queryParams = this.getQuery();
+        let queryParams = this.props.location.query;
 
         if((this.props.enableLocalHashing && !queryParams.method) || !this.props.areAssetsEditable || !this.props.multiple && filesToDisplay.length > 0) {
             return true;

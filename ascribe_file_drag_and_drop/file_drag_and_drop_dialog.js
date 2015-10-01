@@ -23,10 +23,8 @@ let FileDragAndDropDialog = React.createClass({
         location: React.PropTypes.object
     },
 
-    mixins: [Router.State],
-
     render() {
-        const queryParams = this.getQuery();
+        const queryParams = this.props.location.query;
 
         if(this.props.hasFiles) {
             return null;
