@@ -43,7 +43,7 @@ let FileDragAndDropDialog = React.createClass({
                     <div className="file-drag-and-drop-dialog present-options">
                         <p>{getLangText('Would you rather')}</p>
                         <Link
-                            to={location.pathname + location.query}
+                            to={location.pathname}
                             query={queryParamsHash}>
                             <span className="btn btn-default btn-sm">
                                 {getLangText('Hash your work')}
@@ -53,7 +53,7 @@ let FileDragAndDropDialog = React.createClass({
                         <span> or </span>
                        
                        <Link
-                            to={location.pathname + location.query}
+                            to={location.pathname}
                             query={queryParamsUpload}>
                             <span className="btn btn-default btn-sm">
                                 {getLangText('Upload and hash your work')}
