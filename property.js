@@ -125,6 +125,17 @@ let Property = React.createClass({
         }
     },
 
+    isDescendant(parent, child) {
+        let node = child.parentNode;
+        while (node != null) {
+        if (node === parent) {
+            return true;
+        }
+            node = node.parentNode;
+        }
+        return false;
+    },
+
     handleChange(event) {
         this.props.handleChange(event);
         if (typeof this.props.onChange === 'function') {
@@ -154,6 +165,13 @@ let Property = React.createClass({
     },
 
     handleBlur(event) {
+        let e = event.toElement || event.relatedTarget;
+        if (this.isDescendant(this.getDOMNode(), e)){
+            return;
+        }
+        if (this.refs.input.getDOMNode() === document.activeElement) {
+            return;
+        }
         this.setState({
             isFocused: false
         });
@@ -208,7 +226,7 @@ let Property = React.createClass({
                 style,
                 onChange: this.handleChange,
                 onFocus: this.handleFocus,
-                onBlur: this.handleBlur,
+                onClick: this.handleClick,
                 disabled: !this.props.editable,
                 ref: 'input'
             });
@@ -242,7 +260,8 @@ let Property = React.createClass({
             <div
                 className={'ascribe-property-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
-                onFocus={this.handleFocus}
+                onMouseOut={this.handleBlur}
+                onMouseOver={this.handleBlur}
                 style={style}>
                 <OverlayTrigger
                     delay={500}
