@@ -240,7 +240,7 @@ let Property = React.createClass({
 
         return (
             <div
-                className={'ascribe-settings-wrapper ' + this.getClassName()}
+                className={'ascribe-property-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
                 onFocus={this.handleFocus}
                 style={style}>
@@ -248,7 +248,7 @@ let Property = React.createClass({
                     delay={500}
                     placement="top"
                     overlay={tooltip}>
-                    <div className={'ascribe-settings-property ' + this.props.className}>
+                    <div className={'ascribe-property ' + this.props.className}>
                         {this.state.errors}
                         <span>{this.props.label}</span>
                         {this.renderChildren(style)}
