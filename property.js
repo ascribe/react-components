@@ -8,7 +8,7 @@ import Tooltip from 'react-bootstrap/lib/Tooltip';
 
 import AppConstants from '../../constants/application_constants';
 
-import { mergeOptions } from '../../utils/general_utils';
+import { mergeOptions, isDescendantOfDOMNode } from '../../utils/general_utils';
 
 
 let Property = React.createClass({
@@ -125,17 +125,6 @@ let Property = React.createClass({
         }
     },
 
-    isDescendant(parent, child) {
-        let node = child.parentNode;
-        while (node != null) {
-        if (node === parent) {
-            return true;
-        }
-            node = node.parentNode;
-        }
-        return false;
-    },
-
     handleChange(event) {
         this.props.handleChange(event);
         if (typeof this.props.onChange === 'function') {
@@ -166,7 +155,7 @@ let Property = React.createClass({
 
     handleBlur(event) {
         let e = event.toElement || event.relatedTarget;
-        if (this.isDescendant(this.getDOMNode(), e)){
+        if (isDescendantOfDOMNode(this.getDOMNode(), e)){
             return;
         }
         if (this.refs.input.getDOMNode() === document.activeElement) {
