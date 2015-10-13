@@ -121,13 +121,12 @@ let FileDragAndDrop = React.createClass({
         // Firefox only recognizes the simulated mouse click if bubbles is set to true,
         // but since Google Chrome propagates the event much further than needed, we
         // need to stop propagation as soon as the event is created
-        var evt = new MouseEvent('click', {
+        let evt = new MouseEvent('click', {
             view: window,
             bubbles: true,
             cancelable: true
         });
 
-        evt.stopPropagation();
         this.refs.fileinput.getDOMNode().dispatchEvent(evt);
     },
 
