@@ -8,7 +8,7 @@ import Tooltip from 'react-bootstrap/lib/Tooltip';
 
 import AppConstants from '../../constants/application_constants';
 
-import { mergeOptions, isDescendantOfDOMNode } from '../../utils/general_utils';
+import { mergeOptions } from '../../utils/general_utils';
 
 
 let Property = React.createClass({
@@ -146,7 +146,12 @@ let Property = React.createClass({
         if(typeof this.props.onClick === 'function') {
             this.props.onClick();
         }
-
+        // skip the focus of non-input elements
+        let nonInputHTMLElements = ['pre', 'div'];
+        if (this.refs.input &&
+            nonInputHTMLElements.indexOf(this.refs.input.getDOMNode().nodeName.toLowerCase()) > -1 ) {
+            return;
+        }
         this.refs.input.getDOMNode().focus();
         this.setState({
             isFocused: true
@@ -154,13 +159,6 @@ let Property = React.createClass({
     },
 
     handleBlur(event) {
-        let e = event.toElement || event.relatedTarget;
-        if (isDescendantOfDOMNode(this.getDOMNode(), e)){
-            return;
-        }
-        if (this.refs.input.getDOMNode() === document.activeElement) {
-            return;
-        }
         this.setState({
             isFocused: false
         });
@@ -215,7 +213,7 @@ let Property = React.createClass({
                 style,
                 onChange: this.handleChange,
                 onFocus: this.handleFocus,
-                onClick: this.handleClick,
+                onBlur: this.handleBlur,
                 disabled: !this.props.editable,
                 ref: 'input'
             });
@@ -249,8 +247,6 @@ let Property = React.createClass({
             <div
                 className={'ascribe-property-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
-                onMouseOut={this.handleBlur}
-                onMouseOver={this.handleBlur}
                 style={style}>
                 <OverlayTrigger
                     delay={500}
