@@ -3,7 +3,7 @@
 import React from 'react';
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 
-import AppConstants from '../../../constants/application_constants';
+import AscribeSpinner from '../../ascribe_spinner';
 import { getLangText } from '../../../utils/lang_utils';
 
 let FileDragAndDropPreviewImage = React.createClass({
@@ -53,7 +53,11 @@ let FileDragAndDropPreviewImage = React.createClass({
             }
 
         } else {
-            actionSymbol = <img height={35} className="action-file" src={AppConstants.baseUrl + 'static/img/ascribe_animated_medium.gif'} />;
+            actionSymbol = (
+                <div className="spinner-file">
+                    <AscribeSpinner color='dark-blue' size='md' />
+                </div>
+            );
         }
 
         return (
