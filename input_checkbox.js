@@ -17,7 +17,6 @@ let InputCheckbox = React.createClass({
         //
         // Since this component even has checkbox in its name, it felt wrong to expose defaultValue
         // as the default-setting prop to other developers, which is why we choose defaultChecked.
-        defaultValue: React.PropTypes.string,
         defaultChecked: React.PropTypes.bool,
         children: React.PropTypes.oneOfType([
             React.PropTypes.arrayOf(React.PropTypes.element),
@@ -52,7 +51,7 @@ let InputCheckbox = React.createClass({
 
         // Developer's are used to define defaultValues for inputs via defaultValue, but since this is a
         // input of type checkbox we warn the dev to not do that.
-        if(this.props.defaultValue) {
+        if(this.props.defaultValue) { //eslint-disable-line react/prop-types
             console.warn('InputCheckbox is of type checkbox. Therefore its value is represented by checked and defaultChecked. defaultValue will do nothing!');
         }
 
