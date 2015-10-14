@@ -4,6 +4,8 @@ import React from 'react';
 import Router from 'react-router';
 
 import { getLangText } from '../../../utils/lang_utils';
+import { dragAndDropAvailable } from '../../../utils/feature_detection_utils';
+
 
 let Link = Router.Link;
 
@@ -23,6 +25,17 @@ let FileDragAndDropDialog = React.createClass({
     },
 
     mixins: [Router.State],
+
+    getDragDialog(fileClass) {
+        if(dragAndDropAvailable) {
+            return [
+                <p>{getLangText('Drag %s here', fileClass)}</p>,
+                <p>{getLangText('or')}</p>
+            ];
+        } else {
+            return null;
+        }
+    },
 
     render() {
         const queryParams = this.getQuery();
@@ -64,8 +77,7 @@ let FileDragAndDropDialog = React.createClass({
                 if(this.props.multipleFiles) {
                     return (
                         <span className="file-drag-and-drop-dialog">
-                            <p>{getLangText('Drag %s here', this.props.fileClassToUpload.plural)}</p>
-                            <p>{getLangText('or')}</p>
+                            {this.getDragDialog(this.props.fileClassToUpload.plural)}
                             <span
                                 className="btn btn-default"
                                 onClick={this.props.onClick}>
@@ -78,8 +90,7 @@ let FileDragAndDropDialog = React.createClass({
 
                     return (
                         <span className="file-drag-and-drop-dialog">
-                            <p>{getLangText('Drag a %s here', this.props.fileClassToUpload.singular)}</p>
-                            <p>{getLangText('or')}</p>
+                            {this.getDragDialog(this.props.fileClassToUpload.singular)}
                             <span
                                 className="btn btn-default"
                                 onClick={this.props.onClick}>
