@@ -17,11 +17,13 @@ let InputCheckbox = React.createClass({
         //
         // Since this component even has checkbox in its name, it felt wrong to expose defaultValue
         // as the default-setting prop to other developers, which is why we choose defaultChecked.
+        defaultValue: React.PropTypes.string,
         defaultChecked: React.PropTypes.bool,
         children: React.PropTypes.oneOfType([
             React.PropTypes.arrayOf(React.PropTypes.element),
             React.PropTypes.element
         ]),
+        name: React.PropTypes.string,
 
         // provided by Property
         disabled: React.PropTypes.bool,
@@ -102,8 +104,10 @@ let InputCheckbox = React.createClass({
         return (
             <span
                 style={this.props.style}
-                onClick={this.onChange}>
+                onClick={this.onChange}
+                name={this.props.name}>
                 <input
+                    name={this.props.name}
                     type="checkbox"
                     ref="checkbox"
                     onChange={this.onChange}
