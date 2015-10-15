@@ -22,6 +22,7 @@ let InputCheckbox = React.createClass({
             React.PropTypes.arrayOf(React.PropTypes.element),
             React.PropTypes.element
         ]),
+        name: React.PropTypes.string,
 
         // provided by Property
         disabled: React.PropTypes.bool,
@@ -50,7 +51,7 @@ let InputCheckbox = React.createClass({
 
         // Developer's are used to define defaultValues for inputs via defaultValue, but since this is a
         // input of type checkbox we warn the dev to not do that.
-        if(this.props.defaultValue) {
+        if(this.props.defaultValue) { //eslint-disable-line react/prop-types
             console.warn('InputCheckbox is of type checkbox. Therefore its value is represented by checked and defaultChecked. defaultValue will do nothing!');
         }
 
@@ -102,8 +103,10 @@ let InputCheckbox = React.createClass({
         return (
             <span
                 style={this.props.style}
-                onClick={this.onChange}>
+                onClick={this.onChange}
+                name={this.props.name}>
                 <input
+                    name={this.props.name}
                     type="checkbox"
                     ref="checkbox"
                     onChange={this.onChange}
