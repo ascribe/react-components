@@ -31,6 +31,7 @@ let Property = React.createClass({
         footer: React.PropTypes.element,
         handleChange: React.PropTypes.func,
         ignoreFocus: React.PropTypes.bool,
+        name: React.PropTypes.string.isRequired,
         className: React.PropTypes.string,
 
         onClick: React.PropTypes.func,
@@ -210,7 +211,8 @@ let Property = React.createClass({
                 onFocus: this.handleFocus,
                 onBlur: this.handleBlur,
                 disabled: !this.props.editable,
-                ref: 'input'
+                ref: 'input',
+                name: this.props.name
             });
         });
     },
