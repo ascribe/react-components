@@ -1,13 +1,12 @@
 'use strict';
 
 import React from 'react';
-import Router from 'react-router';
+import { Link } from 'react-router';
 
 import { getLangText } from '../../../utils/lang_utils';
 import { dragAndDropAvailable } from '../../../utils/feature_detection_utils';
 
 
-let Link = Router.Link;
 
 let FileDragAndDropDialog = React.createClass({
     propTypes: {
@@ -21,10 +20,10 @@ let FileDragAndDropDialog = React.createClass({
         fileClassToUpload: React.PropTypes.shape({
             singular: React.PropTypes.string,
             plural: React.PropTypes.string
-        })
-    },
+        }),
 
-    mixins: [Router.State],
+        location: React.PropTypes.object
+    },
 
     getDragDialog(fileClass) {
         if(dragAndDropAvailable) {
@@ -38,7 +37,7 @@ let FileDragAndDropDialog = React.createClass({
     },
 
     render() {
-        const queryParams = this.getQuery();
+        const queryParams = this.props.location.query;
 
         if(this.props.hasFiles) {
             return null;
@@ -51,11 +50,13 @@ let FileDragAndDropDialog = React.createClass({
                 let queryParamsUpload = Object.assign({}, queryParams);
                 queryParamsUpload.method = 'upload';
 
+                let { location } = this.props;
+
                 return (
                     <div className="file-drag-and-drop-dialog present-options">
                         <p>{getLangText('Would you rather')}</p>
                         <Link
-                            to={this.getPath()}
+                            to={location.pathname}
                             query={queryParamsHash}>
                             <span className="btn btn-default btn-sm">
                                 {getLangText('Hash your work')}
@@ -65,7 +66,7 @@ let FileDragAndDropDialog = React.createClass({
                         <span> or </span>
                        
                        <Link
-                            to={this.getPath()}
+                            to={location.pathname}
                             query={queryParamsUpload}>
                             <span className="btn btn-default btn-sm">
                                 {getLangText('Upload and hash your work')}

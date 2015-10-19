@@ -2,7 +2,6 @@
 
 import React from 'react/addons';
 import fineUploader from 'fineUploader';
-import Router from 'react-router';
 import Q from 'q';
 
 import S3Fetcher from '../../fetchers/s3_fetcher';
@@ -127,10 +126,10 @@ let ReactS3FineUploader = React.createClass({
         fileInputElement: React.PropTypes.oneOfType([
             React.PropTypes.func,
             React.PropTypes.element
-        ])
-    },
+        ]),
 
-    mixins: [Router.State],
+        location: React.PropTypes.object
+    },
 
     getDefaultProps() {
         return {
@@ -649,7 +648,7 @@ let ReactS3FineUploader = React.createClass({
         //
         // In the view this only happens when the user is allowed to do local hashing as well
         // as when the correct query parameter is present in the url ('hash' and not 'upload')
-        let queryParams = this.getQuery();
+        let queryParams = this.props.location.query;
         if(this.props.enableLocalHashing && queryParams && queryParams.method === 'hash') {
 
             let convertedFilePromises = [];
@@ -830,7 +829,7 @@ let ReactS3FineUploader = React.createClass({
 
     isDropzoneInactive() {
         let filesToDisplay = this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1);
-        let queryParams = this.getQuery();
+        let queryParams = this.props.location.query;
 
         if((this.props.enableLocalHashing && !queryParams.method) || !this.props.areAssetsEditable || !this.props.multiple && filesToDisplay.length > 0) {
             return true;
@@ -859,12 +858,20 @@ let ReactS3FineUploader = React.createClass({
              enableLocalHashing,
              fileClassToUpload,
              validation,
-             fileInputElement
+             fileInputElement,
+             location
             } = this.props;
 
         // Here we initialize the template that has been either provided from the outside
         // or the default input that is FileDragAndDrop.
         return React.createElement(fileInputElement, {
+            multiple,
+            areAssetsDownloadable,
+            areAssetsEditable,
+            onInactive,
+            enableLocalHashing,
+            fileClassToUpload,
+            location,
             onDrop: this.handleUploadFile,
             filesToUpload: this.state.filesToUpload,
             handleDeleteFile: this.handleDeleteFile,
@@ -872,14 +879,8 @@ let ReactS3FineUploader = React.createClass({
             handlePauseFile: this.handlePauseFile,
             handleResumeFile: this.handleResumeFile,
             handleCancelHashing: this.handleCancelHashing,
-            multiple: multiple,
-            areAssetsDownloadable: areAssetsDownloadable,
-            areAssetsEditable: areAssetsEditable,
-            onInactive: onInactive,
             dropzoneInactive: this.isDropzoneInactive(),
             hashingProgress: this.state.hashingProgress,
-            enableLocalHashing: enableLocalHashing,
-            fileClassToUpload: fileClassToUpload,
             allowedExtensions: this.getAllowedExtensions()
         });
     }
