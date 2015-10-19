@@ -12,6 +12,7 @@ import { getLangText } from '../../../utils/lang_utils';
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDrop = React.createClass({
     propTypes: {
+        className: React.PropTypes.string,
         onDrop: React.PropTypes.func.isRequired,
         onDragOver: React.PropTypes.func,
         onInactive: React.PropTypes.func,
@@ -107,6 +108,7 @@ let FileDragAndDrop = React.createClass({
     },
 
     handleOnClick() {
+        let evt;
         // when multiple is set to false and the user already uploaded a piece,
         // do not propagate event
         if(this.props.dropzoneInactive) {
@@ -118,14 +120,17 @@ let FileDragAndDrop = React.createClass({
             return;
         }
 
-        // Firefox only recognizes the simulated mouse click if bubbles is set to true,
-        // but since Google Chrome propagates the event much further than needed, we
-        // need to stop propagation as soon as the event is created
-        let evt = new MouseEvent('click', {
-            view: window,
-            bubbles: true,
-            cancelable: true
-        });
+        try {
+            evt = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+        } catch(e) {
+            // For browsers that do not support the new MouseEvent syntax
+            evt = document.createEvent('MouseEvents');
+            evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
+        }
 
         this.refs.fileinput.getDOMNode().dispatchEvent(evt);
     },
@@ -157,10 +162,10 @@ let FileDragAndDrop = React.createClass({
                     <div className="file-drag-and-drop-hashing-dialog">
                         <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
                         <p>
-                            <a onClick={this.props.handleCancelHashing}> {getLangText('Cancel hashing')}</a>
+                            <a onClick={handleCancelHashing}> {getLangText('Cancel hashing')}</a>
                         </p>
                         <ProgressBar
-                            now={Math.ceil(this.props.hashingProgress)}
+                            now={Math.ceil(hashingProgress)}
                             label="%(percent)s%"
                             className="ascribe-progress-bar"/>
                     </div>
@@ -187,12 +192,23 @@ let FileDragAndDrop = React.createClass({
                             handleResumeFile={this.handleResumeFile}
                             areAssetsDownloadable={areAssetsDownloadable}
                             areAssetsEditable={areAssetsEditable}/>
+                        {/*
+                            Opera doesn't trigger simulated click events
+                            if the targeted input has `display:none` set.
+                            Which means we need to set its visibility to hidden
+                            instead of using `display:none`.
+
+                            See:
+                                - http://stackoverflow.com/questions/12880604/jquery-triggerclick-not-working-on-opera-if-the-element-is-not-displayed
+                        */}
                         <input
                             multiple={multiple}
                             ref="fileinput"
                             type="file"
                             style={{
-                                display: 'none',
+                                visibility: 'hidden',
+                                position: 'absolute',
+                                top: 0,
                                 height: 0,
                                 width: 0
                             }}
