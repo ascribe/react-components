@@ -1,11 +1,12 @@
 'use strict';
 
 import React from 'react';
-import Router from 'react-router';
+import { Link } from 'react-router';
 
 import { getLangText } from '../../../utils/lang_utils';
+import { dragAndDropAvailable } from '../../../utils/feature_detection_utils';
 
-let Link = Router.Link;
+
 
 let FileDragAndDropDialog = React.createClass({
     propTypes: {
@@ -19,13 +20,24 @@ let FileDragAndDropDialog = React.createClass({
         fileClassToUpload: React.PropTypes.shape({
             singular: React.PropTypes.string,
             plural: React.PropTypes.string
-        })
+        }),
+
+        location: React.PropTypes.object
     },
 
-    mixins: [Router.State],
+    getDragDialog(fileClass) {
+        if(dragAndDropAvailable) {
+            return [
+                <p>{getLangText('Drag %s here', fileClass)}</p>,
+                <p>{getLangText('or')}</p>
+            ];
+        } else {
+            return null;
+        }
+    },
 
     render() {
-        const queryParams = this.getQuery();
+        const queryParams = this.props.location.query;
 
         if(this.props.hasFiles) {
             return null;
@@ -38,11 +50,13 @@ let FileDragAndDropDialog = React.createClass({
                 let queryParamsUpload = Object.assign({}, queryParams);
                 queryParamsUpload.method = 'upload';
 
+                let { location } = this.props;
+
                 return (
                     <div className="file-drag-and-drop-dialog present-options">
                         <p>{getLangText('Would you rather')}</p>
                         <Link
-                            to={this.getPath()}
+                            to={location.pathname}
                             query={queryParamsHash}>
                             <span className="btn btn-default btn-sm">
                                 {getLangText('Hash your work')}
@@ -52,7 +66,7 @@ let FileDragAndDropDialog = React.createClass({
                         <span> or </span>
                        
                        <Link
-                            to={this.getPath()}
+                            to={location.pathname}
                             query={queryParamsUpload}>
                             <span className="btn btn-default btn-sm">
                                 {getLangText('Upload and hash your work')}
@@ -64,8 +78,7 @@ let FileDragAndDropDialog = React.createClass({
                 if(this.props.multipleFiles) {
                     return (
                         <span className="file-drag-and-drop-dialog">
-                            <p>{getLangText('Drag %s here', this.props.fileClassToUpload.plural)}</p>
-                            <p>{getLangText('or')}</p>
+                            {this.getDragDialog(this.props.fileClassToUpload.plural)}
                             <span
                                 className="btn btn-default"
                                 onClick={this.props.onClick}>
@@ -78,8 +91,7 @@ let FileDragAndDropDialog = React.createClass({
 
                     return (
                         <span className="file-drag-and-drop-dialog">
-                            <p>{getLangText('Drag a %s here', this.props.fileClassToUpload.singular)}</p>
-                            <p>{getLangText('or')}</p>
+                            {this.getDragDialog(this.props.fileClassToUpload.singular)}
                             <span
                                 className="btn btn-default"
                                 onClick={this.props.onClick}>

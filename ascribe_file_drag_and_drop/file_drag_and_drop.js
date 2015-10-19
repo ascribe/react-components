@@ -40,7 +40,8 @@ let FileDragAndDrop = React.createClass({
             plural: React.PropTypes.string
         }),
 
-        allowedExtensions: React.PropTypes.string
+        allowedExtensions: React.PropTypes.string,
+        location: React.PropTypes.object
     },
 
     handleDragOver(event) {
@@ -142,7 +143,8 @@ let FileDragAndDrop = React.createClass({
               fileClassToUpload,
               areAssetsDownloadable,
               areAssetsEditable,
-              allowedExtensions
+              allowedExtensions,
+              location
             } = this.props;
 
         // has files only is true if there are files that do not have the status deleted or canceled
@@ -179,7 +181,8 @@ let FileDragAndDrop = React.createClass({
                             hasFiles={hasFiles}
                             onClick={this.handleOnClick}
                             enableLocalHashing={enableLocalHashing}
-                            fileClassToUpload={fileClassToUpload}/>
+                            fileClassToUpload={fileClassToUpload}
+                            location={location}/>
                         <FileDragAndDropPreviewIterator
                             files={filesToUpload}
                             handleDeleteFile={this.handleDeleteFile}
