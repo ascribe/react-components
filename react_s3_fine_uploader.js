@@ -326,7 +326,7 @@ let ReactS3FineUploader = React.createClass({
             .then((res) => {
                 return res.json();
             })
-            .then((res) =>{
+            .then((res) => {
                 if(res.otherdata) {
                     file.s3Url = res.otherdata.url_safe;
                     file.s3UrlSafe = res.otherdata.url_safe;
