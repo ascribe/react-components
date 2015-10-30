@@ -18,7 +18,6 @@ import { displayValidFilesFilter, transformAllowedExtensionsToInputAcceptProp } 
 import { getCookie } from '../../utils/fetch_api_utils';
 import { getLangText } from '../../utils/lang_utils';
 
-
 let ReactS3FineUploader = React.createClass({
     propTypes: {
         keyRoutine: React.PropTypes.shape({
@@ -107,11 +106,14 @@ let ReactS3FineUploader = React.createClass({
         // One solution we found in the process of tackling this problem was to hash
         // the file in the browser using md5 and then uploading the resulting text document instead
         // of the actual file.
-        // This boolean essentially enables that behavior
+        //
+        // This boolean and string essentially enable that behavior.
+        // Right now, we determine which upload method to use by appending a query parameter,
+        // which should be passed into 'uploadMethod':
+        //   'hash':   upload using the hash
+        //   'upload': upload full file (default if not specified)
         enableLocalHashing: React.PropTypes.bool,
-
-        // automatically injected by React-Router
-        query: React.PropTypes.object,
+        uploadMethod: React.PropTypes.string,
 
         // A class of a file the user has to upload
         // Needs to be defined both in singular as well as in plural
@@ -126,9 +128,7 @@ let ReactS3FineUploader = React.createClass({
         fileInputElement: React.PropTypes.oneOfType([
             React.PropTypes.func,
             React.PropTypes.element
-        ]),
-
-        location: React.PropTypes.object
+        ])
     },
 
     getDefaultProps() {
@@ -192,11 +192,11 @@ let ReactS3FineUploader = React.createClass({
             filesToUpload: [],
             uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
             csrfToken: getCookie(AppConstants.csrftoken),
-            
+
             // -1: aborted
             // -2: uninitialized
             hashingProgress: -2,
-            
+
             // this is for logging
             chunks: {}
         };
@@ -354,7 +354,6 @@ let ReactS3FineUploader = React.createClass({
     /* FineUploader specific callback function handlers */
 
     onUploadChunk(id, name, chunkData) {
-
         let chunks = this.state.chunks;
 
         chunks[id + '-' + chunkData.startByte + '-' + chunkData.endByte] = {
@@ -370,10 +369,9 @@ let ReactS3FineUploader = React.createClass({
     },
 
     onUploadChunkSuccess(id, chunkData, responseJson, xhr) {
-
         let chunks = this.state.chunks;
         let chunkKey = id + '-' + chunkData.startByte + '-' + chunkData.endByte;
-        
+
         if(chunks[chunkKey]) {
             chunks[chunkKey].completed = true;
             chunks[chunkKey].responseJson = responseJson;
@@ -414,7 +412,7 @@ let ReactS3FineUploader = React.createClass({
                     } else {
                         console.warn('You didn\'t define submitFile in as a prop in react-s3-fine-uploader');
                     }
-                    
+
                     // for explanation, check comment of if statement above
                     if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
                         // also, lets check if after the completion of this upload,
@@ -597,7 +595,6 @@ let ReactS3FineUploader = React.createClass({
         } else {
             throw new Error(getLangText('File upload could not be paused.'));
         }
-        
     },
 
     handleResumeFile(fileId) {
@@ -647,16 +644,14 @@ let ReactS3FineUploader = React.createClass({
         // md5 hash of a file locally and just upload a txt file containing that hash.
         //
         // In the view this only happens when the user is allowed to do local hashing as well
-        // as when the correct query parameter is present in the url ('hash' and not 'upload')
-        let queryParams = this.props.location.query;
-        if(this.props.enableLocalHashing && queryParams && queryParams.method === 'hash') {
-
-            let convertedFilePromises = [];
+        // as when the correct method prop is present ('hash' and not 'upload')
+        if (this.props.enableLocalHashing && this.props.uploadMethod === 'hash') {
+            const convertedFilePromises = [];
             let overallFileSize = 0;
+
             // "files" is not a classical Javascript array but a Javascript FileList, therefore
             // we can not use map to convert values
             for(let i = 0; i < files.length; i++) {
-
                 // for calculating the overall progress of all submitted files
                 // we'll need to calculate the overall sum of all files' sizes
                 overallFileSize += files[i].size;
@@ -668,7 +663,6 @@ let ReactS3FineUploader = React.createClass({
                 // we're using promises to handle that
                 let hashedFilePromise = computeHashOfFile(files[i]);
                 convertedFilePromises.push(hashedFilePromise);
-
             }
 
             // To react after the computation of all files, we define the resolvement
@@ -676,7 +670,6 @@ let ReactS3FineUploader = React.createClass({
             // with their txt representative
             Q.all(convertedFilePromises)
                 .progress(({index, value: {progress, reject}}) => {
-
                     // hashing progress has been aborted from outside
                     // To get out of the executing, we need to call reject from the
                     // inside of the promise's execution.
@@ -696,18 +689,14 @@ let ReactS3FineUploader = React.createClass({
                     // currently hashing files
                     let overallHashingProgress = 0;
                     for(let i = 0; i < files.length; i++) {
-
                         let filesSliceOfOverall = files[i].size / overallFileSize;
                         overallHashingProgress += filesSliceOfOverall * files[i].progress;
-
                     }
 
                     // Multiply by 100, since react-progressbar expects decimal numbers
                     this.setState({ hashingProgress: overallHashingProgress * 100});
-
                 })
                 .then((convertedFiles) => {
-
                     // clear hashing progress, since its done
                     this.setState({ hashingProgress: -2});
 
@@ -823,20 +812,18 @@ let ReactS3FineUploader = React.createClass({
         changeSet.status = { $set: status };
 
         let filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
-        
+
         this.setState({ filesToUpload });
     },
 
     isDropzoneInactive() {
-        let filesToDisplay = this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1);
-        let queryParams = this.props.location.query;
+        const filesToDisplay = this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1);
 
-        if((this.props.enableLocalHashing && !queryParams.method) || !this.props.areAssetsEditable || !this.props.multiple && filesToDisplay.length > 0) {
+        if ((this.props.enableLocalHashing && !this.props.uploadMethod) || !this.props.areAssetsEditable || !this.props.multiple && filesToDisplay.length > 0) {
             return true;
         } else {
             return false;
         }
-
     },
 
     getAllowedExtensions() {
@@ -850,17 +837,16 @@ let ReactS3FineUploader = React.createClass({
     },
 
     render() {
-        let {
-             multiple,
-             areAssetsDownloadable,
-             areAssetsEditable,
-             onInactive,
-             enableLocalHashing,
-             fileClassToUpload,
-             validation,
-             fileInputElement,
-             location
-            } = this.props;
+        const {
+            multiple,
+            areAssetsDownloadable,
+            areAssetsEditable,
+            onInactive,
+            enableLocalHashing,
+            uploadMethod,
+            fileClassToUpload,
+            validation,
+            fileInputElement } = this.props;
 
         // Here we initialize the template that has been either provided from the outside
         // or the default input that is FileDragAndDrop.
@@ -870,8 +856,8 @@ let ReactS3FineUploader = React.createClass({
             areAssetsEditable,
             onInactive,
             enableLocalHashing,
+            uploadMethod,
             fileClassToUpload,
-            location,
             onDrop: this.handleUploadFile,
             filesToUpload: this.state.filesToUpload,
             handleDeleteFile: this.handleDeleteFile,
