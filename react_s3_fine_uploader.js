@@ -202,7 +202,7 @@ let ReactS3FineUploader = React.createClass({
         };
     },
 
-    componentWillUpdate() {
+    componentWillReceiveProps() {
         // since the csrf header is defined in this component's props,
         // everytime the csrf cookie is changed we'll need to reinitalize
         // fineuploader and update the actual csrf token
