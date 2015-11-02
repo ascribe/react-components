@@ -12,8 +12,6 @@ import GlobalNotificationActions from '../../actions/global_notification_actions
 import requests from '../../utils/requests';
 
 import { getLangText } from '../../utils/lang_utils';
-import { mergeOptionsWithDuplicates } from '../../utils/general_utils';
-
 
 let Form = React.createClass({
     propTypes: {
@@ -124,12 +122,12 @@ let Form = React.createClass({
     getFormData() {
         let data = {};
 
-        for(let ref in this.refs) {
+        for (let ref in this.refs) {
             data[this.refs[ref].props.name] = this.refs[ref].state.value;
         }
 
-        if(typeof this.props.getFormData === 'function') {
-            data = mergeOptionsWithDuplicates(data, this.props.getFormData());
+        if (typeof this.props.getFormData === 'function') {
+            data = Object.assign(data, this.props.getFormData());
         }
 
         return data;
