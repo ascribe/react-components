@@ -288,10 +288,8 @@ let Form = React.createClass({
                 {this.renderChildren()}
                 {this.getButtons()}
             </form>
-
         );
     }
 });
-
 
 export default Form;
