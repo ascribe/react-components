@@ -31,7 +31,10 @@ let Property = React.createClass({
         footer: React.PropTypes.element,
         handleChange: React.PropTypes.func,
         ignoreFocus: React.PropTypes.bool,
-        name: React.PropTypes.string.isRequired,
+        name: React.PropTypes.oneOfType([
+            React.PropTypes.string,
+            React.PropTypes.number
+        ]).isRequired,
         className: React.PropTypes.string,
 
         onClick: React.PropTypes.func,
