@@ -305,14 +305,14 @@ let Form = React.createClass({
                 let refToValidate = {};
                 const property = this.refs[refName];
                 const input = property.refs.input;
-                const value = input.getDOMNode().value;
+                const value = input.getDOMNode().value || input.state.value;
                 const { max,
                         min,
                         pattern,
                         required,
                         type } = input.props;
 
-                refToValidate.required = required ? value !== '' : true;
+                refToValidate.required = required ? value : true;
                 refToValidate.pattern = pattern && typeof value === 'string' ? value.match(pattern) : true;
                 refToValidate.max = type === 'number' ? parseInt(value) <= max : true;
                 refToValidate.min = type === 'number' ? parseInt(value) >= min : true;
