@@ -92,8 +92,14 @@ let UploadButton = React.createClass({
              allowedExtensions
         } = this.props;
 
+        /*
+         * We do not want a button that submits here.
+         * As UploadButton could be used in forms that want to be submitted independent
+         * of clicking the selector.
+         * Therefore the wrapping component needs to be an `anchor` tag instead of a `button`
+         */
         return (
-            <button
+            <a
                 onClick={this.handleOnClick}
                 className="btn btn-default btn-sm margin-left-2px"
                 disabled={this.getUploadingFiles().length !== 0 || !!this.getUploadedFile()}>
@@ -109,7 +115,7 @@ let UploadButton = React.createClass({
                     }}
                     onChange={this.handleDrop}
                     accept={allowedExtensions}/>
-           </button>
+           </a>
         );
     }
 });
