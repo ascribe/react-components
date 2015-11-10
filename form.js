@@ -236,12 +236,12 @@ let Form = React.createClass({
     },
 
     renderChildren() {
-        return ReactAddons.Children.map(this.props.children, (child) => {
+        return ReactAddons.Children.map(this.props.children, (child, i) => {
             if (child) {
                 return ReactAddons.addons.cloneWithProps(child, {
                     handleChange: this.handleChangeChild,
                     ref: child.props.name,
-
+                    key: i,
                     // We need this in order to make editable be overridable when setting it directly
                     // on Property
                     editable: child.props.overrideForm ? child.props.editable : !this.props.disabled
@@ -269,7 +269,13 @@ let Form = React.createClass({
         }
     },
 
-    _validateRef(refToValidate) {
+    /**
+     * Validates a single ref and returns a human-readable error message
+     * @param  {object} refToValidate A customly constructed object to check
+     * @return {oneOfType([arrayOf(string), bool])} Either an error message or false, saying that
+     * everything is valid
+     */
+    _hasRefErrors(refToValidate) {
         let error = [];
 
         Object
@@ -280,13 +286,13 @@ let Form = React.createClass({
                 if(!contraintValue) {
                     switch(constraintKey) {
                         case 'min' || 'max':
-                            error.push(getLangText('The field you defined is not in the valid range.'));
+                            error.push(getLangText('The field you defined is not in the valid range'));
                             break;
                         case 'pattern':
                             error.push(getLangText('The value you defined is not matching the valid pattern'));
                             break;
                         case 'required':
-                            error.push(getLangText('This field is required.'));
+                            error.push(getLangText('This field is required'));
                             break;
                     }
                 }
@@ -295,7 +301,22 @@ let Form = React.createClass({
         return error.length ? error : false;
     },
 
-    valid() {
+    /**
+     * This method validates all child inputs of the form.
+     *
+     * As of now, it only considers
+     * - `max`
+     * - `min`
+     * - `pattern`
+     * - `required`
+     *
+     * The idea is to enhance this method everytime we need more thorough validation.
+     * So feel free to add props that additionally should be checked, if they're present
+     * in the input's props.
+     *
+     * @return {[type]} [description]
+     */
+    validate() {
         this.clearErrors();
         const validatedFormInputs = {};
 
@@ -317,12 +338,12 @@ let Form = React.createClass({
                 refToValidate.max = type === 'number' ? parseInt(value) <= max : true;
                 refToValidate.min = type === 'number' ? parseInt(value) >= min : true;
 
-                const validatedRef = this._validateRef(refToValidate);
+                const validatedRef = this._hasRefErrors(refToValidate);
                 validatedFormInputs[refName] = validatedRef;
             });
-        const errorMessagesForFields = sanitize(validatedFormInputs, (val) => !val);
-        this.handleError({ json: { errors: errorMessagesForFields } });
-        return !Object.keys(errorMessagesForFields).length;
+        const errorMessagesForRefs = sanitize(validatedFormInputs, (val) => !val);
+        this.handleError({ json: { errors: errorMessagesForRefs } });
+        return !Object.keys(errorMessagesForRefs).length;
     },
 
     render() {
