@@ -15,6 +15,7 @@ let Property = React.createClass({
     propTypes: {
         hidden: React.PropTypes.bool,
 
+        autoFocus: React.PropTypes.bool,
         editable: React.PropTypes.bool,
 
         // If we want Form to have a different value for disabled as Property has one for
@@ -66,6 +67,12 @@ let Property = React.createClass({
             isFocused: false,
             errors: null
         };
+    },
+
+    componentDidMount() {
+        if (this.props.autoFocus) {
+            this.handleFocus();
+        }
     },
 
     componentWillReceiveProps() {
