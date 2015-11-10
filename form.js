@@ -12,7 +12,7 @@ import GlobalNotificationActions from '../../actions/global_notification_actions
 import requests from '../../utils/requests';
 
 import { getLangText } from '../../utils/lang_utils';
-import { mergeOptionsWithDuplicates } from '../../utils/general_utils';
+import { mergeOptionsWithDuplicates, sanitize } from '../../utils/general_utils';
 
 
 let Form = React.createClass({
@@ -155,7 +155,7 @@ let Form = React.createClass({
         });
     },
 
-    handleError(err){
+    handleError(err) {
         if (err.json) {
             for (let input in err.json.errors){
                 if (this.refs && this.refs[input] && this.refs[input].state) {
@@ -185,7 +185,7 @@ let Form = React.createClass({
         this.setState({submitted: false});
     },
 
-    clearErrors(){
+    clearErrors() {
         for(let ref in this.refs){
             if (this.refs[ref] && typeof this.refs[ref].clearErrors === 'function'){
                 this.refs[ref].clearErrors();
@@ -267,6 +267,62 @@ let Form = React.createClass({
         } else {
             return null;
         }
+    },
+
+    _validateRef(refToValidate) {
+        let error = [];
+
+        Object
+            .keys(refToValidate)
+            .forEach((constraintKey) => {
+                const contraintValue = refToValidate[constraintKey];
+
+                if(!contraintValue) {
+                    switch(constraintKey) {
+                        case 'min' || 'max':
+                            error.push(getLangText('The field you defined is not in the valid range.'));
+                            break;
+                        case 'pattern':
+                            error.push(getLangText('The value you defined is not matching the valid pattern'));
+                            break;
+                        case 'required':
+                            error.push(getLangText('This field is required.'));
+                            break;
+                    }
+                }
+            });
+
+        return error.length ? error : false;
+    },
+
+    valid() {
+        this.clearErrors();
+        const validatedFormInputs = {};
+
+        Object
+            .keys(this.refs)
+            .forEach((refName) => {
+                let refToValidate = {};
+                const property = this.refs[refName];
+                const input = property.refs.input;
+                const value = input.getDOMNode().value;
+                const { max,
+                        min,
+                        pattern,
+                        required,
+                        type } = input.props;
+
+                refToValidate.required = required ? value !== '' : true;
+                refToValidate.pattern = pattern && typeof value === 'string' ? value.match(pattern) : true;
+                refToValidate.max = type === 'number' ? parseInt(value) <= max : true;
+                refToValidate.min = type === 'number' ? parseInt(value) >= min : true;
+
+                const validatedRef = this._validateRef(refToValidate);
+                validatedFormInputs[refName] = validatedRef;
+            });
+        const errorMessagesForFields = sanitize(validatedFormInputs, (val) => !val);
+        this.handleError({ json: { errors: errorMessagesForFields } });
+        return !Object.keys(errorMessagesForFields).length;
     },
 
     render() {
