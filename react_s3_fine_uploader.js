@@ -298,10 +298,7 @@ let ReactS3FineUploader = React.createClass({
                 resolve(res.key);
             })
             .catch((err) => {
-                console.logGlobal(err, false, {
-                    files: this.state.filesToUpload,
-                    chunks: this.state.chunks
-                });
+                this.onErrorPromiseProxy(err);
                 reject(err);
             });
         });
@@ -310,56 +307,57 @@ let ReactS3FineUploader = React.createClass({
     createBlob(file) {
         const { createBlobRoutine } = this.props;
 
-        // returning here without doing anything enables us to
-        // lazy create the blob at any time after the upload
-        if(!createBlobRoutine) {
-            return null;
-        } else {
-            return Q.Promise((resolve, reject) => {
-                window.fetch(createBlobRoutine.url, {
-                    method: 'post',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie(AppConstants.csrftoken)
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        'filename': file.name,
-                        'key': file.key,
-                        'piece_id': createBlobRoutine.pieceId
-                    })
+        return Q.Promise((resolve, reject) => {
+
+            // if createBlobRoutine is not defined,
+            // we're progressing right away without posting to S3
+            // so that this can be done manually by the form
+            if(!createBlobRoutine) {
+                // still we warn the user of this component
+                console.warn('createBlobRoutine was not defined for ReactS3FineUploader. Continuing without creating the blob on the server.');
+                resolve();
+            }
+
+            window.fetch(createBlobRoutine.url, {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie(AppConstants.csrftoken)
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    'filename': file.name,
+                    'key': file.key,
+                    'piece_id': createBlobRoutine.pieceId
                 })
-                .then((res) => {
-                    return res.json();
-                })
-                .then((res) => {
-                    if(res.otherdata) {
-                        file.s3Url = res.otherdata.url_safe;
-                        file.s3UrlSafe = res.otherdata.url_safe;
-                    } else if(res.digitalwork) {
-                        file.s3Url = res.digitalwork.url_safe;
-                        file.s3UrlSafe = res.digitalwork.url_safe;
-                    } else if(res.contractblob) {
-                        file.s3Url = res.contractblob.url_safe;
-                        file.s3UrlSafe = res.contractblob.url_safe;
-                    } else if(res.thumbnail) {
-                        file.s3Url = res.thumbnail.url_safe;
-                        file.s3UrlSafe = res.thumbnail.url_safe;
-                    } else {
-                        throw new Error(getLangText('Could not find a url to download.'));
-                    }
-                    resolve(res);
-                })
-                .catch((err) => {
-                    console.logGlobal(err, false, {
-                        files: this.state.filesToUpload,
-                        chunks: this.state.chunks
-                    });
-                    reject(err);
-                });
+            })
+            .then((res) => {
+                return res.json();
+            })
+            .then((res) => {
+                if(res.otherdata) {
+                    file.s3Url = res.otherdata.url_safe;
+                    file.s3UrlSafe = res.otherdata.url_safe;
+                } else if(res.digitalwork) {
+                    file.s3Url = res.digitalwork.url_safe;
+                    file.s3UrlSafe = res.digitalwork.url_safe;
+                } else if(res.contractblob) {
+                    file.s3Url = res.contractblob.url_safe;
+                    file.s3UrlSafe = res.contractblob.url_safe;
+                } else if(res.thumbnail) {
+                    file.s3Url = res.thumbnail.url_safe;
+                    file.s3UrlSafe = res.thumbnail.url_safe;
+                } else {
+                    throw new Error(getLangText('Could not find a url to download.'));
+                }
+                resolve(res);
+            })
+            .catch((err) => {
+                this.onErrorPromiseProxy(err);
+                reject(err);
             });
-        }
+        });
     },
 
     /* FineUploader specific callback function handlers */
@@ -415,48 +413,43 @@ let ReactS3FineUploader = React.createClass({
             let filesToUpload = React.addons.update(this.state.filesToUpload, { $set: files });
             this.setState({ filesToUpload });
 
-            const createBlobResult = this.createBlob(files[id]);
-            if(!createBlobResult) {
-                if(this.props.submitFile) {
-                    this.props.submitFile(files[id]);
-                } else {
-                    console.warn('You didn\'t define submitFile in as a prop in react-s3-fine-uploader');
-                }
-            } else {
-                // Only after the blob has been created server-side, we can make the form submittable.
-                this.createBlob(files[id])
-                    .then(() => {
-                        // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitFile
-                        // are optional, we'll only trigger them when they're actually defined
-                        if(this.props.submitFile) {
-                            this.props.submitFile(files[id]);
+            // Only after the blob has been created server-side, we can make the form submittable.
+            this.createBlob(files[id])
+                .then(() => {
+                    // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitFile
+                    // are optional, we'll only trigger them when they're actually defined
+                    if(this.props.submitFile) {
+                        this.props.submitFile(files[id]);
+                    } else {
+                        console.warn('You didn\'t define submitFile in as a prop in react-s3-fine-uploader');
+                    }
+                    // for explanation, check comment of if statement above
+                    if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
+                        // also, lets check if after the completion of this upload,
+                        // the form is ready for submission or not
+                        if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
+                            // if so, set uploadstatus to true
+                            this.props.setIsUploadReady(true);
                         } else {
-                            console.warn('You didn\'t define submitFile in as a prop in react-s3-fine-uploader');
+                            this.props.setIsUploadReady(false);
                         }
-                        // for explanation, check comment of if statement above
-                        if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
-                            // also, lets check if after the completion of this upload,
-                            // the form is ready for submission or not
-                            if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
-                                // if so, set uploadstatus to true
-                                this.props.setIsUploadReady(true);
-                            } else {
-                                this.props.setIsUploadReady(false);
-                            }
-                        } else {
-                            console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
-                        }
-                    })
-                    .catch((err) => {
-                        console.logGlobal(err, false, {
-                            files: this.state.filesToUpload,
-                            chunks: this.state.chunks
-                        });
-                        let notification = new GlobalNotificationModel(err.message, 'danger', 5000);
-                        GlobalNotificationActions.appendGlobalNotification(notification);
-                    });
-            }
+                    } else {
+                        console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
+                    }
+                })
+                .catch(this.onErrorPromiseProxy);
         }
+    },
+
+    /**
+     * We want to channel all errors in this component through one single method.
+     * As fineuploader's onError method cannot handle the callback parameters of
+     * a promise we define this proxy method to crunch them into the correct form.
+     *
+     * @param  {error} err plain Javascript error
+     */
+    onErrorPromiseProxy(err) {
+        this.onError(null, null, err.message);
     },
 
     onError(id, name, errorReason) {
@@ -464,6 +457,7 @@ let ReactS3FineUploader = React.createClass({
             files: this.state.filesToUpload,
             chunks: this.state.chunks
         });
+        this.props.setIsUploadReady(true);
         this.state.uploader.cancelAll();
 
         let notification = new GlobalNotificationModel(errorReason || this.props.defaultErrorMessage, 'danger', 5000);
@@ -628,6 +622,10 @@ let ReactS3FineUploader = React.createClass({
     },
 
     handleUploadFile(files) {
+        // While files are being uploaded, the form cannot be ready
+        // for submission
+        this.props.setIsUploadReady(false);
+
         // If multiple set and user already uploaded its work,
         // cancel upload
         if(!this.props.multiple && this.state.filesToUpload.filter(displayValidFilesFilter).length > 0) {
