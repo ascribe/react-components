@@ -421,7 +421,7 @@ let ReactS3FineUploader = React.createClass({
                     if(this.props.submitFile) {
                         this.props.submitFile(files[id]);
                     } else {
-                        console.warn('You didn\'t define submitFile in as a prop in react-s3-fine-uploader');
+                        console.warn('You didn\'t define submitFile as a prop in react-s3-fine-uploader');
                     }
                     // for explanation, check comment of if statement above
                     if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
@@ -443,10 +443,10 @@ let ReactS3FineUploader = React.createClass({
 
     /**
      * We want to channel all errors in this component through one single method.
-     * As fineuploader's onError method cannot handle the callback parameters of
+     * As fineuploader's `onError` method cannot handle the callback parameters of
      * a promise we define this proxy method to crunch them into the correct form.
      *
-     * @param  {error} err plain Javascript error
+     * @param  {error} err a plain Javascript error
      */
     onErrorPromiseProxy(err) {
         this.onError(null, null, err.message);
