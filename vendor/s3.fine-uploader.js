@@ -4399,7 +4399,9 @@ qq.UploadHandlerController = function(o, namespace) {
                     }
                 )
                     .done(function() {
-                        handler.clearXhr(id, chunkIdx);
+                        if (handler._getFileState(id)) {
+                            handler.clearXhr(id, chunkIdx);
+                        }
                     }) ;
             }
         }
