@@ -91,7 +91,7 @@ let UploadButton = React.createClass({
             return (
                 <span>
                     <Glyphicon glyph="ok" />
-                    {' ' + truncateTextAtCharIndex(uploadedFile.name, 20)}
+                    {' ' + truncateTextAtCharIndex(uploadedFile.name, 40)}
                 </span>
             );
         } else {
