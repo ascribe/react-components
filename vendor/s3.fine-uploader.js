@@ -8683,7 +8683,7 @@ qq.s3.RequestSigner = function(o) {
                 options.log(errorMessage, "error");
             }
 
-            promise.failure(errorMessage);
+            promise.failure(errorMessage, xhrOrXdr);
         }
         else {
             promise.success(response);
@@ -8815,7 +8815,7 @@ qq.s3.RequestSigner = function(o) {
                             credentialsProvider.get().accessKey,
                             credentialsProvider.get().sessionToken);
                     }, function(errorMsg) {
-                        options.log("Attempt to update expired credentials apparently failed! Unable to sign request.  ", "error");
+                        options.log("Attempt to update expired credentials apparently failed! Unable to sign request: " + errorMsg, "error");
                         signatureEffort.failure("Unable to sign request - expired credentials.");
                     });
                 }
@@ -9629,8 +9629,8 @@ qq.s3.XhrUploadHandler = function(spec, proxy) {
                     });
 
                     xhr.send(chunkData.blob);
-                }, function() {
-                    promise.failure({error: "Problem signing the chunk!"}, xhr);
+                }, function(errorMsg, xhr) {
+                    promise.failure({error: "Problem signing the chunk: " + errorMsg}, xhr);
                 });
 
                 return promise;

@@ -457,23 +457,27 @@ let ReactS3FineUploader = React.createClass({
     },
 
     onError(id, name, errorReason, xhr) {
-        const errorComment = {
+        console.logGlobal(errorReason, false, {
             files: this.state.filesToUpload,
             chunks: this.state.chunks,
-        };
-        if (xhr) {
-            errorComment.xhr = {
-                response: xhr.response,
-                status: xhr.status,
-                statusText: xhr.statusText
-            };
-        }
-        console.logGlobal(errorReason, false, errorComment);
+            xhr: this.getXhrErrorComment(xhr)
+        });
 
         this.cancelUploads();
 
         let notification = new GlobalNotificationModel(errorReason || this.props.defaultErrorMessage, 'danger', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
+    },
+
+    getXhrErrorComment(xhr) {
+        if (xhr) {
+            return {
+                response: xhr.response,
+                url: xhr.responseURL,
+                status: xhr.status,
+                statusText: xhr.statusText
+            };
+        }
     },
 
     isFileValid(file) {
