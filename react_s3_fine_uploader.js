@@ -456,11 +456,19 @@ let ReactS3FineUploader = React.createClass({
         }
     },
 
-    onError(id, name, errorReason) {
-        console.logGlobal(errorReason, false, {
+    onError(id, name, errorReason, xhr) {
+        const errorComment = {
             files: this.state.filesToUpload,
-            chunks: this.state.chunks
-        });
+            chunks: this.state.chunks,
+        };
+        if (xhr) {
+            errorComment.xhr = {
+                response: xhr.response,
+                status: xhr.status,
+                statusText: xhr.statusText
+            };
+        }
+        console.logGlobal(errorReason, false, errorComment);
 
         this.cancelUploads();
 
