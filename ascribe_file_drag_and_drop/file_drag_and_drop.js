@@ -45,6 +45,10 @@ let FileDragAndDrop = React.createClass({
         location: React.PropTypes.object
     },
 
+    clearSelection() {
+        this.refs.fileSelector.getDOMNode().value = '';
+    },
+
     handleDragOver(event) {
         event.preventDefault();
 
@@ -81,30 +85,30 @@ let FileDragAndDrop = React.createClass({
     },
 
     handleDeleteFile(fileId) {
-        // input's value is not change the second time someone
+        // input's value is not changed the second time someone
         // inputs the same file again, therefore we need to reset its value
-        this.refs.fileinput.getDOMNode().value = '';
+        this.clearSelection();
         this.props.handleDeleteFile(fileId);
     },
 
     handleCancelFile(fileId) {
-        // input's value is not change the second time someone
+        // input's value is not changed the second time someone
         // inputs the same file again, therefore we need to reset its value
-        this.refs.fileinput.getDOMNode().value = '';
+        this.clearSelection();
         this.props.handleCancelFile(fileId);
     },
 
     handlePauseFile(fileId) {
-        // input's value is not change the second time someone
+        // input's value is not changed the second time someone
         // inputs the same file again, therefore we need to reset its value
-        this.refs.fileinput.getDOMNode().value = '';
+        this.clearSelection();
         this.props.handlePauseFile(fileId);
     },
 
     handleResumeFile(fileId) {
-        // input's value is not change the second time someone
+        // input's value is not changed the second time someone
         // inputs the same file again, therefore we need to reset its value
-        this.refs.fileinput.getDOMNode().value = '';
+        this.clearSelection();
         this.props.handleResumeFile(fileId);
     },
 
@@ -133,7 +137,7 @@ let FileDragAndDrop = React.createClass({
             evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
         }
 
-        this.refs.fileinput.getDOMNode().dispatchEvent(evt);
+        this.refs.fileSelector.getDOMNode().dispatchEvent(evt);
     },
 
     render: function () {
@@ -206,7 +210,7 @@ let FileDragAndDrop = React.createClass({
                         */}
                         <input
                             multiple={multiple}
-                            ref="fileinput"
+                            ref="fileSelector"
                             type="file"
                             style={{
                                 visibility: 'hidden',
