@@ -457,12 +457,12 @@ let ReactS3FineUploader = React.createClass({
     },
 
     onError(id, name, errorReason) {
-        this.cancelUploads();
-
         console.logGlobal(errorReason, false, {
             files: this.state.filesToUpload,
             chunks: this.state.chunks
         });
+
+        this.cancelUploads();
 
         let notification = new GlobalNotificationModel(errorReason || this.props.defaultErrorMessage, 'danger', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
