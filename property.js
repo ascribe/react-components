@@ -181,9 +181,7 @@ let Property = React.createClass({
 
     setErrors(errors){
         this.setState({
-            errors: errors.map((error) => {
-                return <span className="pull-right" key={error}>{error}</span>;
-            })
+            errors: errors.pop()
         });
     },
 

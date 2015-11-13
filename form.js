@@ -276,29 +276,29 @@ let Form = React.createClass({
      * everything is valid
      */
     _hasRefErrors(refToValidate) {
-        let error = [];
-
-        Object
+        let errors = Object
             .keys(refToValidate)
-            .forEach((constraintKey) => {
+            .reduce((a, constraintKey) => {
                 const contraintValue = refToValidate[constraintKey];
 
                 if(!contraintValue) {
                     switch(constraintKey) {
                         case 'min' || 'max':
-                            error.push(getLangText('The field you defined is not in the valid range'));
+                            a.push(getLangText('The field you defined is not in the valid range'));
                             break;
                         case 'pattern':
-                            error.push(getLangText('The value you defined is not matching the valid pattern'));
+                            a.push(getLangText('The value you defined is not matching the valid pattern'));
                             break;
                         case 'required':
-                            error.push(getLangText('This field is required'));
+                            a.push(getLangText('This field is required'));
                             break;
                     }
                 }
-            });
 
-        return error.length ? error : false;
+                return a;
+            }, []);
+
+        return errors.length ? errors : false;
     },
 
     /**
@@ -335,8 +335,8 @@ let Form = React.createClass({
 
                 refToValidate.required = required ? value : true;
                 refToValidate.pattern = pattern && typeof value === 'string' ? value.match(pattern) : true;
-                refToValidate.max = type === 'number' ? parseInt(value) <= max : true;
-                refToValidate.min = type === 'number' ? parseInt(value) >= min : true;
+                refToValidate.max = type === 'number' ? parseInt(value, 10) <= max : true;
+                refToValidate.min = type === 'number' ? parseInt(value, 10) >= min : true;
 
                 const validatedRef = this._hasRefErrors(refToValidate);
                 validatedFormInputs[refName] = validatedRef;
