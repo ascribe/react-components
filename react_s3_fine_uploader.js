@@ -113,7 +113,7 @@ let ReactS3FineUploader = React.createClass({
         //   'hash':   upload using the hash
         //   'upload': upload full file (default if not specified)
         enableLocalHashing: React.PropTypes.bool,
-        uploadMethod: React.PropTypes.string,
+        uploadMethod: React.PropTypes.oneOf(['hash', 'upload']),
 
         // A class of a file the user has to upload
         // Needs to be defined both in singular as well as in plural
@@ -202,7 +202,7 @@ let ReactS3FineUploader = React.createClass({
         };
     },
 
-    componentWillReceiveProps() {
+    componentWillUpdate() {
         // since the csrf header is defined in this component's props,
         // everytime the csrf cookie is changed we'll need to reinitalize
         // fineuploader and update the actual csrf token
