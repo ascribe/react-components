@@ -9,8 +9,11 @@ let InputTextAreaToggable = React.createClass({
     propTypes: {
         disabled: React.PropTypes.bool,
         rows: React.PropTypes.number.isRequired,
-        required: React.PropTypes.string,
-        defaultValue: React.PropTypes.string
+        required: React.PropTypes.bool,
+        defaultValue: React.PropTypes.string,
+        placeholder: React.PropTypes.string,
+        onBlur: React.PropTypes.func,
+        onChange: React.PropTypes.func
     },
 
     getInitialState() {
