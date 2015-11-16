@@ -27,6 +27,7 @@ let FileDragAndDrop = React.createClass({
         areAssetsEditable: React.PropTypes.bool,
 
         enableLocalHashing: React.PropTypes.bool,
+        uploadMethod: React.PropTypes.string,
 
         // triggers a FileDragAndDrop-global spinner
         hashingProgress: React.PropTypes.number,
@@ -41,8 +42,7 @@ let FileDragAndDrop = React.createClass({
             plural: React.PropTypes.string
         }),
 
-        allowedExtensions: React.PropTypes.string,
-        location: React.PropTypes.object
+        allowedExtensions: React.PropTypes.string
     },
 
     clearSelection() {
@@ -141,19 +141,19 @@ let FileDragAndDrop = React.createClass({
     },
 
     render: function () {
-        let { filesToUpload,
-              dropzoneInactive,
-              className,
-              hashingProgress,
-              handleCancelHashing,
-              multiple,
-              enableLocalHashing,
-              fileClassToUpload,
-              areAssetsDownloadable,
-              areAssetsEditable,
-              allowedExtensions,
-              location
-            } = this.props;
+        const {
+            filesToUpload,
+            dropzoneInactive,
+            className,
+            hashingProgress,
+            handleCancelHashing,
+            multiple,
+            enableLocalHashing,
+            uploadMethod,
+            fileClassToUpload,
+            areAssetsDownloadable,
+            areAssetsEditable,
+            allowedExtensions } = this.props;
 
         // has files only is true if there are files that do not have the status deleted or canceled
         let hasFiles = filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0;
@@ -189,8 +189,8 @@ let FileDragAndDrop = React.createClass({
                             hasFiles={hasFiles}
                             onClick={this.handleOnClick}
                             enableLocalHashing={enableLocalHashing}
-                            fileClassToUpload={fileClassToUpload}
-                            location={location}/>
+                            uploadMethod={uploadMethod}
+                            fileClassToUpload={fileClassToUpload} />
                         <FileDragAndDropPreviewIterator
                             files={filesToUpload}
                             handleDeleteFile={this.handleDeleteFile}
