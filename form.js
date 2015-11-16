@@ -12,6 +12,8 @@ import GlobalNotificationActions from '../../actions/global_notification_actions
 import requests from '../../utils/requests';
 
 import { getLangText } from '../../utils/lang_utils';
+import { sanitize } from '../../utils/general_utils';
+
 
 let Form = React.createClass({
     propTypes: {
@@ -153,7 +155,7 @@ let Form = React.createClass({
         });
     },
 
-    handleError(err){
+    handleError(err) {
         if (err.json) {
             for (let input in err.json.errors){
                 if (this.refs && this.refs[input] && this.refs[input].state) {
@@ -183,7 +185,7 @@ let Form = React.createClass({
         this.setState({submitted: false});
     },
 
-    clearErrors(){
+    clearErrors() {
         for(let ref in this.refs){
             if (this.refs[ref] && typeof this.refs[ref].clearErrors === 'function'){
                 this.refs[ref].clearErrors();
@@ -234,12 +236,12 @@ let Form = React.createClass({
     },
 
     renderChildren() {
-        return ReactAddons.Children.map(this.props.children, (child) => {
+        return ReactAddons.Children.map(this.props.children, (child, i) => {
             if (child) {
                 return ReactAddons.addons.cloneWithProps(child, {
                     handleChange: this.handleChangeChild,
                     ref: child.props.name,
-
+                    key: i,
                     // We need this in order to make editable be overridable when setting it directly
                     // on Property
                     editable: child.props.overrideForm ? child.props.editable : !this.props.disabled
@@ -265,6 +267,83 @@ let Form = React.createClass({
         } else {
             return null;
         }
+    },
+
+    /**
+     * Validates a single ref and returns a human-readable error message
+     * @param  {object} refToValidate A customly constructed object to check
+     * @return {oneOfType([arrayOf(string), bool])} Either an error message or false, saying that
+     * everything is valid
+     */
+    _hasRefErrors(refToValidate) {
+        let errors = Object
+            .keys(refToValidate)
+            .reduce((a, constraintKey) => {
+                const contraintValue = refToValidate[constraintKey];
+
+                if(!contraintValue) {
+                    switch(constraintKey) {
+                        case 'min' || 'max':
+                            a.push(getLangText('The field you defined is not in the valid range'));
+                            break;
+                        case 'pattern':
+                            a.push(getLangText('The value you defined is not matching the valid pattern'));
+                            break;
+                        case 'required':
+                            a.push(getLangText('This field is required'));
+                            break;
+                    }
+                }
+
+                return a;
+            }, []);
+
+        return errors.length ? errors : false;
+    },
+
+    /**
+     * This method validates all child inputs of the form.
+     *
+     * As of now, it only considers
+     * - `max`
+     * - `min`
+     * - `pattern`
+     * - `required`
+     *
+     * The idea is to enhance this method everytime we need more thorough validation.
+     * So feel free to add props that additionally should be checked, if they're present
+     * in the input's props.
+     *
+     * @return {[type]} [description]
+     */
+    validate() {
+        this.clearErrors();
+        const validatedFormInputs = {};
+
+        Object
+            .keys(this.refs)
+            .forEach((refName) => {
+                let refToValidate = {};
+                const property = this.refs[refName];
+                const input = property.refs.input;
+                const value = input.getDOMNode().value || input.state.value;
+                const { max,
+                        min,
+                        pattern,
+                        required,
+                        type } = input.props;
+
+                refToValidate.required = required ? value : true;
+                refToValidate.pattern = pattern && typeof value === 'string' ? value.match(pattern) : true;
+                refToValidate.max = type === 'number' ? parseInt(value, 10) <= max : true;
+                refToValidate.min = type === 'number' ? parseInt(value, 10) >= min : true;
+
+                const validatedRef = this._hasRefErrors(refToValidate);
+                validatedFormInputs[refName] = validatedRef;
+            });
+        const errorMessagesForRefs = sanitize(validatedFormInputs, (val) => !val);
+        this.handleError({ json: { errors: errorMessagesForRefs } });
+        return !Object.keys(errorMessagesForRefs).length;
     },
 
     render() {
