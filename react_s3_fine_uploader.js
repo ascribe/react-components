@@ -18,7 +18,6 @@ import { displayValidFilesFilter, transformAllowedExtensionsToInputAcceptProp } 
 import { getCookie } from '../../utils/fetch_api_utils';
 import { getLangText } from '../../utils/lang_utils';
 
-
 let ReactS3FineUploader = React.createClass({
     propTypes: {
         keyRoutine: React.PropTypes.shape({
@@ -107,11 +106,14 @@ let ReactS3FineUploader = React.createClass({
         // One solution we found in the process of tackling this problem was to hash
         // the file in the browser using md5 and then uploading the resulting text document instead
         // of the actual file.
-        // This boolean essentially enables that behavior
+        //
+        // This boolean and string essentially enable that behavior.
+        // Right now, we determine which upload method to use by appending a query parameter,
+        // which should be passed into 'uploadMethod':
+        //   'hash':   upload using the hash
+        //   'upload': upload full file (default if not specified)
         enableLocalHashing: React.PropTypes.bool,
-
-        // automatically injected by React-Router
-        query: React.PropTypes.object,
+        uploadMethod: React.PropTypes.oneOf(['hash', 'upload']),
 
         // A class of a file the user has to upload
         // Needs to be defined both in singular as well as in plural
@@ -126,9 +128,7 @@ let ReactS3FineUploader = React.createClass({
         fileInputElement: React.PropTypes.oneOfType([
             React.PropTypes.func,
             React.PropTypes.element
-        ]),
-
-        location: React.PropTypes.object
+        ])
     },
 
     getDefaultProps() {
@@ -314,18 +314,27 @@ let ReactS3FineUploader = React.createClass({
                 resolve(res.key);
             })
             .catch((err) => {
-                console.logGlobal(err, false, {
-                    files: this.state.filesToUpload,
-                    chunks: this.state.chunks
-                });
+                this.onErrorPromiseProxy(err);
                 reject(err);
             });
         });
     },
 
     createBlob(file) {
+        const { createBlobRoutine } = this.props;
+
         return Q.Promise((resolve, reject) => {
-            window.fetch(this.props.createBlobRoutine.url, {
+
+            // if createBlobRoutine is not defined,
+            // we're progressing right away without posting to S3
+            // so that this can be done manually by the form
+            if(!createBlobRoutine) {
+                // still we warn the user of this component
+                console.warn('createBlobRoutine was not defined for ReactS3FineUploader. Continuing without creating the blob on the server.');
+                resolve();
+            }
+
+            window.fetch(createBlobRoutine.url, {
                 method: 'post',
                 headers: {
                     'Accept': 'application/json',
@@ -336,7 +345,7 @@ let ReactS3FineUploader = React.createClass({
                 body: JSON.stringify({
                     'filename': file.name,
                     'key': file.key,
-                    'piece_id': this.props.createBlobRoutine.pieceId
+                    'piece_id': createBlobRoutine.pieceId
                 })
             })
             .then((res) => {
@@ -352,16 +361,16 @@ let ReactS3FineUploader = React.createClass({
                 } else if(res.contractblob) {
                     file.s3Url = res.contractblob.url_safe;
                     file.s3UrlSafe = res.contractblob.url_safe;
+                } else if(res.thumbnail) {
+                    file.s3Url = res.thumbnail.url_safe;
+                    file.s3UrlSafe = res.thumbnail.url_safe;
                 } else {
                     throw new Error(getLangText('Could not find a url to download.'));
                 }
                 resolve(res);
             })
             .catch((err) => {
-                console.logGlobal(err, false, {
-                    files: this.state.filesToUpload,
-                    chunks: this.state.chunks
-                });
+                this.onErrorPromiseProxy(err);
                 reject(err);
             });
         });
@@ -370,7 +379,6 @@ let ReactS3FineUploader = React.createClass({
     /* FineUploader specific callback function handlers */
 
     onUploadChunk(id, name, chunkData) {
-
         let chunks = this.state.chunks;
 
         chunks[id + '-' + chunkData.startByte + '-' + chunkData.endByte] = {
@@ -386,7 +394,6 @@ let ReactS3FineUploader = React.createClass({
     },
 
     onUploadChunkSuccess(id, chunkData, responseJson, xhr) {
-
         let chunks = this.state.chunks;
         let chunkKey = id + '-' + chunkData.startByte + '-' + chunkData.endByte;
 
@@ -430,7 +437,7 @@ let ReactS3FineUploader = React.createClass({
                     if(this.props.submitFile) {
                         this.props.submitFile(files[id]);
                     } else {
-                        console.warn('You didn\'t define submitFile in as a prop in react-s3-fine-uploader');
+                        console.warn('You didn\'t define submitFile as a prop in react-s3-fine-uploader');
                     }
 
                     // for explanation, check comment of if statement above
@@ -447,15 +454,19 @@ let ReactS3FineUploader = React.createClass({
                         console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
                     }
                 })
-                .catch((err) => {
-                    console.logGlobal(err, false, {
-                        files: this.state.filesToUpload,
-                        chunks: this.state.chunks
-                    });
-                    let notification = new GlobalNotificationModel(err.message, 'danger', 5000);
-                    GlobalNotificationActions.appendGlobalNotification(notification);
-                });
+                .catch(this.onErrorPromiseProxy);
         }
+    },
+
+    /**
+     * We want to channel all errors in this component through one single method.
+     * As fineuploader's `onError` method cannot handle the callback parameters of
+     * a promise we define this proxy method to crunch them into the correct form.
+     *
+     * @param  {error} err a plain Javascript error
+     */
+    onErrorPromiseProxy(err) {
+        this.onError(null, null, err.message);
     },
 
     onError(id, name, errorReason, xhr) {
@@ -465,6 +476,7 @@ let ReactS3FineUploader = React.createClass({
             xhr: this.getXhrErrorComment(xhr)
         });
 
+        this.props.setIsUploadReady(true);
         this.cancelUploads();
 
         let notification = new GlobalNotificationModel(errorReason || this.props.defaultErrorMessage, 'danger', 5000);
@@ -628,7 +640,6 @@ let ReactS3FineUploader = React.createClass({
         } else {
             throw new Error(getLangText('File upload could not be paused.'));
         }
-
     },
 
     handleResumeFile(fileId) {
@@ -640,6 +651,10 @@ let ReactS3FineUploader = React.createClass({
     },
 
     handleUploadFile(files) {
+        // While files are being uploaded, the form cannot be ready
+        // for submission
+        this.props.setIsUploadReady(false);
+
         // If multiple set and user already uploaded its work,
         // cancel upload
         if(!this.props.multiple && this.state.filesToUpload.filter(displayValidFilesFilter).length > 0) {
@@ -679,16 +694,14 @@ let ReactS3FineUploader = React.createClass({
         // md5 hash of a file locally and just upload a txt file containing that hash.
         //
         // In the view this only happens when the user is allowed to do local hashing as well
-        // as when the correct query parameter is present in the url ('hash' and not 'upload')
-        let queryParams = this.props.location.query;
-        if(this.props.enableLocalHashing && queryParams && queryParams.method === 'hash') {
-
-            let convertedFilePromises = [];
+        // as when the correct method prop is present ('hash' and not 'upload')
+        if (this.props.enableLocalHashing && this.props.uploadMethod === 'hash') {
+            const convertedFilePromises = [];
             let overallFileSize = 0;
+
             // "files" is not a classical Javascript array but a Javascript FileList, therefore
             // we can not use map to convert values
             for(let i = 0; i < files.length; i++) {
-
                 // for calculating the overall progress of all submitted files
                 // we'll need to calculate the overall sum of all files' sizes
                 overallFileSize += files[i].size;
@@ -700,7 +713,6 @@ let ReactS3FineUploader = React.createClass({
                 // we're using promises to handle that
                 let hashedFilePromise = computeHashOfFile(files[i]);
                 convertedFilePromises.push(hashedFilePromise);
-
             }
 
             // To react after the computation of all files, we define the resolvement
@@ -708,7 +720,6 @@ let ReactS3FineUploader = React.createClass({
             // with their txt representative
             Q.all(convertedFilePromises)
                 .progress(({index, value: {progress, reject}}) => {
-
                     // hashing progress has been aborted from outside
                     // To get out of the executing, we need to call reject from the
                     // inside of the promise's execution.
@@ -728,18 +739,14 @@ let ReactS3FineUploader = React.createClass({
                     // currently hashing files
                     let overallHashingProgress = 0;
                     for(let i = 0; i < files.length; i++) {
-
                         let filesSliceOfOverall = files[i].size / overallFileSize;
                         overallHashingProgress += filesSliceOfOverall * files[i].progress;
-
                     }
 
                     // Multiply by 100, since react-progressbar expects decimal numbers
                     this.setState({ hashingProgress: overallHashingProgress * 100});
-
                 })
                 .then((convertedFiles) => {
-
                     // clear hashing progress, since its done
                     this.setState({ hashingProgress: -2});
 
@@ -860,15 +867,13 @@ let ReactS3FineUploader = React.createClass({
     },
 
     isDropzoneInactive() {
-        let filesToDisplay = this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1);
-        let queryParams = this.props.location.query;
+        const filesToDisplay = this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1);
 
-        if((this.props.enableLocalHashing && !queryParams.method) || !this.props.areAssetsEditable || !this.props.multiple && filesToDisplay.length > 0) {
+        if ((this.props.enableLocalHashing && !this.props.uploadMethod) || !this.props.areAssetsEditable || !this.props.multiple && filesToDisplay.length > 0) {
             return true;
         } else {
             return false;
         }
-
     },
 
     getAllowedExtensions() {
@@ -889,9 +894,8 @@ let ReactS3FineUploader = React.createClass({
              onInactive,
              enableLocalHashing,
              fileClassToUpload,
-             validation,
              fileInputElement: FileInputElement,
-             location } = this.props;
+             uploadMethod } = this.props;
 
         const props = {
             multiple,
@@ -899,8 +903,8 @@ let ReactS3FineUploader = React.createClass({
             areAssetsEditable,
             onInactive,
             enableLocalHashing,
+            uploadMethod,
             fileClassToUpload,
-            location,
             onDrop: this.handleUploadFile,
             filesToUpload: this.state.filesToUpload,
             handleDeleteFile: this.handleDeleteFile,
