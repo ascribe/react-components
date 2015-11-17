@@ -93,7 +93,6 @@ let ReactS3FineUploader = React.createClass({
         retry: React.PropTypes.shape({
             enableAuto: React.PropTypes.bool
         }),
-        uploadStarted: React.PropTypes.func,
         setIsUploadReady: React.PropTypes.func,
         isReadyForFormSubmission: React.PropTypes.func,
         areAssetsDownloadable: React.PropTypes.bool,
@@ -671,11 +670,6 @@ let ReactS3FineUploader = React.createClass({
         }
         // override standard files list with only valid files
         files = validFiles;
-
-        // Call this method to signal the outside component that an upload is in progress
-        if(typeof this.props.uploadStarted === 'function' && files.length > 0) {
-            this.props.uploadStarted();
-        }
 
         // if multiple is set to false and user drops multiple files into the dropzone,
         // take the first one and notify user that only one file can be submitted
