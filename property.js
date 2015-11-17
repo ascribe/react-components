@@ -220,6 +220,19 @@ let Property = React.createClass({
         });
     },
 
+    getLabelAndErrors() {
+        if(this.props.label || this.state.errors) {
+            return (
+                <p>
+                    <span className="pull-left">{this.props.label}</span>
+                    <span className="pull-right">{this.state.errors}</span>
+                </p>
+            );
+        } else {
+            return null;
+        }
+    },
+
     render() {
         let footer = null;
         let tooltip = <span/>;
@@ -253,10 +266,7 @@ let Property = React.createClass({
                     placement="top"
                     overlay={tooltip}>
                     <div className={'ascribe-property ' + this.props.className}>
-                        <p>
-                            <span className="pull-left">{this.props.label}</span>
-                            <span className="pull-right">{this.state.errors}</span>
-                        </p>
+                        {this.getLabelAndErrors()}
                         {this.renderChildren(style)}
                         {footer}
                     </div>
