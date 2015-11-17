@@ -18,87 +18,100 @@ import { displayValidFilesFilter, transformAllowedExtensionsToInputAcceptProp } 
 import { getCookie } from '../../utils/fetch_api_utils';
 import { getLangText } from '../../utils/lang_utils';
 
-let ReactS3FineUploader = React.createClass({
+
+const { shape,
+        string,
+        oneOfType,
+        number,
+        func,
+        bool,
+        any,
+        object,
+        oneOf,
+        element,
+        arrayOf } = React.PropTypes;
+
+const ReactS3FineUploader = React.createClass({
     propTypes: {
-        keyRoutine: React.PropTypes.shape({
-            url: React.PropTypes.string,
-            fileClass: React.PropTypes.string,
-            pieceId: React.PropTypes.oneOfType([
-                React.PropTypes.string,
-                React.PropTypes.number
+        keyRoutine: shape({
+            url: string,
+            fileClass: string,
+            pieceId: oneOfType([
+                string,
+                number
             ])
         }),
-        createBlobRoutine: React.PropTypes.shape({
-            url: React.PropTypes.string,
-            pieceId: React.PropTypes.oneOfType([
-                React.PropTypes.string,
-                React.PropTypes.number
+        createBlobRoutine: shape({
+            url: string,
+            pieceId: oneOfType([
+                string,
+                number
             ])
         }),
-        submitFile: React.PropTypes.func,
-        autoUpload: React.PropTypes.bool,
-        debug: React.PropTypes.bool,
-        objectProperties: React.PropTypes.shape({
-            acl: React.PropTypes.string
+        submitFile: func,
+        autoUpload: bool,
+        debug: bool,
+        objectProperties: shape({
+            acl: string
         }),
-        request: React.PropTypes.shape({
-            endpoint: React.PropTypes.string,
-            accessKey: React.PropTypes.string,
-            params: React.PropTypes.shape({
-                csrfmiddlewaretoken: React.PropTypes.string
+        request: shape({
+            endpoint: string,
+            accessKey: string,
+            params: shape({
+                csrfmiddlewaretoken: string
             })
         }),
-        signature: React.PropTypes.shape({
-            endpoint: React.PropTypes.string
+        signature: shape({
+            endpoint: string
         }).isRequired,
-        uploadSuccess: React.PropTypes.shape({
-            method: React.PropTypes.string,
-            endpoint: React.PropTypes.string,
-            params: React.PropTypes.shape({
-                isBrowserPreviewCapable: React.PropTypes.any, // maybe fix this later
-                bitcoin_ID_noPrefix: React.PropTypes.string
+        uploadSuccess: shape({
+            method: string,
+            endpoint: string,
+            params: shape({
+                isBrowserPreviewCapable: any, // maybe fix this later
+                bitcoin_ID_noPrefix: string
             })
         }),
-        cors: React.PropTypes.shape({
-            expected: React.PropTypes.bool
+        cors: shape({
+            expected: bool
         }),
-        chunking: React.PropTypes.shape({
-            enabled: React.PropTypes.bool
+        chunking: shape({
+            enabled: bool
         }),
-        resume: React.PropTypes.shape({
-            enabled: React.PropTypes.bool
+        resume: shape({
+            enabled: bool
         }),
-        deleteFile: React.PropTypes.shape({
-            enabled: React.PropTypes.bool,
-            method: React.PropTypes.string,
-            endpoint: React.PropTypes.string,
-            customHeaders: React.PropTypes.object
+        deleteFile: shape({
+            enabled: bool,
+            method: string,
+            endpoint: string,
+            customHeaders: object
         }).isRequired,
-        session: React.PropTypes.shape({
-            customHeaders: React.PropTypes.object,
-            endpoint: React.PropTypes.string,
-            params: React.PropTypes.object,
-            refreshOnRequests: React.PropTypes.bool
+        session: shape({
+            customHeaders: object,
+            endpoint: string,
+            params: object,
+            refreshOnRequests: bool
         }),
-        validation: React.PropTypes.shape({
-            itemLimit: React.PropTypes.number,
-            sizeLimit: React.PropTypes.string,
-            allowedExtensions: React.PropTypes.arrayOf(React.PropTypes.string)
+        validation: shape({
+            itemLimit: number,
+            sizeLimit: string,
+            allowedExtensions: arrayOf(string)
         }),
-        messages: React.PropTypes.shape({
-            unsupportedBrowser: React.PropTypes.string
+        messages: shape({
+            unsupportedBrowser: string
         }),
-        formatFileName: React.PropTypes.func,
-        multiple: React.PropTypes.bool,
-        retry: React.PropTypes.shape({
-            enableAuto: React.PropTypes.bool
+        formatFileName: func,
+        multiple: bool,
+        retry: shape({
+            enableAuto: bool
         }),
-        setIsUploadReady: React.PropTypes.func,
-        isReadyForFormSubmission: React.PropTypes.func,
-        areAssetsDownloadable: React.PropTypes.bool,
-        areAssetsEditable: React.PropTypes.bool,
-        defaultErrorMessage: React.PropTypes.string,
-        onInactive: React.PropTypes.func,
+        setIsUploadReady: func,
+        isReadyForFormSubmission: func,
+        areAssetsDownloadable: bool,
+        areAssetsEditable: bool,
+        defaultErrorMessage: string,
+        onInactive: func,
 
         // We encountered some cases where people had difficulties to upload their
         // works to ascribe due to a slow internet connection.
@@ -111,22 +124,22 @@ let ReactS3FineUploader = React.createClass({
         // which should be passed into 'uploadMethod':
         //   'hash':   upload using the hash
         //   'upload': upload full file (default if not specified)
-        enableLocalHashing: React.PropTypes.bool,
-        uploadMethod: React.PropTypes.oneOf(['hash', 'upload']),
+        enableLocalHashing: bool,
+        uploadMethod: oneOf(['hash', 'upload']),
 
         // A class of a file the user has to upload
         // Needs to be defined both in singular as well as in plural
-        fileClassToUpload: React.PropTypes.shape({
-            singular: React.PropTypes.string,
-            plural: React.PropTypes.string
+        fileClassToUpload: shape({
+            singular: string,
+            plural: string
         }),
 
         // Uploading functionality of react fineuploader is disconnected from its UI
         // layer, which means that literally every (properly adjusted) react element
         // can handle the UI handling.
-        fileInputElement: React.PropTypes.oneOfType([
-            React.PropTypes.func,
-            React.PropTypes.element
+        fileInputElement: oneOfType([
+            func,
+            element
         ])
     },
 
