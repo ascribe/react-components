@@ -3,52 +3,54 @@
 import React from 'react';
 import ReactAddons from 'react/addons';
 
-import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
-import Tooltip from 'react-bootstrap/lib/Tooltip';
+import Panel from 'react-bootstrap/lib/Panel';
 
 import AppConstants from '../../constants/application_constants';
 
 import { mergeOptions } from '../../utils/general_utils';
 
 
-let Property = React.createClass({
-    propTypes: {
-        hidden: React.PropTypes.bool,
+const { bool, element, string, oneOfType, func, object, arrayOf } = React.PropTypes;
 
-        editable: React.PropTypes.bool,
+const Property = React.createClass({
+    propTypes: {
+        hidden: bool,
+
+        editable: bool,
 
         // If we want Form to have a different value for disabled as Property has one for
         // editable, we need to set overrideForm to true, as it will then override Form's
         // disabled value for individual Properties
-        overrideForm: React.PropTypes.bool,
+        overrideForm: bool,
 
-        tooltip: React.PropTypes.element,
-        label: React.PropTypes.string,
-        value: React.PropTypes.oneOfType([
-            React.PropTypes.string,
-            React.PropTypes.element
+        label: string,
+        value: oneOfType([
+            string,
+            element
         ]),
-        footer: React.PropTypes.element,
-        handleChange: React.PropTypes.func,
-        ignoreFocus: React.PropTypes.bool,
-        name: React.PropTypes.string.isRequired,
-        className: React.PropTypes.string,
+        footer: element,
+        handleChange: func,
+        ignoreFocus: bool,
+        name: string.isRequired,
+        className: string,
 
-        onClick: React.PropTypes.func,
-        onChange: React.PropTypes.func,
-        onBlur: React.PropTypes.func,
+        onClick: func,
+        onChange: func,
+        onBlur: func,
 
-        children: React.PropTypes.oneOfType([
-            React.PropTypes.arrayOf(React.PropTypes.element),
-            React.PropTypes.element
+        children: oneOfType([
+            arrayOf(element),
+            element
         ]),
-        style: React.PropTypes.object
+        style: object,
+        expanded: bool
     },
 
     getDefaultProps() {
         return {
             editable: true,
             hidden: false,
+            expanded: true,
             className: ''
         };
     },
@@ -190,7 +192,7 @@ let Property = React.createClass({
     },
 
     getClassName() {
-        if(this.props.hidden){
+        if(this.props.hidden || !this.props.expanded){
             return 'is-hidden';
         }
         if(!this.props.editable){
@@ -235,16 +237,8 @@ let Property = React.createClass({
 
     render() {
         let footer = null;
-        let tooltip = <span/>;
         let style = this.props.style ? mergeOptions({}, this.props.style) : {};
 
-        if(this.props.tooltip){
-            tooltip = (
-                <Tooltip>
-                    {this.props.tooltip}
-                </Tooltip>);
-        }
-        
         if(this.props.footer){
             footer = (
                 <div className="ascribe-property-footer">
@@ -261,16 +255,16 @@ let Property = React.createClass({
                 className={'ascribe-property-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
                 style={style}>
-                <OverlayTrigger
-                    delay={500}
-                    placement="top"
-                    overlay={tooltip}>
+                <Panel
+                    collapsible
+                    expanded={this.props.expanded}
+                    className="bs-custom-panel">
                     <div className={'ascribe-property ' + this.props.className}>
                         {this.getLabelAndErrors()}
                         {this.renderChildren(style)}
                         {footer}
                     </div>
-                </OverlayTrigger>
+                </Panel>
             </div>
         );
     }
