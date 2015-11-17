@@ -48,7 +48,8 @@ const ReactS3FineUploader = React.createClass({
                 number
             ])
         }),
-        submitFile: func,
+        handleSelectFiles: func, // is for when a file is dropped or selected
+        submitFile: func, // is for when a file has been successfully uploaded, TODO: rename to handleSubmitFile
         autoUpload: bool,
         debug: bool,
         objectProperties: shape({
@@ -522,7 +523,12 @@ const ReactS3FineUploader = React.createClass({
 
     onCancel(id) {
         // when a upload is canceled, we need to update this components file array
-        this.setStatusOfFile(id, 'canceled');
+        this.setStatusOfFile(id, 'canceled')
+            .then(() => {
+                if(typeof this.props.handleSelectFiles === 'function') {
+                    this.props.handleSelectFiles(this.state.filesToUpload);
+                }
+            });
 
         let notification = new GlobalNotificationModel(getLangText('File upload canceled'), 'success', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
@@ -616,7 +622,12 @@ const ReactS3FineUploader = React.createClass({
         //
         // If there is an error during the deletion, we will just change the status back to 'online'
         // and display an error message
-        this.setStatusOfFile(fileId, 'deleted');
+        this.setStatusOfFile(fileId, 'deleted')
+            .then(() => {
+                if(typeof this.props.handleSelectFiles === 'function') {
+                    this.props.handleSelectFiles(this.state.filesToUpload);
+                }
+            });
 
         // In some instances (when the file was already uploaded and is just displayed to the user
         // - for example in the contract or additional files dialog)
@@ -856,21 +867,35 @@ const ReactS3FineUploader = React.createClass({
         // set the new file array
         let filesToUpload = React.addons.update(this.state.filesToUpload, { $set: oldAndNewFiles });
 
-        this.setState({ filesToUpload });
+        this.setState({ filesToUpload }, () => {
+            // when files have been dropped or selected by a user, we want to propagate that
+            // information to the outside components, so they can act on it (in our case, because
+            // we want the user to define a thumbnail when the actual work is not renderable
+            // (like e.g. a .zip file))
+            if(typeof this.props.handleSelectFiles === 'function') {
+                this.props.handleSelectFiles(this.state.filesToUpload);
+            }
+        });
     },
 
+    // This method has been made promise-based to immediately afterwards
+    // call a callback function (instantly after this.setState went through)
+    // This is e.g. needed when showing/hiding the optional thumbnail upload
+    // field in the registration form
     setStatusOfFile(fileId, status) {
-        let changeSet = {};
+        return Q.Promise((resolve) => {
+            let changeSet = {};
 
-        if(status === 'deleted' || status === 'canceled') {
-            changeSet.progress = { $set: 0 };
-        }
+            if(status === 'deleted' || status === 'canceled') {
+                changeSet.progress = { $set: 0 };
+            }
 
-        changeSet.status = { $set: status };
+            changeSet.status = { $set: status };
 
-        let filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
+            let filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
 
-        this.setState({ filesToUpload });
+            this.setState({ filesToUpload }, resolve);
+        });
     },
 
     isDropzoneInactive() {
