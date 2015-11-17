@@ -14,8 +14,6 @@ const { bool, element, string, oneOfType, func, object, arrayOf } = React.PropTy
 
 const Property = React.createClass({
     propTypes: {
-        hidden: bool,
-
         editable: bool,
 
         // If we want Form to have a different value for disabled as Property has one for
@@ -49,7 +47,6 @@ const Property = React.createClass({
     getDefaultProps() {
         return {
             editable: true,
-            hidden: false,
             expanded: true,
             className: ''
         };
@@ -192,7 +189,7 @@ const Property = React.createClass({
     },
 
     getClassName() {
-        if(this.props.hidden || !this.props.expanded){
+        if(!this.props.expanded){
             return 'is-hidden';
         }
         if(!this.props.editable){
