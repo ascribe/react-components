@@ -41,7 +41,8 @@ const Property = React.createClass({
             element
         ]),
         style: object,
-        expanded: bool
+        expanded: bool,
+        checkboxLabel: string
     },
 
     getDefaultProps() {
@@ -53,7 +54,17 @@ const Property = React.createClass({
     },
 
     getInitialState() {
+        const { expanded, ignoreFocus, checkboxLabel } = this.props;
+
         return {
+            // We're mirroring expanded here as a state
+            // React's docs do NOT consider this an antipattern as long as it's
+            // not a "source of truth"-duplication
+            expanded,
+
+            // When a checkboxLabel is defined in the props, we want to set
+            // `ignoreFocus` to true
+            ignoreFocus: ignoreFocus || checkboxLabel,
             // Please don't confuse initialValue with react's defaultValue.
             // initialValue is set by us to ensure that a user can reset a specific
             // property (after editing) to its initial value
@@ -64,8 +75,18 @@ const Property = React.createClass({
         };
     },
 
-    componentWillReceiveProps() {
+    componentWillReceiveProps(nextProps) {
         let childInput = this.refs.input;
+
+        // For expanded there are actually two use cases:
+        //
+        // 1. Control its value from the outside completely (do not define `checkboxLabel`)
+        // 2. Let it be controlled from the inside (default value can be set though via `expanded`)
+        //
+        // This handles case 1.
+        if(nextProps.expanded !== this.state.expanded && !this.props.checkboxLabel) {
+            this.setState({ expanded: nextProps.expanded });
+        }
 
         // In order to set this.state.value from another component
         // the state of value should only be set if its not undefined and
@@ -137,7 +158,7 @@ const Property = React.createClass({
     handleFocus() {
         // if ignoreFocus (bool) is defined, then just ignore focusing on
         // the property and input
-        if(this.props.ignoreFocus) {
+        if(this.state.ignoreFocus) {
             return;
         }
 
@@ -189,7 +210,7 @@ const Property = React.createClass({
     },
 
     getClassName() {
-        if(!this.props.expanded){
+        if(!this.state.expanded && !this.props.checkboxLabel){
             return 'is-hidden';
         }
         if(!this.props.editable){
@@ -232,6 +253,31 @@ const Property = React.createClass({
         }
     },
 
+    handleCheckboxToggle() {
+        this.setState({expanded: !this.state.expanded});
+    },
+
+    getCheckbox() {
+        const { checkboxLabel } = this.props;
+
+        if(checkboxLabel) {
+            return (
+                <div
+                    className="ascribe-property-collapsible-toggle"
+                    onClick={this.handleCheckboxToggle}>
+                    <input
+                        onChange={this.handleCheckboxToggle}
+                        type="checkbox"
+                        checked={this.state.expanded}
+                        ref="checkboxCollapsible"/>
+                    <span className="checkbox">{' ' + checkboxLabel}</span>
+                </div>
+            );
+        } else {
+            return null;
+        }
+    },
+
     render() {
         let footer = null;
         let style = this.props.style ? mergeOptions({}, this.props.style) : {};
@@ -243,18 +289,18 @@ const Property = React.createClass({
                 </div>);
         }
 
-        if(!this.props.editable) {
-            style.cursor = 'not-allowed';
-        }
+        style.paddingBottom = !this.state.expanded ? 0 : null;
+        style.cursor = !this.props.editable ? 'not-allowed' : null;
 
         return (
             <div
                 className={'ascribe-property-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
                 style={style}>
+                {this.getCheckbox()}
                 <Panel
                     collapsible
-                    expanded={this.props.expanded}
+                    expanded={this.state.expanded}
                     className="bs-custom-panel">
                     <div className={'ascribe-property ' + this.props.className}>
                         {this.getLabelAndErrors()}
