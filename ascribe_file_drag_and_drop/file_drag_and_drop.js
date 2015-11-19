@@ -79,7 +79,7 @@ let FileDragAndDrop = React.createClass({
         }
 
         if(typeof this.props.onDrop === 'function' && files) {
-          this.props.onDrop(files);
+            this.props.onDrop(files);
         }
 
     },

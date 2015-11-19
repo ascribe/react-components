@@ -38,9 +38,8 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
             let files = event.target.files;
 
             if(typeof this.props.onDrop === 'function' && files) {
-              this.props.onDrop(files);
+                this.props.onDrop(files);
             }
-
         },
 
         getUploadingFiles() {
