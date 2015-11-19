@@ -6,13 +6,16 @@ import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 import AscribeSpinner from '../../ascribe_spinner';
 import { getLangText } from '../../../utils/lang_utils';
 
-let FileDragAndDropPreviewOther = React.createClass({
+
+const { string, number, bool, func } = React.PropTypes;
+
+const FileDragAndDropPreviewOther = React.createClass({
     propTypes: {
-        type: React.PropTypes.string,
-        progress: React.PropTypes.number,
-        areAssetsDownloadable: React.PropTypes.bool,
-        toggleUploadProcess: React.PropTypes.func,
-        downloadUrl: React.PropTypes.string
+        type: string,
+        progress: number,
+        areAssetsDownloadable: bool,
+        toggleUploadProcess: func,
+        downloadUrl: string
     },
 
     getInitialState() {

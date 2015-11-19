@@ -5,22 +5,31 @@ import React from 'react';
 import FileDragAndDropPreviewImage from './file_drag_and_drop_preview_image';
 import FileDragAndDropPreviewOther from './file_drag_and_drop_preview_other';
 
-
 import { getLangText } from '../../../utils/lang_utils';
+import { truncateTextAtCharIndex } from '../../../utils/general_utils';
+import { extractFileExtensionFromString } from '../../../utils/file_utils';
 
-let FileDragAndDropPreview = React.createClass({
 
+const { shape, string, number, func, bool } = React.PropTypes;
+
+const FileDragAndDropPreview = React.createClass({
     propTypes: {
-        file: React.PropTypes.shape({
-            url: React.PropTypes.string,
-            type: React.PropTypes.string
+        file: shape({
+            url: string,
+            type: string,
+            progress: number,
+            id: number,
+            status: string,
+            s3Url: string,
+            s3UrlSafe: string
         }).isRequired,
-        handleDeleteFile: React.PropTypes.func,
-        handleCancelFile: React.PropTypes.func,
-        handlePauseFile: React.PropTypes.func,
-        handleResumeFile: React.PropTypes.func,
-        areAssetsDownloadable: React.PropTypes.bool,
-        areAssetsEditable: React.PropTypes.bool
+        handleDeleteFile: func,
+        handleCancelFile: func,
+        handlePauseFile: func,
+        handleResumeFile: func,
+        areAssetsDownloadable: bool,
+        areAssetsEditable: bool,
+        numberOfDisplayedFiles: number
     },
 
     toggleUploadProcess() {
@@ -50,44 +59,77 @@ let FileDragAndDropPreview = React.createClass({
         }
     },
 
+    getFileName() {
+        const { numberOfDisplayedFiles, file } = this.props;
+
+        if(numberOfDisplayedFiles === 1) {
+            return (
+                <span className="file-name">
+                    {truncateTextAtCharIndex(file.name, 30, '(...).' + extractFileExtensionFromString(file.name))}
+                </span>
+            );
+        } else {
+            return null;
+        }
+    },
+
+    getRemoveButton() {
+        if(this.props.areAssetsEditable) {
+            return (
+                <div className="delete-file">
+                    <span
+                        className="glyphicon glyphicon-remove text-center"
+                        aria-hidden="true"
+                        title={getLangText('Remove file')}
+                        onClick={this.handleDeleteFile}/>
+                </div>
+            );
+        } else {
+            return null;
+        }
+    },
+
     render() {
+        const { file,
+                areAssetsDownloadable,
+                numberOfDisplayedFiles } = this.props;
+        const innerStyle = numberOfDisplayedFiles === 1 ? { verticalAlign: 'middle' } : null;
+        const outerStyle = numberOfDisplayedFiles !== 1 ? { display: 'inline-block' } : null;
+
         let previewElement;
-        let removeBtn;
 
         // Decide whether an image or a placeholder picture should be displayed
-        if(this.props.file.type.split('/')[0] === 'image') {
-            previewElement = (<FileDragAndDropPreviewImage
-                                onClick={this.handleDeleteFile}
-                                progress={this.props.file.progress}
-                                url={this.props.file.url}
-                                toggleUploadProcess={this.toggleUploadProcess}
-                                areAssetsDownloadable={this.props.areAssetsDownloadable}
-                                downloadUrl={this.props.file.s3UrlSafe}/>);
+        if(file.type.split('/')[0] === 'image') {
+            previewElement = (
+                <FileDragAndDropPreviewImage
+                    onClick={this.handleDeleteFile}
+                    progress={file.progress}
+                    url={file.url}
+                    toggleUploadProcess={this.toggleUploadProcess}
+                    areAssetsDownloadable={areAssetsDownloadable}
+                    downloadUrl={file.s3UrlSafe}/>
+            );
         } else {
-            previewElement = (<FileDragAndDropPreviewOther
-                                onClick={this.handleDeleteFile}
-                                progress={this.props.file.progress}
-                                type={this.props.file.type.split('/')[1]}
-                                toggleUploadProcess={this.toggleUploadProcess}
-                                areAssetsDownloadable={this.props.areAssetsDownloadable}
-                                downloadUrl={this.props.file.s3UrlSafe}/>);
-        }
-
-        if(this.props.areAssetsEditable) {
-           removeBtn = (<div className="delete-file">
-                            <span
-                                className="glyphicon glyphicon-remove text-center"
-                                aria-hidden="true"
-                                title={getLangText('Remove file')}
-                                onClick={this.handleDeleteFile}/>
-                        </div>);
+            previewElement = (
+                <FileDragAndDropPreviewOther
+                    onClick={this.handleDeleteFile}
+                    progress={file.progress}
+                    type={file.type.split('/')[1]}
+                    toggleUploadProcess={this.toggleUploadProcess}
+                    areAssetsDownloadable={areAssetsDownloadable}
+                    downloadUrl={file.s3UrlSafe}/>
+                );
         }
 
         return (
-            <div
-                className="file-drag-and-drop-position">
-                {removeBtn}
-                {previewElement}
+            <div style={outerStyle}>
+                <div
+                    style={innerStyle}
+                    className="file-drag-and-drop-position">
+                    {this.getRemoveButton()}
+                    {previewElement}
+                </div>
+                {this.getFileName()}
             </div>
         );
     }

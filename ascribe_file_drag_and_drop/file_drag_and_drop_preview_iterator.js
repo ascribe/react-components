@@ -46,7 +46,8 @@ let FileDragAndDropPreviewIterator = React.createClass({
                                     handlePauseFile={handlePauseFile}
                                     handleResumeFile={handleResumeFile}
                                     areAssetsDownloadable={areAssetsDownloadable}
-                                    areAssetsEditable={areAssetsEditable}/>
+                                    areAssetsEditable={areAssetsEditable}
+                                    numberOfDisplayedFiles={files.length}/>
                             );
                         })}
                     </div>
