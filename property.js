@@ -100,13 +100,13 @@ const Property = React.createClass({
         // from native HTML elements.
         // To enable developers to create input elements, they can expose a property called value
         // in their state that will be picked up by property.js
-        } else if(childInput.state && typeof childInput.state.value !== 'undefined') {
+        } else if(childInput && childInput.state && typeof childInput.state.value !== 'undefined') {
             this.setState({
                 value: childInput.state.value
             });
         }
 
-        if(!this.state.initialValue && childInput.props.defaultValue) {
+        if(!this.state.initialValue && childInput && childInput.props.defaultValue) {
             this.setState({
                 initialValue: childInput.props.defaultValue
             });
@@ -227,17 +227,21 @@ const Property = React.createClass({
     },
 
     renderChildren(style) {
-        return ReactAddons.Children.map(this.props.children, (child) => {
-            return ReactAddons.addons.cloneWithProps(child, {
-                style,
-                onChange: this.handleChange,
-                onFocus: this.handleFocus,
-                onBlur: this.handleBlur,
-                disabled: !this.props.editable,
-                ref: 'input',
-                name: this.props.name
+        // Input's props should only be cloned and propagated down the tree,
+        // if the component is actually being shown (!== 'expanded === false')
+        if((this.state.expanded && this.props.checkboxLabel) || !this.props.checkboxLabel) {
+            return ReactAddons.Children.map(this.props.children, (child) => {
+                return ReactAddons.addons.cloneWithProps(child, {
+                    style,
+                    onChange: this.handleChange,
+                    onFocus: this.handleFocus,
+                    onBlur: this.handleBlur,
+                    disabled: !this.props.editable,
+                    ref: 'input',
+                    name: this.props.name
+                });
             });
-        });
+        }
     },
 
     getLabelAndErrors() {
