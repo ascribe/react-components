@@ -58,8 +58,14 @@ let FileDragAndDropDialog = React.createClass({
                 return (
                     <div className="file-drag-and-drop-dialog present-options">
                         <p>{getLangText('Would you rather')}</p>
+                        {/*
+                            The frontend in live is hosted under /app,
+                            Since `Link` is appending that base url, if its defined
+                            by itself, we need to make sure to not set it at this point.
+                            Otherwise it will be appended twice.
+                        */}
                         <Link
-                            to={window.location.pathname}
+                            to={`/${window.location.pathname.split('/').pop()}`}
                             query={queryParamsHash}>
                             <span className="btn btn-default btn-sm">
                                 {getLangText('Hash your work')}
@@ -69,7 +75,7 @@ let FileDragAndDropDialog = React.createClass({
                         <span> or </span>
 
                        <Link
-                            to={window.location.pathname}
+                            to={`/${window.location.pathname.split('/').pop()}`}
                             query={queryParamsUpload}>
                             <span className="btn btn-default btn-sm">
                                 {getLangText('Upload and hash your work')}
