@@ -62,8 +62,7 @@ const FileDragAndDropPreviewImage = React.createClass({
             );
         } else {
             actionSymbol = (
-                <span
-                    className="glyphicon glyphicon-ok action-file" />
+                <span className='ascribe-icon icon-ascribe-ok action-file'/>
             );
         }
 

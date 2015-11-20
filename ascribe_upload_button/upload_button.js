@@ -93,8 +93,9 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
             if(uploadedFile) {
                 return (
                     <span>
-                        <Glyphicon glyph="ok" />
+                        <span className='ascribe-icon icon-ascribe-ok'/>
                         {' ' + truncateTextAtCharIndex(uploadedFile.name, 40)}
+
                     </span>
                 );
             } else {

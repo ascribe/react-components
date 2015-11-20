@@ -31,11 +31,9 @@ let FileDragAndDropPreviewIterator = React.createClass({
         } = this.props;
         files = files.filter(displayValidFilesFilter);
 
-        const style = files && files.length > 1 ? {marginTop: '2.5em'} : null;
-
         if(files && files.length > 0) {
             return (
-                <div style={style}>
+                <div>
                     {files.map((file, i) => {
                         return (
                             <FileDragAndDropPreview

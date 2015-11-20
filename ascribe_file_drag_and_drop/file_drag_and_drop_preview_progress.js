@@ -5,10 +5,9 @@ import React from 'react';
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 
 import { displayValidProgressFilesFilter } from '../react_s3_fine_uploader_utils';
-import { getLangText } from '../../../utils/lang_utils';
 
 
-let FileDragAndDropPreviewProgress = React.createClass({
+const FileDragAndDropPreviewProgress = React.createClass({
     propTypes: {
         files: React.PropTypes.array
     },
@@ -45,7 +44,7 @@ let FileDragAndDropPreviewProgress = React.createClass({
         let overallProgress = this.calcOverallProgress();
 
         return (
-            <div style={{marginTop: '2em'}}>
+            <div style={{marginTop: '1.3em'}}>
                 <ProgressBar
                     now={Math.ceil(overallProgress)}
                     label={'%(percent)s%'}
