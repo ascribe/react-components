@@ -48,7 +48,7 @@ let FileDragAndDropPreviewProgress = React.createClass({
             <div style={{marginTop: '2em'}}>
                 <ProgressBar
                     now={Math.ceil(overallProgress)}
-                    label={getLangText('Overall progress%s', ': %(percent)s%')}
+                    label={'%(percent)s%'}
                     className="ascribe-progress-bar"
                     style={style} />
             </div>
