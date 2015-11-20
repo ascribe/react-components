@@ -41,14 +41,21 @@ const FileDragAndDropPreview = React.createClass({
     },
 
     handleDeleteFile() {
-        // handleDeleteFile is optional, so if its not submitted,
-        // don't run it
-        // On the other hand, if the files progress is not yet at a 100%,
-        // just run fineuploader.cancel
-        if(this.props.handleDeleteFile && this.props.file.progress === 100) {
-            this.props.handleDeleteFile(this.props.file.id);
-        } else if(this.props.handleCancelFile && this.props.file.progress !== 100) {
-            this.props.handleCancelFile(this.props.file.id);
+        const { handleDeleteFile,
+                handleCancelFile,
+                file } = this.props;
+        // `handleDeleteFile` is optional, so if its not submitted, don't run it
+        //
+        // For delete though, we only want to trigger it, when we're sure that
+        // the file has *completely* been uploaded to S3 and call now also be
+        // deleted using an HTTP DELETE request.
+        if (handleDeleteFile &&
+            file.progress === 100 &&
+            (file.status === 'upload successful' || file.status === 'online') &&
+            file.s3UrlSafe) {
+            handleDeleteFile(file.id);
+        } else if(handleCancelFile) {
+            handleCancelFile(file.id);
         }
     },
 
@@ -107,7 +114,8 @@ const FileDragAndDropPreview = React.createClass({
                     url={file.url}
                     toggleUploadProcess={this.toggleUploadProcess}
                     areAssetsDownloadable={areAssetsDownloadable}
-                    downloadUrl={file.s3UrlSafe}/>
+                    downloadUrl={file.s3UrlSafe}
+                    showProgress={numberOfDisplayedFiles > 1} />
             );
         } else {
             previewElement = (
@@ -117,7 +125,8 @@ const FileDragAndDropPreview = React.createClass({
                     type={file.type.split('/')[1]}
                     toggleUploadProcess={this.toggleUploadProcess}
                     areAssetsDownloadable={areAssetsDownloadable}
-                    downloadUrl={file.s3UrlSafe}/>
+                    downloadUrl={file.s3UrlSafe}
+                    showProgress={numberOfDisplayedFiles > 1} />
                 );
         }
 
