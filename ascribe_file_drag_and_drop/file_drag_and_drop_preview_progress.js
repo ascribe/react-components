@@ -41,18 +41,8 @@ let FileDragAndDropPreviewProgress = React.createClass({
 
     render() {
         const files = this.props.files.filter(displayValidProgressFilesFilter);
+        const style = !files.length ? { display: 'none' } : null;
         let overallProgress = this.calcOverallProgress();
-        let overallFileSize = this.calcOverallFileSize();
-        let style = {
-            visibility: 'hidden'
-        };
-
-        // only visible if overallProgress is over zero
-        // or the overallFileSize is greater than 10MB
-        // or the user is only uploading one file
-        if(overallProgress !== 0 && overallFileSize > 10000000 || files.length === 1) {
-            style.visibility = 'visible';
-        }
 
         return (
             <div style={{marginTop: '2em'}}>
