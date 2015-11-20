@@ -29,28 +29,27 @@ let FileDragAndDropPreviewIterator = React.createClass({
             areAssetsDownloadable,
             areAssetsEditable
         } = this.props;
-
         files = files.filter(displayValidFilesFilter);
+
+        const style = files && files.length > 1 ? {marginTop: '2.5em'} : null;
 
         if(files && files.length > 0) {
             return (
-                <div className="file-drag-and-drop-preview-iterator">
-                    <div className="file-drag-and-drop-preview-iterator-spacing">
-                        {files.map((file, i) => {
-                            return (
-                                <FileDragAndDropPreview
-                                    key={i}
-                                    file={file}
-                                    handleDeleteFile={handleDeleteFile}
-                                    handleCancelFile={handleCancelFile}
-                                    handlePauseFile={handlePauseFile}
-                                    handleResumeFile={handleResumeFile}
-                                    areAssetsDownloadable={areAssetsDownloadable}
-                                    areAssetsEditable={areAssetsEditable}
-                                    numberOfDisplayedFiles={files.length}/>
-                            );
-                        })}
-                    </div>
+                <div style={style}>
+                    {files.map((file, i) => {
+                        return (
+                            <FileDragAndDropPreview
+                                key={i}
+                                file={file}
+                                handleDeleteFile={handleDeleteFile}
+                                handleCancelFile={handleCancelFile}
+                                handlePauseFile={handlePauseFile}
+                                handleResumeFile={handleResumeFile}
+                                areAssetsDownloadable={areAssetsDownloadable}
+                                areAssetsEditable={areAssetsEditable}
+                                numberOfDisplayedFiles={files.length}/>
+                        );
+                    })}
                     <FileDragAndDropPreviewProgress files={files} />
                 </div>
             );

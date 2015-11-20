@@ -43,7 +43,7 @@ const FileDragAndDropPreviewOther = React.createClass({
                 downloadUrl,
                 type,
                 showProgress } = this.props;
-        const style = !showProgress ? { visibility: 'hidden' }: null;
+        const style = !showProgress ? { visibility: 'hidden' } : null;
         let actionSymbol;
 
         // only if assets are actually downloadable, there should be a
