@@ -42,6 +42,15 @@ export function displayValidFilesFilter(file) {
     return file.status !== 'deleted' && file.status !== 'canceled';
 }
 
+/**
+ * Filter function for filtering all files except for deleted and canceled files
+ * @param  {object} file A file from filesToUpload that has status as a prop.
+ * @return {boolean}
+ */
+export function displayRemovedFilesFilter(file) {
+    return file.status === 'deleted' || file.status === 'canceled';
+}
+
 
 /**
  * Filter function for which files to integrate in the progress process

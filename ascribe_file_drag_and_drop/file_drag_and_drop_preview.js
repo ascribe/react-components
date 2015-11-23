@@ -106,12 +106,13 @@ const FileDragAndDropPreview = React.createClass({
         let previewElement;
 
         // Decide whether an image or a placeholder picture should be displayed
-        if(file.type.split('/')[0] === 'image') {
+        // If a file has its `thumbnailUrl` defined, then we display it also as an image
+        if(file.type.split('/')[0] === 'image' || file.thumbnailUrl) {
             previewElement = (
                 <FileDragAndDropPreviewImage
                     onClick={this.handleDeleteFile}
                     progress={file.progress}
-                    url={file.url}
+                    url={file.thumbnailUrl || file.url}
                     toggleUploadProcess={this.toggleUploadProcess}
                     areAssetsDownloadable={areAssetsDownloadable}
                     downloadUrl={file.s3UrlSafe}

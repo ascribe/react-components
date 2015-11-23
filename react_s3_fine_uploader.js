@@ -48,7 +48,7 @@ const ReactS3FineUploader = React.createClass({
                 number
             ])
         }),
-        handleSelectFiles: func, // is for when a file is dropped or selected
+        handleChangedFile: func, // is for when a file is dropped or selected
         submitFile: func, // is for when a file has been successfully uploaded, TODO: rename to handleSubmitFile
         autoUpload: bool,
         debug: bool,
@@ -389,6 +389,19 @@ const ReactS3FineUploader = React.createClass({
         });
     },
 
+    setThumbnailForFileId(fileId, url) {
+        const { filesToUpload } = this.state;
+
+        if(fileId < filesToUpload.length) {
+            const changeSet = { $set: url };
+            const newFilesToUpload = React.addons.update(filesToUpload, { [fileId]: { thumbnailUrl: changeSet } });
+
+            this.setState({ filesToUpload: newFilesToUpload });
+        } else {
+            throw new Error("You're accessing an index out of range of filesToUpload");
+        }
+    },
+
     /* FineUploader specific callback function handlers */
 
     onUploadChunk(id, name, chunkData) {
@@ -525,8 +538,8 @@ const ReactS3FineUploader = React.createClass({
         // when a upload is canceled, we need to update this components file array
         this.setStatusOfFile(id, 'canceled')
             .then(() => {
-                if(typeof this.props.handleSelectFiles === 'function') {
-                    this.props.handleSelectFiles(this.state.filesToUpload);
+                if(typeof this.props.handleChangedFile === 'function') {
+                    this.props.handleChangedFile(this.state.filesToUpload[id]);
                 }
             });
 
@@ -624,8 +637,8 @@ const ReactS3FineUploader = React.createClass({
         // and display an error message
         this.setStatusOfFile(fileId, 'deleted')
             .then(() => {
-                if(typeof this.props.handleSelectFiles === 'function') {
-                    this.props.handleSelectFiles(this.state.filesToUpload);
+                if(typeof this.props.handleChangedFile === 'function') {
+                    this.props.handleChangedFile(this.state.filesToUpload[fileId]);
                 }
             });
 
@@ -872,8 +885,10 @@ const ReactS3FineUploader = React.createClass({
             // information to the outside components, so they can act on it (in our case, because
             // we want the user to define a thumbnail when the actual work is not renderable
             // (like e.g. a .zip file))
-            if(typeof this.props.handleSelectFiles === 'function') {
-                this.props.handleSelectFiles(this.state.filesToUpload);
+            if(typeof this.props.handleChangedFile === 'function') {
+                // its save to assume that the last file in `filesToUpload` is always
+                // the latest file added
+                this.props.handleChangedFile(this.state.filesToUpload.slice(-1)[0]);
             }
         });
     },
