@@ -238,7 +238,16 @@ let Form = React.createClass({
     renderChildren() {
         return ReactAddons.Children.map(this.props.children, (child, i) => {
             if (child) {
-                return ReactAddons.addons.cloneWithProps(child, {
+
+                // Since refs will be overwritten by this functions return statement,
+                // we still want to be able to define refs for nested `Form` or `Property`
+                // children, which is why we're upfront simply invoking the callback-ref-
+                // function before overwriting it.
+                if(typeof child.ref === 'function' && this.refs[child.props.name]) {
+                    child.ref(this.refs[child.props.name]);
+                }
+
+                return React.cloneElement(child, {
                     handleChange: this.handleChangeChild,
                     ref: child.props.name,
                     key: i,

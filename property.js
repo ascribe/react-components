@@ -231,7 +231,16 @@ const Property = React.createClass({
         // if the component is actually being shown (!== 'expanded === false')
         if((this.state.expanded && this.props.checkboxLabel) || !this.props.checkboxLabel) {
             return ReactAddons.Children.map(this.props.children, (child) => {
-                return ReactAddons.addons.cloneWithProps(child, {
+
+                // Since refs will be overriden by this functions return statement,
+                // we still want to be able to define refs for nested `Form` or `Property`
+                // children, which is why we're upfront simply invoking the callback-ref-
+                // function before overriding it.
+                if(typeof child.ref === 'function' && this.refs.input) {
+                    child.ref(this.refs.input);
+                }
+
+                return React.cloneElement(child, {
                     style,
                     onChange: this.handleChange,
                     onFocus: this.handleFocus,
