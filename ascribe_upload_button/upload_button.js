@@ -2,8 +2,6 @@
 
 import React from 'react';
 
-import Glyphicon from 'react-bootstrap/lib/Glyphicon';
-
 import { displayValidProgressFilesFilter } from '../react_s3_fine_uploader_utils';
 import { getLangText } from '../../../utils/lang_utils';
 import { truncateTextAtCharIndex } from '../../../utils/general_utils';
@@ -29,7 +27,9 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
 
             allowedExtensions: string,
 
-            handleCancelFile: func // provided by ReactS3FineUploader
+            // provided by ReactS3FineUploader
+            handleCancelFile: func,
+            handleDeleteFile: func
         },
 
         handleDrop(event) {
@@ -74,6 +74,11 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
             }
         },
 
+        onClickRemove() {
+            const uploadedFile = this.getUploadedFile();
+            this.props.handleDeleteFile(uploadedFile.id);
+        },
+
         getButtonLabel() {
             let { filesToUpload, fileClassToUpload } = this.props;
 
@@ -94,8 +99,8 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
                 return (
                     <span>
                         <span className='ascribe-icon icon-ascribe-ok'/>
-                        {' ' + truncateTextAtCharIndex(uploadedFile.name, 40)}
-
+                        {' ' + truncateTextAtCharIndex(uploadedFile.name, 40) + ' '}
+                        [<a onClick={this.onClickRemove}>{getLangText('remove')}</a>]
                     </span>
                 );
             } else {
