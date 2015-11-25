@@ -50,28 +50,35 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
             return this.props.filesToUpload.filter((file) => file.status === 'upload successful')[0];
         },
 
+        clearSelection() {
+            this.refs.fileSelector.getDOMNode().value = '';
+        },
+
         handleOnClick() {
-            const uploadingFiles = this.getUploadingFiles();
+            let evt;
+            const uploadingFile = this.getUploadingFiles();
             const uploadedFile = this.getUploadedFile();
 
-            if(uploadedFile) {
-                this.props.handleCancelFile(uploadedFile.id);
-            }
-            if(uploadingFiles.length === 0) {
-                // We only want the button to be clickable if there are no files currently uploading
 
-                // Firefox only recognizes the simulated mouse click if bubbles is set to true,
-                // but since Google Chrome propagates the event much further than needed, we
-                // need to stop propagation as soon as the event is created
-                var evt = new MouseEvent('click', {
+            if(uploadingFile.length) {
+                this.clearSelection();
+                this.props.handleCancelFile(uploadingFile[0].id);
+            } else if(uploadedFile) {
+                this.props.handleDeleteFile(uploadedFile.id);
+            }
+            try {
+                evt = new MouseEvent('click', {
                     view: window,
                     bubbles: true,
                     cancelable: true
                 });
-
-                evt.stopPropagation();
-                this.refs.fileinput.getDOMNode().dispatchEvent(evt);
+            } catch(e) {
+                // For browsers that do not support the new MouseEvent syntax
+                evt = document.createEvent('MouseEvents');
+                evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
             }
+            evt.stopPropagation();
+            this.refs.fileSelector.getDOMNode().dispatchEvent(evt);
         },
 
         onClickRemove() {
@@ -129,7 +136,7 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
                         {this.getButtonLabel()}
                         <input
                             multiple={multiple}
-                            ref="fileinput"
+                            ref="fileSelector"
                             type="file"
                             style={{
                                 display: 'none',
