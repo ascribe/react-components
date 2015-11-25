@@ -13,8 +13,8 @@ import GlobalNotificationActions from '../../actions/global_notification_actions
 
 import AppConstants from '../../constants/application_constants';
 
+import { displayValidFilesFilter, FileStatus, transformAllowedExtensionsToInputAcceptProp } from './react_s3_fine_uploader_utils';
 import { computeHashOfFile } from '../../utils/file_utils';
-import { displayValidFilesFilter, transformAllowedExtensionsToInputAcceptProp } from './react_s3_fine_uploader_utils';
 import { getCookie } from '../../utils/fetch_api_utils';
 import { getLangText } from '../../utils/lang_utils';
 
@@ -449,7 +449,7 @@ const ReactS3FineUploader = React.createClass({
 
             // Set the state of the completed file to 'upload successful' in order to
             // remove it from the GUI
-            files[id].status = 'upload successful';
+            files[id].status = FileStatus.UPLOAD_SUCCESSFUL;
             files[id].key = this.state.uploader.getKey(id);
 
             let filesToUpload = React.addons.update(this.state.filesToUpload, { $set: files });
@@ -536,7 +536,7 @@ const ReactS3FineUploader = React.createClass({
 
     onCancel(id) {
         // when a upload is canceled, we need to update this components file array
-        this.setStatusOfFile(id, 'canceled')
+        this.setStatusOfFile(id, FileStatus.CANCELED)
             .then(() => {
                 if(typeof this.props.handleChangedFile === 'function') {
                     this.props.handleChangedFile(this.state.filesToUpload[id]);
@@ -576,7 +576,7 @@ const ReactS3FineUploader = React.createClass({
             // fetch blobs for images
             response = response.map((file) => {
                 file.url = file.s3UrlSafe;
-                file.status = 'online';
+                file.status = FileStatus.ONLINE;
                 file.progress = 100;
                 return file;
             });
@@ -604,7 +604,7 @@ const ReactS3FineUploader = React.createClass({
 
     onDeleteComplete(id, xhr, isError) {
         if(isError) {
-            this.setStatusOfFile(id, 'online');
+            this.setStatusOfFile(id, FileStatus.ONLINE);
 
             let notification = new GlobalNotificationModel(getLangText('There was an error deleting your file.'), 'danger', 10000);
             GlobalNotificationActions.appendGlobalNotification(notification);
@@ -633,9 +633,9 @@ const ReactS3FineUploader = React.createClass({
         // We set the files state to 'deleted' immediately, so that the user is not confused with
         // the unresponsiveness of the UI
         //
-        // If there is an error during the deletion, we will just change the status back to 'online'
+        // If there is an error during the deletion, we will just change the status back to FileStatus.ONLINE
         // and display an error message
-        this.setStatusOfFile(fileId, 'deleted')
+        this.setStatusOfFile(fileId, FileStatus.DELETED)
             .then(() => {
                 if(typeof this.props.handleChangedFile === 'function') {
                     this.props.handleChangedFile(this.state.filesToUpload[fileId]);
@@ -651,7 +651,7 @@ const ReactS3FineUploader = React.createClass({
         //  To check which files are already uploaded from previous sessions we check their status.
         //  If they are, it is "online"
 
-        if(this.state.filesToUpload[fileId].status !== 'online') {
+        if(this.state.filesToUpload[fileId].status !== FileStatus.ONLINE) {
             // delete file from server
             this.state.uploader.deleteFile(fileId);
             // this is being continued in onDeleteFile, as
@@ -672,7 +672,7 @@ const ReactS3FineUploader = React.createClass({
 
     handlePauseFile(fileId) {
         if(this.state.uploader.pauseUpload(fileId)) {
-            this.setStatusOfFile(fileId, 'paused');
+            this.setStatusOfFile(fileId, FileStatus.PAUSED);
         } else {
             throw new Error(getLangText('File upload could not be paused.'));
         }
@@ -680,7 +680,7 @@ const ReactS3FineUploader = React.createClass({
 
     handleResumeFile(fileId) {
         if(this.state.uploader.continueUpload(fileId)) {
-            this.setStatusOfFile(fileId, 'uploading');
+            this.setStatusOfFile(fileId, FileStatus.UPLOADING);
         } else {
             throw new Error(getLangText('File upload could not be resumed.'));
         }
@@ -860,12 +860,12 @@ const ReactS3FineUploader = React.createClass({
                 //
                 // If the user deletes one of those files, then fineuploader will still keep it in his
                 // files array but with key, progress undefined and size === -1 but
-                // status === 'upload successful'.
+                // status === FileStatus.UPLOAD_SUCCESSFUL.
                 // This poses a problem as we depend on the amount of files that have
-                // status === 'upload successful', therefore once the file is synced,
-                // we need to tag its status as 'deleted' (which basically happens here)
+                // status === FileStatus.UPLOAD_SUCCESSFUL, therefore once the file is synced,
+                // we need to tag its status as FileStatus.DELETED (which basically happens here)
                 if(oldAndNewFiles[i].size === -1 && (!oldAndNewFiles[i].progress || oldAndNewFiles[i].progress === 0)) {
-                    oldAndNewFiles[i].status = 'deleted';
+                    oldAndNewFiles[i].status = FileStatus.DELETED;
                 }
 
                 if(oldAndNewFiles[i].originalName === oldFiles[j].name) {
@@ -901,7 +901,7 @@ const ReactS3FineUploader = React.createClass({
         return Q.Promise((resolve) => {
             let changeSet = {};
 
-            if(status === 'deleted' || status === 'canceled') {
+            if (status === FileStatus.DELETED || status === FileStatus.CANCELED || status === FileStatus.UPLOAD_FAILED) {
                 changeSet.progress = { $set: 0 };
             }
 
@@ -914,9 +914,19 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isDropzoneInactive() {
-        const filesToDisplay = this.state.filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1);
+        const { areAssetsEditable, enableLocalHashing, multiple, showErrorStates, uploadMethod } = this.props;
+        const { errorState, filesToUpload } = this.state;
 
-        if ((this.props.enableLocalHashing && !this.props.uploadMethod) || !this.props.areAssetsEditable || !this.props.multiple && filesToDisplay.length > 0) {
+        const filesToDisplay = filesToUpload.filter((file) => {
+            return file.status !== FileStatus.DELETED &&
+                        file.status !== FileStatus.CANCELED &&
+                        file.status !== FileStatus.UPLOAD_FAILED &&
+                        file.size !== -1;
+        });
+
+        if ((enableLocalHashing && !uploadMethod) || !areAssetsEditable ||
+                (showErrorStates && errorState.errorClass) ||
+                (!multiple && filesToDisplay.length > 0)) {
             return true;
         } else {
             return false;

@@ -1,11 +1,18 @@
 'use strict';
 
+import fineUploader from 'fineUploader';
+// Re-export qq.status from FineUploader with an additional online
+// state that we use to keep track of files from S3.
+export const FileStatus = Object.assign(fineUploader.status, {
+    ONLINE: 'online'
+});
+
 export const formSubmissionValidation = {
     /**
      * Returns a boolean if there has been at least one file uploaded
      * successfully without it being deleted or canceled.
      * @param  {array of files}  files provided by react fine uploader
-     * @return {boolean}       
+     * @return {boolean}
      */
     atLeastOneUploadedFile(files) {
         files = files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled');

@@ -6,6 +6,7 @@ import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 import FileDragAndDropDialog from './file_drag_and_drop_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
 
+import { FileStatus } from '../react_s3_fine_uploader_utils';
 import { getLangText } from '../../../utils/lang_utils';
 
 
@@ -155,8 +156,16 @@ let FileDragAndDrop = React.createClass({
             areAssetsEditable,
             allowedExtensions } = this.props;
 
-        // has files only is true if there are files that do not have the status deleted or canceled
-        let hasFiles = filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0;
+        // has files only is true if there are files that do not have the status deleted, canceled, or failed
+        let hasFiles = filesToUpload
+                        .filter((file) => {
+                            return file.status !== FileStatus.DELETED &&
+                                file.status !== FileStatus.CANCELED &&
+                                file.status !== FileStatus.UPLOAD_FAILED &&
+                                file.size !== -1;
+                        })
+                        .length > 0;
+
         let updatedClassName = hasFiles ? 'has-files ' : '';
         updatedClassName += dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';
         updatedClassName += ' file-drag-and-drop';

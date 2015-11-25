@@ -5,6 +5,7 @@ import React from 'react';
 import FileDragAndDropPreviewImage from './file_drag_and_drop_preview_image';
 import FileDragAndDropPreviewOther from './file_drag_and_drop_preview_other';
 
+import { FileStatus } from '../react_s3_fine_uploader_utils';
 import { getLangText } from '../../../utils/lang_utils';
 import { truncateTextAtCharIndex } from '../../../utils/general_utils';
 import { extractFileExtensionFromString } from '../../../utils/file_utils';
@@ -33,9 +34,9 @@ const FileDragAndDropPreview = React.createClass({
     },
 
     toggleUploadProcess() {
-        if(this.props.file.status === 'uploading') {
+        if(this.props.file.status === FileStatus.UPLOADING) {
             this.props.handlePauseFile(this.props.file.id);
-        } else if(this.props.file.status === 'paused') {
+        } else if(this.props.file.status === FileStatus.PAUSED) {
             this.props.handleResumeFile(this.props.file.id);
         }
     },
@@ -51,7 +52,7 @@ const FileDragAndDropPreview = React.createClass({
         // deleted using an HTTP DELETE request.
         if (handleDeleteFile &&
             file.progress === 100 &&
-            (file.status === 'upload successful' || file.status === 'online') &&
+            (file.status === FileStatus.UPLOAD_SUCCESSFUL || file.status === FileStatus.ONLINE) &&
             file.s3UrlSafe) {
             handleDeleteFile(file.id);
         } else if(handleCancelFile) {
