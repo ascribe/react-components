@@ -2,14 +2,12 @@
 
 import React from 'react';
 import ReactAddons from 'react/addons';
+import classNames from 'classnames';
 
 import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
 import Tooltip from 'react-bootstrap/lib/Tooltip';
 
 import AppConstants from '../../constants/application_constants';
-
-import { mergeOptions } from '../../utils/general_utils';
-
 
 let Property = React.createClass({
     propTypes: {
@@ -231,44 +229,44 @@ let Property = React.createClass({
     },
 
     render() {
-        let footer = null;
-        let tooltip = <span/>;
-        let style = this.props.style ? mergeOptions({}, this.props.style) : {};
+        const { className, editable, footer, label, tooltip } = this.props;
+        const style = Object.assign({}, this.props.style, { cursor: !editable ? 'not-allowed' : null });
 
-        if(this.props.tooltip){
-            tooltip = (
-                <Tooltip>
-                    {this.props.tooltip}
-                </Tooltip>);
+        let tooltipEl = tooltip ? <Tooltip>{tooltip}</Tooltip>
+                                : <span />;
+
+        let labelEl;
+        if (label || this.state.errors) {
+            labelEl = (
+                <p>
+                    <span className="pull-left">{label}</span>
+                    <span className="pull-right">{this.state.errors}</span>
+                </p>
+            );
         }
-        
-        if(this.props.footer){
-            footer = (
+
+        let footerEl;
+        if (footer) {
+            footerEl = (
                 <div className="ascribe-property-footer">
-                    {this.props.footer}
-                </div>);
-        }
-
-        if(!this.props.editable) {
-            style.cursor = 'not-allowed';
+                    {footer}
+                </div>
+            );
         }
 
         return (
             <div
-                className={'ascribe-property-wrapper ' + this.getClassName()}
+                className={classNames('ascribe-property-wrapper', this.getClassName())}
                 onClick={this.handleFocus}
                 style={style}>
                 <OverlayTrigger
                     delay={500}
                     placement="top"
-                    overlay={tooltip}>
-                    <div className={'ascribe-property ' + this.props.className}>
-                        <p>
-                            <span className="pull-left">{this.props.label}</span>
-                            <span className="pull-right">{this.state.errors}</span>
-                        </p>
+                    overlay={tooltipEl}>
+                    <div className={classNames('ascribe-property', this.props.className)}>
+                        {labelEl}
                         {this.renderChildren(style)}
-                        {footer}
+                        {footerEl}
                     </div>
                 </OverlayTrigger>
             </div>
