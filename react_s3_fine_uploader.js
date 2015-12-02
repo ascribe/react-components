@@ -99,7 +99,6 @@ let ReactS3FineUploader = React.createClass({
         areAssetsDownloadable: React.PropTypes.bool,
         areAssetsEditable: React.PropTypes.bool,
         defaultErrorMessage: React.PropTypes.string,
-        onInactive: React.PropTypes.func,
 
         // We encountered some cases where people had difficulties to upload their
         // works to ascribe due to a slow internet connection.
@@ -891,7 +890,6 @@ let ReactS3FineUploader = React.createClass({
              multiple,
              areAssetsDownloadable,
              areAssetsEditable,
-             onInactive,
              enableLocalHashing,
              fileClassToUpload,
              fileInputElement: FileInputElement,
@@ -901,7 +899,6 @@ let ReactS3FineUploader = React.createClass({
             multiple,
             areAssetsDownloadable,
             areAssetsEditable,
-            onInactive,
             enableLocalHashing,
             uploadMethod,
             fileClassToUpload,

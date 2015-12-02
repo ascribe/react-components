@@ -15,7 +15,6 @@ let FileDragAndDrop = React.createClass({
         className: React.PropTypes.string,
         onDrop: React.PropTypes.func.isRequired,
         onDragOver: React.PropTypes.func,
-        onInactive: React.PropTypes.func,
         filesToUpload: React.PropTypes.array,
         handleDeleteFile: React.PropTypes.func,
         handleCancelFile: React.PropTypes.func,
@@ -63,11 +62,6 @@ let FileDragAndDrop = React.createClass({
         let files;
 
         if(this.props.dropzoneInactive) {
-            // if there is a handle function for doing stuff
-            // when the dropzone is inactive, then call it
-            if(this.props.onInactive) {
-                this.props.onInactive();
-            }
             return;
         }
 
@@ -119,9 +113,6 @@ let FileDragAndDrop = React.createClass({
         if(this.props.dropzoneInactive) {
             // if there is a handle function for doing stuff
             // when the dropzone is inactive, then call it
-            if(this.props.onInactive) {
-                this.props.onInactive();
-            }
             return;
         }
 
