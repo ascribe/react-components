@@ -78,13 +78,15 @@ const Property = React.createClass({
     componentWillReceiveProps(nextProps) {
         let childInput = this.refs.input;
 
-        // For expanded there are actually two use cases:
+        // For expanded there are actually three use cases:
         //
         // 1. Control its value from the outside completely (do not define `checkboxLabel`)
         // 2. Let it be controlled from the inside (default value can be set though via `expanded`)
+        // 3. Let it be controlled from a child by using `setExpanded` (`expanded` must not be 
+        //    set from the outside as a prop then(!!!))
         //
-        // This handles case 1.
-        if(nextProps.expanded !== this.state.expanded && !this.props.checkboxLabel) {
+        // This handles case 1. and 3.
+        if(typeof nextProps.expanded === this.props.expanded && nextProps.expanded !== this.state.expanded && !this.props.checkboxLabel) {
             this.setState({ expanded: nextProps.expanded });
         }
 
@@ -226,6 +228,10 @@ const Property = React.createClass({
         }
     },
 
+    setExpanded(expanded) {
+        this.setState({ expanded });
+    },
+
     renderChildren(style) {
         // Input's props should only be cloned and propagated down the tree,
         // if the component is actually being shown (!== 'expanded === false')
@@ -247,7 +253,8 @@ const Property = React.createClass({
                     onBlur: this.handleBlur,
                     disabled: !this.props.editable,
                     ref: 'input',
-                    name: this.props.name
+                    name: this.props.name,
+                    setExpanded: this.setExpanded
                 });
             });
         }
