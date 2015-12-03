@@ -2,61 +2,69 @@
 
 import React from 'react';
 import ReactAddons from 'react/addons';
-import classNames from 'classnames';
 
-import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
-import Tooltip from 'react-bootstrap/lib/Tooltip';
+import Panel from 'react-bootstrap/lib/Panel';
 
 import AppConstants from '../../constants/application_constants';
 
-let Property = React.createClass({
-    propTypes: {
-        hidden: React.PropTypes.bool,
+import { mergeOptions } from '../../utils/general_utils';
 
-        autoFocus: React.PropTypes.bool,
-        editable: React.PropTypes.bool,
+
+const { bool, element, string, oneOfType, func, object, arrayOf } = React.PropTypes;
+
+const Property = React.createClass({
+    propTypes: {
+        editable: bool,
 
         // If we want Form to have a different value for disabled as Property has one for
         // editable, we need to set overrideForm to true, as it will then override Form's
         // disabled value for individual Properties
-        overrideForm: React.PropTypes.bool,
+        overrideForm: bool,
 
-        tooltip: React.PropTypes.element,
-        label: React.PropTypes.string,
-        value: React.PropTypes.oneOfType([
-            React.PropTypes.string,
-            React.PropTypes.element
+        label: string,
+        value: oneOfType([
+            string,
+            element
         ]),
-        footer: React.PropTypes.element,
-        handleChange: React.PropTypes.func,
-        ignoreFocus: React.PropTypes.bool,
-        name: React.PropTypes.oneOfType([
-            React.PropTypes.string,
-            React.PropTypes.number
-        ]).isRequired,
-        className: React.PropTypes.string,
+        footer: element,
+        handleChange: func,
+        ignoreFocus: bool,
+        name: string.isRequired,
+        className: string,
 
-        onClick: React.PropTypes.func,
-        onChange: React.PropTypes.func,
-        onBlur: React.PropTypes.func,
+        onClick: func,
+        onChange: func,
+        onBlur: func,
 
-        children: React.PropTypes.oneOfType([
-            React.PropTypes.arrayOf(React.PropTypes.element),
-            React.PropTypes.element
+        children: oneOfType([
+            arrayOf(element),
+            element
         ]),
-        style: React.PropTypes.object
+        style: object,
+        expanded: bool,
+        checkboxLabel: string
     },
 
     getDefaultProps() {
         return {
             editable: true,
-            hidden: false,
+            expanded: true,
             className: ''
         };
     },
 
     getInitialState() {
+        const { expanded, ignoreFocus, checkboxLabel } = this.props;
+
         return {
+            // We're mirroring expanded here as a state
+            // React's docs do NOT consider this an antipattern as long as it's
+            // not a "source of truth"-duplication
+            expanded,
+
+            // When a checkboxLabel is defined in the props, we want to set
+            // `ignoreFocus` to true
+            ignoreFocus: ignoreFocus || checkboxLabel,
             // Please don't confuse initialValue with react's defaultValue.
             // initialValue is set by us to ensure that a user can reset a specific
             // property (after editing) to its initial value
@@ -67,14 +75,18 @@ let Property = React.createClass({
         };
     },
 
-    componentDidMount() {
-        if (this.props.autoFocus) {
-            this.handleFocus();
-        }
-    },
-
-    componentWillReceiveProps() {
+    componentWillReceiveProps(nextProps) {
         let childInput = this.refs.input;
+
+        // For expanded there are actually two use cases:
+        //
+        // 1. Control its value from the outside completely (do not define `checkboxLabel`)
+        // 2. Let it be controlled from the inside (default value can be set though via `expanded`)
+        //
+        // This handles case 1.
+        if(nextProps.expanded !== this.state.expanded && !this.props.checkboxLabel) {
+            this.setState({ expanded: nextProps.expanded });
+        }
 
         // In order to set this.state.value from another component
         // the state of value should only be set if its not undefined and
@@ -88,13 +100,13 @@ let Property = React.createClass({
         // from native HTML elements.
         // To enable developers to create input elements, they can expose a property called value
         // in their state that will be picked up by property.js
-        } else if(childInput.state && typeof childInput.state.value !== 'undefined') {
+        } else if(childInput && childInput.state && typeof childInput.state.value !== 'undefined') {
             this.setState({
                 value: childInput.state.value
             });
         }
 
-        if(!this.state.initialValue && childInput.props.defaultValue) {
+        if(!this.state.initialValue && childInput && childInput.props.defaultValue) {
             this.setState({
                 initialValue: childInput.props.defaultValue
             });
@@ -146,7 +158,7 @@ let Property = React.createClass({
     handleFocus() {
         // if ignoreFocus (bool) is defined, then just ignore focusing on
         // the property and input
-        if(this.props.ignoreFocus) {
+        if(this.state.ignoreFocus) {
             return;
         }
 
@@ -198,7 +210,7 @@ let Property = React.createClass({
     },
 
     getClassName() {
-        if(this.props.hidden){
+        if(!this.state.expanded && !this.props.checkboxLabel){
             return 'is-hidden';
         }
         if(!this.props.editable){
@@ -215,60 +227,100 @@ let Property = React.createClass({
     },
 
     renderChildren(style) {
-        return ReactAddons.Children.map(this.props.children, (child) => {
-            return ReactAddons.addons.cloneWithProps(child, {
-                style,
-                onChange: this.handleChange,
-                onFocus: this.handleFocus,
-                onBlur: this.handleBlur,
-                disabled: !this.props.editable,
-                ref: 'input',
-                name: this.props.name
+        // Input's props should only be cloned and propagated down the tree,
+        // if the component is actually being shown (!== 'expanded === false')
+        if((this.state.expanded && this.props.checkboxLabel) || !this.props.checkboxLabel) {
+            return ReactAddons.Children.map(this.props.children, (child) => {
+
+                // Since refs will be overriden by this functions return statement,
+                // we still want to be able to define refs for nested `Form` or `Property`
+                // children, which is why we're upfront simply invoking the callback-ref-
+                // function before overriding it.
+                if(typeof child.ref === 'function' && this.refs.input) {
+                    child.ref(this.refs.input);
+                }
+
+                return React.cloneElement(child, {
+                    style,
+                    onChange: this.handleChange,
+                    onFocus: this.handleFocus,
+                    onBlur: this.handleBlur,
+                    disabled: !this.props.editable,
+                    ref: 'input',
+                    name: this.props.name
+                });
             });
-        });
+        }
     },
 
-    render() {
-        const { className, editable, footer, label, tooltip } = this.props;
-        const style = Object.assign({}, this.props.style, { cursor: !editable ? 'not-allowed' : null });
-
-        let tooltipEl = tooltip ? <Tooltip>{tooltip}</Tooltip>
-                                : <span />;
-
-        let labelEl;
-        if (label || this.state.errors) {
-            labelEl = (
+    getLabelAndErrors() {
+        if(this.props.label || this.state.errors) {
+            return (
                 <p>
-                    <span className="pull-left">{label}</span>
+                    <span className="pull-left">{this.props.label}</span>
                     <span className="pull-right">{this.state.errors}</span>
                 </p>
             );
+        } else {
+            return null;
         }
+    },
 
-        let footerEl;
-        if (footer) {
-            footerEl = (
-                <div className="ascribe-property-footer">
-                    {footer}
+    handleCheckboxToggle() {
+        this.setState({expanded: !this.state.expanded});
+    },
+
+    getCheckbox() {
+        const { checkboxLabel } = this.props;
+
+        if(checkboxLabel) {
+            return (
+                <div
+                    className="ascribe-property-collapsible-toggle"
+                    onClick={this.handleCheckboxToggle}>
+                    <input
+                        onChange={this.handleCheckboxToggle}
+                        type="checkbox"
+                        checked={this.state.expanded}
+                        ref="checkboxCollapsible"/>
+                    <span className="checkbox">{' ' + checkboxLabel}</span>
                 </div>
             );
+        } else {
+            return null;
         }
+    },
+
+    render() {
+        let footer = null;
+        let style = this.props.style ? mergeOptions({}, this.props.style) : {};
+
+        if(this.props.footer){
+            footer = (
+                <div className="ascribe-property-footer">
+                    {this.props.footer}
+                </div>);
+        }
+
+        style.paddingBottom = !this.state.expanded ? 0 : null;
+        style.cursor = !this.props.editable ? 'not-allowed' : null;
 
         return (
             <div
-                className={classNames('ascribe-property-wrapper', this.getClassName())}
+                className={'ascribe-property-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
                 style={style}>
-                <OverlayTrigger
-                    delay={500}
-                    placement="top"
-                    overlay={tooltipEl}>
-                    <div className={classNames('ascribe-property', this.props.className)}>
-                        {labelEl}
+                {this.getCheckbox()}
+                <Panel
+                    collapsible
+                    expanded={this.state.expanded}
+                    className="bs-custom-panel">
+                    <div className={'ascribe-property ' + this.props.className}>
+                        {this.getLabelAndErrors()}
                         {this.renderChildren(style)}
-                        {footerEl}
+                        {footer}
                     </div>
-                </OverlayTrigger>
+                </Panel>
             </div>
         );
     }
