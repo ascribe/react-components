@@ -124,8 +124,12 @@ let Form = React.createClass({
     getFormData() {
         let data = {};
 
-        for (let ref in this.refs) {
-            data[this.refs[ref].props.name] = this.refs[ref].state.value;
+        for (let refName in this.refs) {
+            const ref = this.refs[refName];
+
+            if (ref.state && 'value' in ref.state) {
+                data[ref.props.name] = ref.state.value;
+            }
         }
 
         if (typeof this.props.getFormData === 'function') {
