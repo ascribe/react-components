@@ -286,7 +286,7 @@ const ReactS3FineUploader = React.createClass({
 
     // Cancel uploads and clear previously selected files on the input element
     cancelUploads(id) {
-        !!id ? this.state.uploader.cancel(id) : this.state.uploader.cancelAll();
+        typeof id !== 'undefined' ? this.state.uploader.cancel(id) : this.state.uploader.cancelAll();
 
         // Reset the file input element to clear the previously selected files so that
         // the user can reselect them again.
@@ -394,11 +394,13 @@ const ReactS3FineUploader = React.createClass({
 
         if(fileId < filesToUpload.length) {
             const changeSet = { $set: url };
-            const newFilesToUpload = React.addons.update(filesToUpload, { [fileId]: { thumbnailUrl: changeSet } });
+            const newFilesToUpload = React.addons.update(filesToUpload, {
+                [fileId]: { thumbnailUrl: changeSet }
+            });
 
             this.setState({ filesToUpload: newFilesToUpload });
         } else {
-            throw new Error("You're accessing an index out of range of filesToUpload");
+            throw new Error('Accessing an index out of range of filesToUpload');
         }
     },
 

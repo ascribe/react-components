@@ -32,6 +32,20 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
             handleDeleteFile: func
         },
 
+        getInitialState() {
+            return {
+                disabled: this.getUploadingFiles().length !== 0
+            };
+        },
+
+        componentWillReceiveProps(nextProps) {
+            if(this.props.filesToUpload !== nextProps.filesToUpload) {
+                this.setState({
+                    disabled: this.getUploadingFiles().length !== 0
+                });
+            }
+        },
+
         handleDrop(event) {
             event.preventDefault();
             event.stopPropagation();
@@ -55,33 +69,38 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
         },
 
         handleOnClick() {
-            let evt;
-            const uploadingFile = this.getUploadingFiles();
-            const uploadedFile = this.getUploadedFile();
+            if(!this.state.disabled) {
+                let evt;
+                const uploadingFiles = this.getUploadingFiles();
+                const uploadedFile = this.getUploadedFile();
 
-
-            if(uploadingFile.length) {
                 this.clearSelection();
-                this.props.handleCancelFile(uploadingFile[0].id);
-            } else if(uploadedFile) {
-                this.props.handleDeleteFile(uploadedFile.id);
+                if(uploadingFiles.length) {
+                    this.props.handleCancelFile(uploadingFiles[0].id);
+                } else if(uploadedFile && !uploadedFile.s3UrlSafe) {
+                    this.props.handleCancelFile(uploadedFile.id);
+                } else if(uploadedFile && uploadedFile.s3UrlSafe) {
+                    this.props.handleDeleteFile(uploadedFile.id);
+                }
+
+                try {
+                    evt = new MouseEvent('click', {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                } catch(e) {
+                    // For browsers that do not support the new MouseEvent syntax
+                    evt = document.createEvent('MouseEvents');
+                    evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
+                }
+                evt.stopPropagation();
+                this.refs.fileSelector.getDOMNode().dispatchEvent(evt);
             }
-            try {
-                evt = new MouseEvent('click', {
-                    view: window,
-                    bubbles: true,
-                    cancelable: true
-                });
-            } catch(e) {
-                // For browsers that do not support the new MouseEvent syntax
-                evt = document.createEvent('MouseEvents');
-                evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
-            }
-            evt.stopPropagation();
-            this.refs.fileSelector.getDOMNode().dispatchEvent(evt);
         },
 
         onClickRemove() {
+            this.clearSelection();
             const uploadedFile = this.getUploadedFile();
             this.props.handleDeleteFile(uploadedFile.id);
         },
@@ -118,8 +137,11 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
         },
 
         render() {
-            let { multiple,
-                 allowedExtensions } = this.props;
+            const {
+                multiple,
+                allowedExtensions } = this.props;
+            const { disabled } = this.state;
+
 
             /*
              * We do not want a button that submits here.
@@ -129,10 +151,15 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
              */
             return (
                 <div className="upload-button-wrapper">
-                    <a
+                    {/*
+                        The button needs to be of `type="button"` as it would
+                        otherwise submit the form its in.
+                    */}
+                    <button
+                        type="button"
                         onClick={this.handleOnClick}
                         className={className}
-                        disabled={this.getUploadingFiles().length !== 0}>
+                        disabled={disabled}>
                         {this.getButtonLabel()}
                         <input
                             multiple={multiple}
@@ -145,7 +172,7 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
                             }}
                             onChange={this.handleDrop}
                             accept={allowedExtensions}/>
-                   </a>
+                   </button>
                    {this.getUploadedFileLabel()}
                 </div>
             );
