@@ -131,7 +131,6 @@ let Form = React.createClass({
                 // An input can also provide an `Object` as a value
                 // which we're going to merge with `data` (overwrites)
                 if(ref.state.value.constructor === Object) {
-                    console.log(ref.state.value);
                     Object.assign(data, ref.state.value);
                 } else {
                     data[ref.props.name] = ref.state.value;

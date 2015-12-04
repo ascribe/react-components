@@ -42,7 +42,8 @@ const Property = React.createClass({
         ]),
         style: object,
         expanded: bool,
-        checkboxLabel: string
+        checkboxLabel: string,
+        autoFocus: bool
     },
 
     getDefaultProps() {
@@ -75,6 +76,12 @@ const Property = React.createClass({
         };
     },
 
+    componentDidMount() {
+        if(this.props.autoFocus) {
+            this.handleFocus();
+        }
+    },
+
     componentWillReceiveProps(nextProps) {
         let childInput = this.refs.input;
 
@@ -82,11 +89,11 @@ const Property = React.createClass({
         //
         // 1. Control its value from the outside completely (do not define `checkboxLabel`)
         // 2. Let it be controlled from the inside (default value can be set though via `expanded`)
-        // 3. Let it be controlled from a child by using `setExpanded` (`expanded` must not be 
+        // 3. Let it be controlled from a child by using `setExpanded` (`expanded` must not be
         //    set from the outside as a prop then(!!!))
         //
         // This handles case 1. and 3.
-        if(typeof nextProps.expanded === this.props.expanded && nextProps.expanded !== this.state.expanded && !this.props.checkboxLabel) {
+        if(nextProps.expanded !== this.props.expanded && nextProps.expanded !== this.state.expanded && !this.props.checkboxLabel) {
             this.setState({ expanded: nextProps.expanded });
         }
 
