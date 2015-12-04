@@ -239,6 +239,10 @@ const Property = React.createClass({
         this.setState({ expanded });
     },
 
+    handleCheckboxToggle() {
+        this.setExpanded(!this.state.expanded);
+    },
+
     renderChildren(style) {
         // Input's props should only be cloned and propagated down the tree,
         // if the component is actually being shown (!== 'expanded === false')
@@ -278,10 +282,6 @@ const Property = React.createClass({
         } else {
             return null;
         }
-    },
-
-    handleCheckboxToggle() {
-        this.setState({expanded: !this.state.expanded});
     },
 
     getCheckbox() {
