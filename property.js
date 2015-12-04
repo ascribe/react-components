@@ -307,17 +307,22 @@ const Property = React.createClass({
 
     render() {
         let footer = null;
-        let style = this.props.style ? mergeOptions({}, this.props.style) : {};
+        let style = Object.assign({}, this.props.style);
 
         if(this.props.footer){
             footer = (
                 <div className="ascribe-property-footer">
                     {this.props.footer}
-                </div>);
+                </div>
+            );
         }
 
-        style.paddingBottom = !this.state.expanded ? 0 : null;
-        style.cursor = !this.props.editable ? 'not-allowed' : null;
+        if (!this.state.expanded) {
+            style.paddingBottom = 0;
+        }
+        if (!this.props.editable) {
+            style.cursor = 'not-allowed';
+        }
 
         return (
             <div
