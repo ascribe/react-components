@@ -41,7 +41,7 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
         componentWillReceiveProps(nextProps) {
             if(this.props.filesToUpload !== nextProps.filesToUpload) {
                 this.setState({
-                    disabled: this.getUploadingFiles().length !== 0
+                    disabled: this.getUploadingFiles(nextProps.filesToUpload).length !== 0
                 });
             }
         },
@@ -56,8 +56,8 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
             }
         },
 
-        getUploadingFiles() {
-            return this.props.filesToUpload.filter((file) => file.status === 'uploading');
+        getUploadingFiles(filesToUpload = this.props.filesToUpload) {
+            return filesToUpload.filter((file) => file.status === 'uploading');
         },
 
         getUploadedFile() {
@@ -99,11 +99,18 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
             }
         },
 
+        onClickCancel() {
+            this.clearSelection();
+            const uploadingFile = this.getUploadingFiles()[0];
+            this.props.handleCancelFile(uploadingFile.id);
+        },
+
         onClickRemove() {
             this.clearSelection();
             const uploadedFile = this.getUploadedFile();
             this.props.handleDeleteFile(uploadedFile.id);
         },
+
 
         getButtonLabel() {
             let { filesToUpload, fileClassToUpload } = this.props;
@@ -120,8 +127,16 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
 
         getUploadedFileLabel() {
             const uploadedFile = this.getUploadedFile();
+            const uploadingFiles = this.getUploadingFiles();
 
-            if(uploadedFile) {
+            if(uploadingFiles.length) {
+                return (
+                    <span>
+                        {' ' + truncateTextAtCharIndex(uploadingFiles[0].name, 40) + ' '}
+                        [<a onClick={this.onClickCancel}>{getLangText('cancel upload')}</a>]
+                    </span>
+                );
+            } else if(uploadedFile) {
                 return (
                     <span>
                         <span className='ascribe-icon icon-ascribe-ok'/>
