@@ -283,10 +283,6 @@ const Property = React.createClass({
         }
     },
 
-    handleCheckboxToggle() {
-        this.setState({expanded: !this.state.expanded});
-    },
-
     getCheckbox() {
         const { checkboxLabel } = this.props;
 
@@ -310,7 +306,6 @@ const Property = React.createClass({
 
     render() {
         let footer = null;
-        let style = Object.assign({}, this.props.style);
 
         if(this.props.footer){
             footer = (
@@ -320,14 +315,11 @@ const Property = React.createClass({
             );
         }
 
-        style.paddingBottom = !this.state.expanded ? 0 : null;
-        style.cursor = !this.props.editable ? 'not-allowed' : null;
-
         return (
             <div
                 className={'ascribe-property-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
-                style={style}>
+                style={this.props.style}>
                 {this.getCheckbox()}
                 <Panel
                     collapsible
