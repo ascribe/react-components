@@ -327,7 +327,7 @@ const Property = React.createClass({
                     className="bs-custom-panel">
                     <div className={'ascribe-property ' + this.props.className}>
                         {this.getLabelAndErrors()}
-                        {this.renderChildren(style)}
+                        {this.renderChildren(this.props.style)}
                         {footer}
                     </div>
                 </Panel>
