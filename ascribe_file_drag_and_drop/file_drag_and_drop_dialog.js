@@ -9,7 +9,6 @@ import { getCurrentQueryParams } from '../../../utils/url_utils';
 
 let FileDragAndDropDialog = React.createClass({
     propTypes: {
-        hasFiles: React.PropTypes.bool,
         multipleFiles: React.PropTypes.bool,
         enableLocalHashing: React.PropTypes.bool,
         uploadMethod: React.PropTypes.string,
@@ -36,80 +35,75 @@ let FileDragAndDropDialog = React.createClass({
 
     render() {
         const {
-            hasFiles,
             multipleFiles,
             enableLocalHashing,
             uploadMethod,
             fileClassToUpload,
             onClick } = this.props;
 
-        if (hasFiles) {
-            return null;
+        if (enableLocalHashing && !uploadMethod) {
+            const currentQueryParams = getCurrentQueryParams();
+
+            const queryParamsHash = Object.assign({}, currentQueryParams);
+            queryParamsHash.method = 'hash';
+
+            const queryParamsUpload = Object.assign({}, currentQueryParams);
+            queryParamsUpload.method = 'upload';
+
+            return (
+                <div className="file-drag-and-drop-dialog present-options">
+                    <p>{getLangText('Would you rather')}</p>
+                    {/*
+                        The frontend in live is hosted under /app,
+                        Since `Link` is appending that base url, if its defined
+                        by itself, we need to make sure to not set it at this point.
+                        Otherwise it will be appended twice.
+                    */}
+                    <Link
+                        to={`/${window.location.pathname.split('/').pop()}`}
+                        query={queryParamsHash}>
+                        <span className="btn btn-default btn-sm">
+                            {getLangText('Hash your work')}
+                        </span>
+                    </Link>
+
+                    <span> or </span>
+
+                   <Link
+                        to={`/${window.location.pathname.split('/').pop()}`}
+                        query={queryParamsUpload}>
+                        <span className="btn btn-default btn-sm">
+                            {getLangText('Upload and hash your work')}
+                        </span>
+                    </Link>
+                </div>
+            );
         } else {
-            if (enableLocalHashing && !uploadMethod) {
-                const currentQueryParams = getCurrentQueryParams();
-
-                const queryParamsHash = Object.assign({}, currentQueryParams);
-                queryParamsHash.method = 'hash';
-
-                const queryParamsUpload = Object.assign({}, currentQueryParams);
-                queryParamsUpload.method = 'upload';
-
+            if (multipleFiles) {
                 return (
-                    <div className="file-drag-and-drop-dialog present-options">
-                        <p>{getLangText('Would you rather')}</p>
-                        {/*
-                            The frontend in live is hosted under /app,
-                            Since `Link` is appending that base url, if its defined
-                            by itself, we need to make sure to not set it at this point.
-                            Otherwise it will be appended twice.
-                        */}
-                        <Link
-                            to={`/${window.location.pathname.split('/').pop()}`}
-                            query={queryParamsHash}>
-                            <span className="btn btn-default btn-sm">
-                                {getLangText('Hash your work')}
-                            </span>
-                        </Link>
-
-                        <span> or </span>
-
-                       <Link
-                            to={`/${window.location.pathname.split('/').pop()}`}
-                            query={queryParamsUpload}>
-                            <span className="btn btn-default btn-sm">
-                                {getLangText('Upload and hash your work')}
-                            </span>
-                        </Link>
-                    </div>
+                    <span className="file-drag-and-drop-dialog">
+                        {this.getDragDialog(fileClassToUpload.plural)}
+                        <span
+                            className="btn btn-default"
+                            onClick={onClick}>
+                                {getLangText('choose %s to upload', fileClassToUpload.plural)}
+                        </span>
+                    </span>
                 );
             } else {
-                if (multipleFiles) {
-                    return (
-                        <span className="file-drag-and-drop-dialog">
-                            {this.getDragDialog(fileClassToUpload.plural)}
-                            <span
-                                className="btn btn-default"
-                                onClick={onClick}>
-                                    {getLangText('choose %s to upload', fileClassToUpload.plural)}
-                            </span>
-                        </span>
-                    );
-                } else {
-                    const dialog = uploadMethod === 'hash' ? getLangText('choose a %s to hash', fileClassToUpload.singular)
-                                                           : getLangText('choose a %s to upload', fileClassToUpload.singular);
+                const dialog = uploadMethod === 'hash' ? getLangText('choose a %s to hash', fileClassToUpload.singular)
+                                                       : getLangText('choose a %s to upload', fileClassToUpload.singular);
 
-                    return (
-                        <span className="file-drag-and-drop-dialog">
-                            {this.getDragDialog(fileClassToUpload.singular)}
-                            <span
-                                className="btn btn-default"
-                                onClick={onClick}>
-                                    {dialog}
-                            </span>
+                return (
+                    <span className="file-drag-and-drop-dialog">
+                        {this.getDragDialog(fileClassToUpload.singular)}
+                        <span
+                            className="btn btn-default"
+                            onClick={onClick}>
+                                {dialog}
                         </span>
-                    );
-                }
+                    </span>
+                );
             }
         }
     }

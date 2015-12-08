@@ -1,9 +1,11 @@
 'use strict';
 
 import React from 'react';
+import classNames from 'classnames';
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 
 import FileDragAndDropDialog from './file_drag_and_drop_dialog';
+import FileDragAndDropErrorDialog from './file_drag_and_drop_error_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
 
 import { FileStatus } from '../react_s3_fine_uploader_utils';
@@ -22,11 +24,11 @@ let FileDragAndDrop = React.createClass({
         onDrop: React.PropTypes.func.isRequired,
         onDragOver: React.PropTypes.func,
         onInactive: React.PropTypes.func,
-        filesToUpload: React.PropTypes.array,
         handleDeleteFile: React.PropTypes.func,
         handleCancelFile: React.PropTypes.func,
         handlePauseFile: React.PropTypes.func,
         handleResumeFile: React.PropTypes.func,
+        handleRetryFiles: React.PropTypes.func,
 
         enableLocalHashing: React.PropTypes.bool,
         uploadMethod: React.PropTypes.string,
@@ -142,73 +144,79 @@ let FileDragAndDrop = React.createClass({
         this.refs.fileSelector.getDOMNode().dispatchEvent(evt);
     },
 
+    getPreviewIterator() {
+        const { areAssetsDownloadable, areAssetsEditable, filesToUpload } = this.props;
+
+        return (
+            <FileDragAndDropPreviewIterator
+                files={filesToUpload}
+                handleDeleteFile={this.handleDeleteFile}
+                handleCancelFile={this.handleCancelFile}
+                handlePauseFile={this.handlePauseFile}
+                handleResumeFile={this.handleResumeFile}
+                areAssetsDownloadable={areAssetsDownloadable}
+                areAssetsEditable={areAssetsEditable}/>
+        );
+    },
+
+    getUploadDialog() {
+        const { enableLocalHashing, fileClassToUpload, multiple, uploadMethod } = this.props;
+
+        return (
+            <FileDragAndDropDialog
+                multipleFiles={multiple}
+                onClick={this.handleOnClick}
+                enableLocalHashing={enableLocalHashing}
+                uploadMethod={uploadMethod}
+                fileClassToUpload={fileClassToUpload} />
+        );
+    },
+
     render: function () {
         const {
             filesToUpload,
             dropzoneInactive,
-            className,
             hashingProgress,
             handleCancelHashing,
             multiple,
-            enableLocalHashing,
-            uploadMethod,
             fileClassToUpload,
-            areAssetsDownloadable,
-            areAssetsEditable,
             allowedExtensions } = this.props;
 
         // has files only is true if there are files that do not have the status deleted, canceled, or failed
-        let hasFiles = filesToUpload
-                        .filter((file) => {
-                            return file.status !== FileStatus.DELETED &&
-                                file.status !== FileStatus.CANCELED &&
-                                file.status !== FileStatus.UPLOAD_FAILED &&
-                                file.size !== -1;
-                        })
-                        .length > 0;
+        const hasFiles = filesToUpload
+                            .filter((file) => {
+                                return file.status !== FileStatus.DELETED &&
+                                    file.status !== FileStatus.CANCELED &&
+                                    file.status !== FileStatus.UPLOAD_FAILED &&
+                                    file.size !== -1;
+                            })
+                            .length > 0;
 
-        let updatedClassName = hasFiles ? 'has-files ' : '';
-        updatedClassName += dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone';
-        updatedClassName += ' file-drag-and-drop';
+        const failedFiles = filesToUpload.filter((file) => file.status === FileStatus.UPLOAD_FAILED);
+        let hasError = showError && errorClass && failedFiles.length > 0;
 
         // if !== -2: triggers a FileDragAndDrop-global spinner
         if(hashingProgress !== -2) {
             return (
-                <div className={className}>
-                    <div className="file-drag-and-drop-hashing-dialog">
-                        <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
-                        <p>
-                            <a onClick={handleCancelHashing}> {getLangText('Cancel hashing')}</a>
-                        </p>
-                        <ProgressBar
-                            now={Math.ceil(hashingProgress)}
-                            label="%(percent)s%"
-                            className="ascribe-progress-bar"/>
-                    </div>
+                <div className="file-drag-and-drop-hashing-dialog">
+                    <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
+                    <p>
+                        <a onClick={handleCancelHashing}> {getLangText('Cancel hashing')}</a>
+                    </p>
+                    <ProgressBar
+                        now={Math.ceil(hashingProgress)}
+                        label="%(percent)s%"
+                        className="ascribe-progress-bar"/>
                 </div>
             );
         } else {
             return (
                 <div
-                    className={updatedClassName}
+                    className={classNames('file-drag-and-drop', dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone', { 'has-files': hasFiles })}
                     onDrag={this.handleDrop}
                     onDragOver={this.handleDragOver}
                     onDrop={this.handleDrop}>
-                        <FileDragAndDropDialog
-                            multipleFiles={multiple}
-                            hasFiles={hasFiles}
-                            onClick={this.handleOnClick}
-                            enableLocalHashing={enableLocalHashing}
-                            uploadMethod={uploadMethod}
-                            fileClassToUpload={fileClassToUpload} />
-                        <FileDragAndDropPreviewIterator
-                            files={filesToUpload}
-                            handleDeleteFile={this.handleDeleteFile}
-                            handleCancelFile={this.handleCancelFile}
-                            handlePauseFile={this.handlePauseFile}
-                            handleResumeFile={this.handleResumeFile}
-                            areAssetsDownloadable={areAssetsDownloadable}
-                            areAssetsEditable={areAssetsEditable}/>
+                        {!hasFiles && !hasError ? this.getUploadDialog() : null}
                         {/*
                             Opera doesn't trigger simulated click events
                             if the targeted input has `display:none` set.
