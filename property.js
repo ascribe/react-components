@@ -42,7 +42,8 @@ const Property = React.createClass({
         ]),
         style: object,
         expanded: bool,
-        checkboxLabel: string
+        checkboxLabel: string,
+        autoFocus: bool
     },
 
     getDefaultProps() {
@@ -76,16 +77,24 @@ const Property = React.createClass({
         };
     },
 
+    componentDidMount() {
+        if(this.props.autoFocus) {
+            this.handleFocus();
+        }
+    },
+
     componentWillReceiveProps(nextProps) {
         let childInput = this.refs.input;
 
-        // For expanded there are actually two use cases:
+        // For expanded there are actually three use cases:
         //
         // 1. Control its value from the outside completely (do not define `checkboxLabel`)
         // 2. Let it be controlled from the inside (default value can be set though via `expanded`)
+        // 3. Let it be controlled from a child by using `setExpanded` (`expanded` must not be
+        //    set from the outside as a prop then(!!!))
         //
-        // This handles case 1.
-        if(nextProps.expanded !== this.state.expanded && !this.props.checkboxLabel) {
+        // This handles case 1. and 3.
+        if(nextProps.expanded !== this.props.expanded && nextProps.expanded !== this.state.expanded && !this.props.checkboxLabel) {
             this.setState({ expanded: nextProps.expanded });
         }
 
@@ -230,12 +239,19 @@ const Property = React.createClass({
         }
     },
 
+    setExpanded(expanded) {
+        this.setState({ expanded });
+    },
+
+    handleCheckboxToggle() {
+        this.setExpanded(!this.state.expanded);
+    },
+
     renderChildren(style) {
         // Input's props should only be cloned and propagated down the tree,
         // if the component is actually being shown (!== 'expanded === false')
         if((this.state.expanded && this.props.checkboxLabel) || !this.props.checkboxLabel) {
             return ReactAddons.Children.map(this.props.children, (child) => {
-
                 // Since refs will be overriden by this functions return statement,
                 // we still want to be able to define refs for nested `Form` or `Property`
                 // children, which is why we're upfront simply invoking the callback-ref-
@@ -252,7 +268,8 @@ const Property = React.createClass({
                     setWarning: this.setWarning,
                     disabled: !this.props.editable,
                     ref: 'input',
-                    name: this.props.name
+                    name: this.props.name,
+                    setExpanded: this.setExpanded
                 });
             });
         }
@@ -269,10 +286,6 @@ const Property = React.createClass({
         } else {
             return null;
         }
-    },
-
-    handleCheckboxToggle() {
-        this.setState({expanded: !this.state.expanded});
     },
 
     getCheckbox() {
@@ -298,23 +311,20 @@ const Property = React.createClass({
 
     render() {
         let footer = null;
-        let style = this.props.style ? mergeOptions({}, this.props.style) : {};
 
         if(this.props.footer){
             footer = (
                 <div className="ascribe-property-footer">
                     {this.props.footer}
-                </div>);
+                </div>
+            );
         }
-
-        style.paddingBottom = !this.state.expanded ? 0 : null;
-        style.cursor = !this.props.editable ? 'not-allowed' : null;
 
         return (
             <div
                 className={'ascribe-property-wrapper ' + this.getClassName()}
                 onClick={this.handleFocus}
-                style={style}>
+                style={this.props.style}>
                 {this.getCheckbox()}
                 <Panel
                     collapsible
@@ -322,7 +332,7 @@ const Property = React.createClass({
                     className="bs-custom-panel">
                     <div className={'ascribe-property ' + this.props.className}>
                         {this.getLabelAndErrors()}
-                        {this.renderChildren(style)}
+                        {this.renderChildren(this.props.style)}
                         {footer}
                     </div>
                 </Panel>
