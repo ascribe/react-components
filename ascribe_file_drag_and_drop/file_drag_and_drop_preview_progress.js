@@ -5,10 +5,9 @@ import React from 'react';
 import ProgressBar from 'react-bootstrap/lib/ProgressBar';
 
 import { displayValidProgressFilesFilter } from '../react_s3_fine_uploader_utils';
-import { getLangText } from '../../../utils/lang_utils';
 
 
-let FileDragAndDropPreviewProgress = React.createClass({
+const FileDragAndDropPreviewProgress = React.createClass({
     propTypes: {
         files: React.PropTypes.array
     },
@@ -40,24 +39,18 @@ let FileDragAndDropPreviewProgress = React.createClass({
     },
 
     render() {
+        const files = this.props.files.filter(displayValidProgressFilesFilter);
+        const style = !files.length ? { display: 'none' } : null;
         let overallProgress = this.calcOverallProgress();
-        let overallFileSize = this.calcOverallFileSize();
-        let style = {
-            visibility: 'hidden'
-        };
-
-        // only visible if overallProgress is over zero
-        // or the overallFileSize is greater than 10MB
-        if(overallProgress !== 0 && overallFileSize > 10000000) {
-            style.visibility = 'visible';
-        }
 
         return (
-            <ProgressBar
-                now={Math.ceil(overallProgress)}
-                label={getLangText('Overall progress%s', ': %(percent)s%')}
-                className="ascribe-progress-bar"
-                style={style} />
+            <div style={{marginTop: '1.3em'}}>
+                <ProgressBar
+                    now={Math.ceil(overallProgress)}
+                    label={'%(percent)s%'}
+                    className="ascribe-progress-bar"
+                    style={style} />
+            </div>
         );
     }
 });

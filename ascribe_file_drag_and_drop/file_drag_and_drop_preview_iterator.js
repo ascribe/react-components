@@ -29,27 +29,25 @@ let FileDragAndDropPreviewIterator = React.createClass({
             areAssetsDownloadable,
             areAssetsEditable
         } = this.props;
-
         files = files.filter(displayValidFilesFilter);
 
         if(files && files.length > 0) {
             return (
-                <div className="file-drag-and-drop-preview-iterator">
-                    <div className="file-drag-and-drop-preview-iterator-spacing">
-                        {files.map((file, i) => {
-                            return (
-                                <FileDragAndDropPreview
-                                    key={i}
-                                    file={file}
-                                    handleDeleteFile={handleDeleteFile}
-                                    handleCancelFile={handleCancelFile}
-                                    handlePauseFile={handlePauseFile}
-                                    handleResumeFile={handleResumeFile}
-                                    areAssetsDownloadable={areAssetsDownloadable}
-                                    areAssetsEditable={areAssetsEditable}/>
-                            );
-                        })}
-                    </div>
+                <div>
+                    {files.map((file, i) => {
+                        return (
+                            <FileDragAndDropPreview
+                                key={i}
+                                file={file}
+                                handleDeleteFile={handleDeleteFile}
+                                handleCancelFile={handleCancelFile}
+                                handlePauseFile={handlePauseFile}
+                                handleResumeFile={handleResumeFile}
+                                areAssetsDownloadable={areAssetsDownloadable}
+                                areAssetsEditable={areAssetsEditable}
+                                numberOfDisplayedFiles={files.length}/>
+                        );
+                    })}
                     <FileDragAndDropPreviewProgress files={files} />
                 </div>
             );

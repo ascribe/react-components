@@ -18,88 +18,100 @@ import { displayValidFilesFilter, transformAllowedExtensionsToInputAcceptProp } 
 import { getCookie } from '../../utils/fetch_api_utils';
 import { getLangText } from '../../utils/lang_utils';
 
-let ReactS3FineUploader = React.createClass({
+
+const { shape,
+        string,
+        oneOfType,
+        number,
+        func,
+        bool,
+        any,
+        object,
+        oneOf,
+        element,
+        arrayOf } = React.PropTypes;
+
+const ReactS3FineUploader = React.createClass({
     propTypes: {
-        keyRoutine: React.PropTypes.shape({
-            url: React.PropTypes.string,
-            fileClass: React.PropTypes.string,
-            pieceId: React.PropTypes.oneOfType([
-                React.PropTypes.string,
-                React.PropTypes.number
+        keyRoutine: shape({
+            url: string,
+            fileClass: string,
+            pieceId: oneOfType([
+                string,
+                number
             ])
         }),
-        createBlobRoutine: React.PropTypes.shape({
-            url: React.PropTypes.string,
-            pieceId: React.PropTypes.oneOfType([
-                React.PropTypes.string,
-                React.PropTypes.number
+        createBlobRoutine: shape({
+            url: string,
+            pieceId: oneOfType([
+                string,
+                number
             ])
         }),
-        submitFile: React.PropTypes.func,
-        autoUpload: React.PropTypes.bool,
-        debug: React.PropTypes.bool,
-        objectProperties: React.PropTypes.shape({
-            acl: React.PropTypes.string
+        handleChangedFile: func, // is for when a file is dropped or selected
+        submitFile: func, // is for when a file has been successfully uploaded, TODO: rename to handleSubmitFile
+        autoUpload: bool,
+        debug: bool,
+        objectProperties: shape({
+            acl: string
         }),
-        request: React.PropTypes.shape({
-            endpoint: React.PropTypes.string,
-            accessKey: React.PropTypes.string,
-            params: React.PropTypes.shape({
-                csrfmiddlewaretoken: React.PropTypes.string
+        request: shape({
+            endpoint: string,
+            accessKey: string,
+            params: shape({
+                csrfmiddlewaretoken: string
             })
         }),
-        signature: React.PropTypes.shape({
-            endpoint: React.PropTypes.string
+        signature: shape({
+            endpoint: string
         }).isRequired,
-        uploadSuccess: React.PropTypes.shape({
-            method: React.PropTypes.string,
-            endpoint: React.PropTypes.string,
-            params: React.PropTypes.shape({
-                isBrowserPreviewCapable: React.PropTypes.any, // maybe fix this later
-                bitcoin_ID_noPrefix: React.PropTypes.string
+        uploadSuccess: shape({
+            method: string,
+            endpoint: string,
+            params: shape({
+                isBrowserPreviewCapable: any, // maybe fix this later
+                bitcoin_ID_noPrefix: string
             })
         }),
-        cors: React.PropTypes.shape({
-            expected: React.PropTypes.bool
+        cors: shape({
+            expected: bool
         }),
-        chunking: React.PropTypes.shape({
-            enabled: React.PropTypes.bool
+        chunking: shape({
+            enabled: bool
         }),
-        resume: React.PropTypes.shape({
-            enabled: React.PropTypes.bool
+        resume: shape({
+            enabled: bool
         }),
-        deleteFile: React.PropTypes.shape({
-            enabled: React.PropTypes.bool,
-            method: React.PropTypes.string,
-            endpoint: React.PropTypes.string,
-            customHeaders: React.PropTypes.object
+        deleteFile: shape({
+            enabled: bool,
+            method: string,
+            endpoint: string,
+            customHeaders: object
         }).isRequired,
-        session: React.PropTypes.shape({
-            customHeaders: React.PropTypes.object,
-            endpoint: React.PropTypes.string,
-            params: React.PropTypes.object,
-            refreshOnRequests: React.PropTypes.bool
+        session: shape({
+            customHeaders: object,
+            endpoint: string,
+            params: object,
+            refreshOnRequests: bool
         }),
-        validation: React.PropTypes.shape({
-            itemLimit: React.PropTypes.number,
-            sizeLimit: React.PropTypes.string,
-            allowedExtensions: React.PropTypes.arrayOf(React.PropTypes.string)
+        validation: shape({
+            itemLimit: number,
+            sizeLimit: string,
+            allowedExtensions: arrayOf(string)
         }),
-        messages: React.PropTypes.shape({
-            unsupportedBrowser: React.PropTypes.string
+        messages: shape({
+            unsupportedBrowser: string
         }),
-        formatFileName: React.PropTypes.func,
-        multiple: React.PropTypes.bool,
-        retry: React.PropTypes.shape({
-            enableAuto: React.PropTypes.bool
+        formatFileName: func,
+        multiple: bool,
+        retry: shape({
+            enableAuto: bool
         }),
-        uploadStarted: React.PropTypes.func,
-        setIsUploadReady: React.PropTypes.func,
-        isReadyForFormSubmission: React.PropTypes.func,
-        areAssetsDownloadable: React.PropTypes.bool,
-        areAssetsEditable: React.PropTypes.bool,
-        defaultErrorMessage: React.PropTypes.string,
-        onInactive: React.PropTypes.func,
+        setIsUploadReady: func,
+        isReadyForFormSubmission: func,
+        areAssetsDownloadable: bool,
+        areAssetsEditable: bool,
+        defaultErrorMessage: string,
 
         // We encountered some cases where people had difficulties to upload their
         // works to ascribe due to a slow internet connection.
@@ -112,22 +124,22 @@ let ReactS3FineUploader = React.createClass({
         // which should be passed into 'uploadMethod':
         //   'hash':   upload using the hash
         //   'upload': upload full file (default if not specified)
-        enableLocalHashing: React.PropTypes.bool,
-        uploadMethod: React.PropTypes.oneOf(['hash', 'upload']),
+        enableLocalHashing: bool,
+        uploadMethod: oneOf(['hash', 'upload']),
 
         // A class of a file the user has to upload
         // Needs to be defined both in singular as well as in plural
-        fileClassToUpload: React.PropTypes.shape({
-            singular: React.PropTypes.string,
-            plural: React.PropTypes.string
+        fileClassToUpload: shape({
+            singular: string,
+            plural: string
         }),
 
         // Uploading functionality of react fineuploader is disconnected from its UI
         // layer, which means that literally every (properly adjusted) react element
         // can handle the UI handling.
-        fileInputElement: React.PropTypes.oneOfType([
-            React.PropTypes.func,
-            React.PropTypes.element
+        fileInputElement: oneOfType([
+            func,
+            element
         ])
     },
 
@@ -273,7 +285,7 @@ let ReactS3FineUploader = React.createClass({
 
     // Cancel uploads and clear previously selected files on the input element
     cancelUploads(id) {
-        !!id ? this.state.uploader.cancel(id) : this.state.uploader.cancelAll();
+        typeof id !== 'undefined' ? this.state.uploader.cancel(id) : this.state.uploader.cancelAll();
 
         // Reset the file input element to clear the previously selected files so that
         // the user can reselect them again.
@@ -374,6 +386,21 @@ let ReactS3FineUploader = React.createClass({
                 reject(err);
             });
         });
+    },
+
+    setThumbnailForFileId(fileId, url) {
+        const { filesToUpload } = this.state;
+
+        if(fileId < filesToUpload.length) {
+            const changeSet = { $set: url };
+            const newFilesToUpload = React.addons.update(filesToUpload, {
+                [fileId]: { thumbnailUrl: changeSet }
+            });
+
+            this.setState({ filesToUpload: newFilesToUpload });
+        } else {
+            throw new Error('Accessing an index out of range of filesToUpload');
+        }
     },
 
     /* FineUploader specific callback function handlers */
@@ -510,7 +537,12 @@ let ReactS3FineUploader = React.createClass({
 
     onCancel(id) {
         // when a upload is canceled, we need to update this components file array
-        this.setStatusOfFile(id, 'canceled');
+        this.setStatusOfFile(id, 'canceled')
+            .then(() => {
+                if(typeof this.props.handleChangedFile === 'function') {
+                    this.props.handleChangedFile(this.state.filesToUpload[id]);
+                }
+            });
 
         let notification = new GlobalNotificationModel(getLangText('File upload canceled'), 'success', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
@@ -604,7 +636,12 @@ let ReactS3FineUploader = React.createClass({
         //
         // If there is an error during the deletion, we will just change the status back to 'online'
         // and display an error message
-        this.setStatusOfFile(fileId, 'deleted');
+        this.setStatusOfFile(fileId, 'deleted')
+            .then(() => {
+                if(typeof this.props.handleChangedFile === 'function') {
+                    this.props.handleChangedFile(this.state.filesToUpload[fileId]);
+                }
+            });
 
         // In some instances (when the file was already uploaded and is just displayed to the user
         // - for example in the contract or additional files dialog)
@@ -671,11 +708,6 @@ let ReactS3FineUploader = React.createClass({
         }
         // override standard files list with only valid files
         files = validFiles;
-
-        // Call this method to signal the outside component that an upload is in progress
-        if(typeof this.props.uploadStarted === 'function' && files.length > 0) {
-            this.props.uploadStarted();
-        }
 
         // if multiple is set to false and user drops multiple files into the dropzone,
         // take the first one and notify user that only one file can be submitted
@@ -849,21 +881,37 @@ let ReactS3FineUploader = React.createClass({
         // set the new file array
         let filesToUpload = React.addons.update(this.state.filesToUpload, { $set: oldAndNewFiles });
 
-        this.setState({ filesToUpload });
+        this.setState({ filesToUpload }, () => {
+            // when files have been dropped or selected by a user, we want to propagate that
+            // information to the outside components, so they can act on it (in our case, because
+            // we want the user to define a thumbnail when the actual work is not renderable
+            // (like e.g. a .zip file))
+            if(typeof this.props.handleChangedFile === 'function') {
+                // its save to assume that the last file in `filesToUpload` is always
+                // the latest file added
+                this.props.handleChangedFile(this.state.filesToUpload.slice(-1)[0]);
+            }
+        });
     },
 
+    // This method has been made promise-based to immediately afterwards
+    // call a callback function (instantly after this.setState went through)
+    // This is e.g. needed when showing/hiding the optional thumbnail upload
+    // field in the registration form
     setStatusOfFile(fileId, status) {
-        let changeSet = {};
+        return Q.Promise((resolve) => {
+            let changeSet = {};
 
-        if(status === 'deleted' || status === 'canceled') {
-            changeSet.progress = { $set: 0 };
-        }
+            if(status === 'deleted' || status === 'canceled') {
+                changeSet.progress = { $set: 0 };
+            }
 
-        changeSet.status = { $set: status };
+            changeSet.status = { $set: status };
 
-        let filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
+            let filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
 
-        this.setState({ filesToUpload });
+            this.setState({ filesToUpload }, resolve);
+        });
     },
 
     isDropzoneInactive() {
@@ -891,7 +939,6 @@ let ReactS3FineUploader = React.createClass({
              multiple,
              areAssetsDownloadable,
              areAssetsEditable,
-             onInactive,
              enableLocalHashing,
              fileClassToUpload,
              fileInputElement: FileInputElement,
@@ -901,7 +948,6 @@ let ReactS3FineUploader = React.createClass({
             multiple,
             areAssetsDownloadable,
             areAssetsEditable,
-            onInactive,
             enableLocalHashing,
             uploadMethod,
             fileClassToUpload,
