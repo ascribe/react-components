@@ -33,6 +33,47 @@ const { shape,
 
 const ReactS3FineUploader = React.createClass({
     propTypes: {
+        areAssetsDownloadable: bool,
+        areAssetsEditable: bool,
+
+        handleChangedFile: func, // for when a file is dropped or selected, TODO: rename to onChangedFile
+        submitFile: func, // for when a file has been successfully uploaded, TODO: rename to onSubmitFile
+        onInactive: func, // for when the user does something while the uploader's inactive
+
+        // Handle form validation
+        setIsUploadReady: func,     //TODO: rename to setIsUploaderValidated
+        isReadyForFormSubmission: func,
+
+        // We encountered some cases where people had difficulties to upload their
+        // works to ascribe due to a slow internet connection.
+        // One solution we found in the process of tackling this problem was to hash
+        // the file in the browser using md5 and then uploading the resulting text document instead
+        // of the actual file.
+        //
+        // This boolean and string essentially enable that behavior.
+        // Right now, we determine which upload method to use by appending a query parameter,
+        // which should be passed into 'uploadMethod':
+        //   'hash':   upload using the hash
+        //   'upload': upload full file (default if not specified)
+        enableLocalHashing: bool,
+        uploadMethod: oneOf(['hash', 'upload']),
+
+        // A class of a file the user has to upload
+        // Needs to be defined both in singular as well as in plural
+        fileClassToUpload: shape({
+            singular: string,
+            plural: string
+        }),
+
+        // Uploading functionality of react fineuploader is disconnected from its UI
+        // layer, which means that literally every (properly adjusted) react element
+        // can handle the UI handling.
+        fileInputElement: oneOfType([
+            func,
+            element
+        ]),
+
+        // S3 helpers
         keyRoutine: shape({
             url: string,
             fileClass: string,
@@ -48,10 +89,11 @@ const ReactS3FineUploader = React.createClass({
                 number
             ])
         }),
-        handleChangedFile: func, // is for when a file is dropped or selected
-        submitFile: func, // is for when a file has been successfully uploaded, TODO: rename to handleSubmitFile
+
+        // FineUploader options
         autoUpload: bool,
         debug: bool,
+        multiple: bool,
         objectProperties: shape({
             acl: string
         }),
@@ -103,45 +145,9 @@ const ReactS3FineUploader = React.createClass({
             unsupportedBrowser: string
         }),
         formatFileName: func,
-        multiple: bool,
         retry: shape({
             enableAuto: bool
-        }),
-        setIsUploadReady: func,
-        isReadyForFormSubmission: func,
-        areAssetsDownloadable: bool,
-        areAssetsEditable: bool,
-        defaultErrorMessage: string,
-        onInactive: func,
-
-        // We encountered some cases where people had difficulties to upload their
-        // works to ascribe due to a slow internet connection.
-        // One solution we found in the process of tackling this problem was to hash
-        // the file in the browser using md5 and then uploading the resulting text document instead
-        // of the actual file.
-        //
-        // This boolean and string essentially enable that behavior.
-        // Right now, we determine which upload method to use by appending a query parameter,
-        // which should be passed into 'uploadMethod':
-        //   'hash':   upload using the hash
-        //   'upload': upload full file (default if not specified)
-        enableLocalHashing: bool,
-        uploadMethod: oneOf(['hash', 'upload']),
-
-        // A class of a file the user has to upload
-        // Needs to be defined both in singular as well as in plural
-        fileClassToUpload: shape({
-            singular: string,
-            plural: string
-        }),
-
-        // Uploading functionality of react fineuploader is disconnected from its UI
-        // layer, which means that literally every (properly adjusted) react element
-        // can handle the UI handling.
-        fileInputElement: oneOfType([
-            func,
-            element
-        ])
+        })
     },
 
     getDefaultProps() {
@@ -945,14 +951,18 @@ const ReactS3FineUploader = React.createClass({
 
     render() {
         const {
-             multiple,
-             areAssetsDownloadable,
-             areAssetsEditable,
-             onInactive,
-             enableLocalHashing,
-             fileClassToUpload,
-             fileInputElement: FileInputElement,
-             uploadMethod } = this.props;
+            multiple,
+            areAssetsDownloadable,
+            areAssetsEditable,
+            onInactive,
+            enableLocalHashing,
+            fileClassToUpload,
+            fileInputElement: FileInputElement,
+            showErrorPrompt,
+            uploadMethod } = this.props;
+
+        // Only show the error state once all files are finished
+        const showError = !uploadInProgress && showErrorPrompt && errorClass;
 
         const props = {
             multiple,
@@ -962,8 +972,8 @@ const ReactS3FineUploader = React.createClass({
             enableLocalHashing,
             uploadMethod,
             fileClassToUpload,
+            filesToUpload,
             onDrop: this.handleUploadFile,
-            filesToUpload: this.state.filesToUpload,
             handleDeleteFile: this.handleDeleteFile,
             handleCancelFile: this.handleCancelFile,
             handlePauseFile: this.handlePauseFile,

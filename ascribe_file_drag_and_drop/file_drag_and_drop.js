@@ -13,7 +13,12 @@ import { getLangText } from '../../../utils/lang_utils';
 // Taken from: https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDrop = React.createClass({
     propTypes: {
-        className: React.PropTypes.string,
+        areAssetsDownloadable: React.PropTypes.bool,
+        areAssetsEditable: React.PropTypes.bool,
+        multiple: React.PropTypes.bool,
+        dropzoneInactive: React.PropTypes.bool,
+        filesToUpload: React.PropTypes.array,
+
         onDrop: React.PropTypes.func.isRequired,
         onDragOver: React.PropTypes.func,
         onInactive: React.PropTypes.func,
@@ -22,10 +27,6 @@ let FileDragAndDrop = React.createClass({
         handleCancelFile: React.PropTypes.func,
         handlePauseFile: React.PropTypes.func,
         handleResumeFile: React.PropTypes.func,
-        multiple: React.PropTypes.bool,
-        dropzoneInactive: React.PropTypes.bool,
-        areAssetsDownloadable: React.PropTypes.bool,
-        areAssetsEditable: React.PropTypes.bool,
 
         enableLocalHashing: React.PropTypes.bool,
         uploadMethod: React.PropTypes.string,
