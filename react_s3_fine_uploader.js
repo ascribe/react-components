@@ -8,10 +8,13 @@ import S3Fetcher from '../../fetchers/s3_fetcher';
 
 import FileDragAndDrop from './ascribe_file_drag_and_drop/file_drag_and_drop';
 
+import ErrorQueueStore from '../../stores/error_queue_store';
+
 import GlobalNotificationModel from '../../models/global_notification_model';
 import GlobalNotificationActions from '../../actions/global_notification_actions';
 
 import AppConstants from '../../constants/application_constants';
+import { ErrorClasses, testErrorAgainstAll } from '../../constants/error_constants';
 
 import { displayValidFilesFilter, FileStatus, transformAllowedExtensionsToInputAcceptProp } from './react_s3_fine_uploader_utils';
 import { computeHashOfFile } from '../../utils/file_utils';
@@ -31,12 +34,16 @@ const { shape,
         element,
         arrayOf } = React.PropTypes;
 
+// After 5 manual retries, show the contact us prompt.
+const RETRY_ATTEMPT_TO_SHOW_CONTACT_US = 5;
+
 const ReactS3FineUploader = React.createClass({
     propTypes: {
         areAssetsDownloadable: bool,
         areAssetsEditable: bool,
         errorNotificationMessage: string,
         showErrorPrompt: bool,
+        setWarning: func, // for when the parent component wants to be notified of uploader warnings (ie. upload failed)
 
         handleChangedFile: func, // for when a file is dropped or selected, TODO: rename to onChangedFile
         submitFile: func, // for when a file has been successfully uploaded, TODO: rename to onSubmitFile
@@ -301,6 +308,9 @@ const ReactS3FineUploader = React.createClass({
         // proclaim that upload is not ready
         this.props.setIsUploadReady(false);
 
+        // reset any warnings propagated to parent
+        this.setWarning(false);
+
         // reset internal data structures of component
         this.setState(this.getInitialState());
     },
@@ -420,6 +430,12 @@ const ReactS3FineUploader = React.createClass({
             this.setState({ filesToUpload: newFilesToUpload });
         } else {
             throw new Error("You're accessing an index out of range of filesToUpload");
+        }
+    },
+
+    setWarning(hasWarning) {
+        if (typeof this.props.setWarning === 'function') {
+            this.props.setWarning(hasWarning);
         }
     },
 
@@ -597,6 +613,7 @@ const ReactS3FineUploader = React.createClass({
                 });
 
                 this.setState({ errorState });
+                this.setWarning(true);
             }
         } else {
             notificationMessage = errorReason || errorNotificationMessage;
@@ -766,6 +783,8 @@ const ReactS3FineUploader = React.createClass({
             },
             filesToUpload
         });
+
+        this.setWarning(false);
     },
 
     handleUploadFile(files) {
