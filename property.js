@@ -71,7 +71,8 @@ const Property = React.createClass({
             initialValue: null,
             value: null,
             isFocused: false,
-            errors: null
+            errors: null,
+            hasWarning: false
         };
     },
 
@@ -209,17 +210,20 @@ const Property = React.createClass({
         this.setState({errors: null});
     },
 
+    setWarning(hasWarning) {
+        this.setState({ hasWarning });
+    },
+
     getClassName() {
-        if(!this.state.expanded && !this.props.checkboxLabel){
+        if (!this.state.expanded && !this.props.checkboxLabel) {
             return 'is-hidden';
-        }
-        if(!this.props.editable){
+        } else if (!this.props.editable) {
             return 'is-fixed';
-        }
-        if (this.state.errors){
+        } else if (this.state.errors) {
             return 'is-error';
-        }
-        if(this.state.isFocused) {
+        } else if (this.state.hasWarning) {
+            return 'is-warning';
+        } else if (this.state.isFocused) {
             return 'is-focused';
         } else {
             return '';
@@ -245,6 +249,7 @@ const Property = React.createClass({
                     onChange: this.handleChange,
                     onFocus: this.handleFocus,
                     onBlur: this.handleBlur,
+                    setWarning: this.setWarning,
                     disabled: !this.props.editable,
                     ref: 'input',
                     name: this.props.name
