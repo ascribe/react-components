@@ -23,7 +23,6 @@ let FileDragAndDrop = React.createClass({
 
         onDrop: React.PropTypes.func.isRequired,
         onDragOver: React.PropTypes.func,
-        onInactive: React.PropTypes.func,
         handleDeleteFile: React.PropTypes.func,
         handleCancelFile: React.PropTypes.func,
         handlePauseFile: React.PropTypes.func,
@@ -70,28 +69,21 @@ let FileDragAndDrop = React.createClass({
     handleDrop(event) {
         event.preventDefault();
         event.stopPropagation();
-        let files;
 
-        if(this.props.dropzoneInactive) {
-            // if there is a handle function for doing stuff
-            // when the dropzone is inactive, then call it
-            if(this.props.onInactive) {
-                this.props.onInactive();
+        if (!this.props.dropzoneInactive) {
+            let files;
+
+            // handle Drag and Drop
+            if(event.dataTransfer && event.dataTransfer.files.length > 0) {
+                files = event.dataTransfer.files;
+            } else if(event.target.files) { // handle input type file
+                files = event.target.files;
             }
-            return;
-        }
 
-        // handle Drag and Drop
-        if(event.dataTransfer && event.dataTransfer.files.length > 0) {
-            files = event.dataTransfer.files;
-        } else if(event.target.files) { // handle input type file
-            files = event.target.files;
+            if(typeof this.props.onDrop === 'function' && files) {
+              this.props.onDrop(files);
+            }
         }
-
-        if(typeof this.props.onDrop === 'function' && files) {
-            this.props.onDrop(files);
-        }
-
     },
 
     handleDeleteFile(fileId) {
@@ -123,31 +115,25 @@ let FileDragAndDrop = React.createClass({
     },
 
     handleOnClick() {
-        let evt;
-        // when multiple is set to false and the user already uploaded a piece,
-        // do not propagate event
-        if(this.props.dropzoneInactive) {
-            // if there is a handle function for doing stuff
-            // when the dropzone is inactive, then call it
-            if(this.props.onInactive) {
-                this.props.onInactive();
+        // do not propagate event if the drop zone's inactive,
+        // for example when multiple is set to false and the user already uploaded a piece
+        if (!this.props.dropzoneInactive) {
+            let evt;
+
+            try {
+                evt = new MouseEvent('click', {
+                    view: window,
+                    bubbles: true,
+                    cancelable: true
+                });
+            } catch(e) {
+                // For browsers that do not support the new MouseEvent syntax
+                evt = document.createEvent('MouseEvents');
+                evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
             }
-            return;
-        }
 
-        try {
-            evt = new MouseEvent('click', {
-                view: window,
-                bubbles: true,
-                cancelable: true
-            });
-        } catch(e) {
-            // For browsers that do not support the new MouseEvent syntax
-            evt = document.createEvent('MouseEvents');
-            evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
+            this.refs.fileSelector.getDOMNode().dispatchEvent(evt);
         }
-
-        this.refs.fileSelector.getDOMNode().dispatchEvent(evt);
     },
 
     getErrorDialog(failedFiles) {

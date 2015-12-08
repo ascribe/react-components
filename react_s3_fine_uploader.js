@@ -47,7 +47,6 @@ const ReactS3FineUploader = React.createClass({
 
         handleChangedFile: func, // for when a file is dropped or selected, TODO: rename to onChangedFile
         submitFile: func, // for when a file has been successfully uploaded, TODO: rename to onSubmitFile
-        onInactive: func, // for when the user does something while the uploader's inactive
 
         // Handle form validation
         setIsUploadReady: func,     //TODO: rename to setIsUploaderValidated
@@ -317,7 +316,7 @@ const ReactS3FineUploader = React.createClass({
 
     // Cancel uploads and clear previously selected files on the input element
     cancelUploads(id) {
-        !!id ? this.state.uploader.cancel(id) : this.state.uploader.cancelAll();
+        typeof id !== 'undefined' ? this.state.uploader.cancel(id) : this.state.uploader.cancelAll();
 
         // Reset the file input element to clear the previously selected files so that
         // the user can reselect them again.
@@ -425,11 +424,13 @@ const ReactS3FineUploader = React.createClass({
 
         if(fileId < filesToUpload.length) {
             const changeSet = { $set: url };
-            const newFilesToUpload = React.addons.update(filesToUpload, { [fileId]: { thumbnailUrl: changeSet } });
+            const newFilesToUpload = React.addons.update(filesToUpload, {
+                [fileId]: { thumbnailUrl: changeSet }
+            });
 
             this.setState({ filesToUpload: newFilesToUpload });
         } else {
-            throw new Error("You're accessing an index out of range of filesToUpload");
+            throw new Error('Accessing an index out of range of filesToUpload');
         }
     },
 
@@ -1052,13 +1053,12 @@ const ReactS3FineUploader = React.createClass({
     render() {
         const { errorState: { errorClass }, filesToUpload, uploadInProgress } = this.state;
         const {
-            multiple,
             areAssetsDownloadable,
             areAssetsEditable,
-            onInactive,
             enableLocalHashing,
             fileClassToUpload,
             fileInputElement: FileInputElement,
+            multiple,
             showErrorPrompt,
             uploadMethod } = this.props;
 
@@ -1069,7 +1069,6 @@ const ReactS3FineUploader = React.createClass({
             multiple,
             areAssetsDownloadable,
             areAssetsEditable,
-            onInactive,
             enableLocalHashing,
             uploadMethod,
             fileClassToUpload,
