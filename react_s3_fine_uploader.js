@@ -35,6 +35,8 @@ const ReactS3FineUploader = React.createClass({
     propTypes: {
         areAssetsDownloadable: bool,
         areAssetsEditable: bool,
+        errorNotificationMessage: string,
+        showErrorPrompt: bool,
 
         handleChangedFile: func, // for when a file is dropped or selected, TODO: rename to onChangedFile
         submitFile: func, // for when a file has been successfully uploaded, TODO: rename to onSubmitFile
@@ -152,8 +154,18 @@ const ReactS3FineUploader = React.createClass({
 
     getDefaultProps() {
         return {
+            errorNotificationMessage: getLangText('Oops, we had a problem uploading your file. Please contact us if this happens repeatedly.'),
+            showErrorPrompt: false,
+            fileClassToUpload: {
+                singular: getLangText('file'),
+                plural: getLangText('files')
+            },
+            fileInputElement: FileDragAndDrop,
+
+            // FineUploader options
             autoUpload: true,
             debug: false,
+            multiple: false,
             objectProperties: {
                 acl: 'public-read',
                 bucket: 'exampleBucket'
@@ -195,22 +207,20 @@ const ReactS3FineUploader = React.createClass({
                     name = name.slice(0, 15) + '...' + name.slice(-15);
                 }
                 return name;
-            },
-            multiple: false,
-            defaultErrorMessage: getLangText('Unexpected error. Please contact us if this happens repeatedly.'),
-            fileClassToUpload: {
-                singular: getLangText('file'),
-                plural: getLangText('files')
-            },
-            fileInputElement: FileDragAndDrop
+            }
         };
     },
 
     getInitialState() {
         return {
             filesToUpload: [],
-            uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
+            uploader: this.createNewFineUploader(),
             csrfToken: getCookie(AppConstants.csrftoken),
+            errorState: {
+                manualRetryAttempt: 0,
+                errorClass: undefined
+            },
+            uploadInProgress: false,
 
             // -1: aborted
             // -2: uninitialized
@@ -228,7 +238,7 @@ const ReactS3FineUploader = React.createClass({
         let potentiallyNewCSRFToken = getCookie(AppConstants.csrftoken);
         if(this.state.csrfToken !== potentiallyNewCSRFToken) {
             this.setState({
-                uploader: new fineUploader.s3.FineUploaderBasic(this.propsToConfig()),
+                uploader: this.createNewFineUploader(),
                 csrfToken: potentiallyNewCSRFToken
             });
         }
@@ -241,8 +251,12 @@ const ReactS3FineUploader = React.createClass({
         this.state.uploader.cancelAll();
     },
 
+    createNewFineUploader() {
+        return new fineUploader.s3.FineUploaderBasic(this.propsToConfig());
+    },
+
     propsToConfig() {
-        let objectProperties = this.props.objectProperties;
+        const objectProperties = Object.assign({}, this.props.objectProperties);
         objectProperties.key = this.requestKey;
 
         return {
@@ -263,6 +277,7 @@ const ReactS3FineUploader = React.createClass({
             multiple: this.props.multiple,
             retry: this.props.retry,
             callbacks: {
+                onAllComplete: this.onAllComplete,
                 onComplete: this.onComplete,
                 onCancel: this.onCancel,
                 onProgress: this.onProgress,
@@ -408,6 +423,65 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
+    checkFormSubmissionReady() {
+        const { isReadyForFormSubmission, setIsUploadReady } = this.props;
+
+        // since the form validation props isReadyForFormSubmission and setIsUploadReady
+        // are optional, we'll only trigger them when they're actually defined
+        if (typeof isReadyForFormSubmission === 'function' && typeof setIsUploadReady === 'function') {
+            // set uploadReady to true if the uploader's ready for submission
+            setIsUploadReady(isReadyForFormSubmission(this.state.filesToUpload));
+        } else {
+            console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
+        }
+    },
+
+    isFileValid(file) {
+        const { validation } = this.props;
+
+        if (validation && file.size > validation.sizeLimit) {
+            const fileSizeInMegaBytes = validation.sizeLimit / 1000000;
+
+            const notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
+
+            return false;
+        } else {
+            return true;
+        }
+    },
+
+    getUploadErrorClass({ type = 'upload', reason, xhr }) {
+        const { manualRetryAttempt } = this.state.errorState;
+        let matchedErrorClass;
+
+        // Use the contact us error class if they've retried a number of times
+        // and are still unsuccessful
+        if (manualRetryAttempt === RETRY_ATTEMPT_TO_SHOW_CONTACT_US) {
+            matchedErrorClass = ErrorClasses.upload.contactUs;
+        } else {
+            matchedErrorClass = testErrorAgainstAll({ type, reason, xhr });
+
+            // If none found, show the next error message
+            if (!matchedErrorClass) {
+                matchedErrorClass = ErrorQueueStore.getNextError('upload');
+            }
+        }
+
+        return matchedErrorClass;
+    },
+
+    getXhrErrorComment(xhr) {
+        if (xhr) {
+            return {
+                response: xhr.response,
+                url: xhr.responseURL,
+                status: xhr.status,
+                statusText: xhr.statusText
+            };
+        }
+    },
+
     /* FineUploader specific callback function handlers */
 
     onUploadChunk(id, name, chunkData) {
@@ -438,7 +512,14 @@ const ReactS3FineUploader = React.createClass({
 
             this.setState({ startedChunks });
         }
+    },
 
+    onAllComplete(succeed, failed) {
+        if (this.state.uploadInProgress) {
+            this.setState({
+                uploadInProgress: false
+            });
+        }
     },
 
     onComplete(id, name, res, xhr) {
@@ -464,29 +545,14 @@ const ReactS3FineUploader = React.createClass({
             // Only after the blob has been created server-side, we can make the form submittable.
             this.createBlob(files[id])
                 .then(() => {
-                    // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitFile
-                    // are optional, we'll only trigger them when they're actually defined
-                    if(this.props.submitFile) {
+                    if (typeof this.props.submitFile === 'function') {
                         this.props.submitFile(files[id]);
                     } else {
                         console.warn('You didn\'t define submitFile as a prop in react-s3-fine-uploader');
                     }
 
-                    // for explanation, check comment of if statement above
-                    if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
-                        // also, lets check if after the completion of this upload,
-                        // the form is ready for submission or not
-                        if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
-                            // if so, set uploadstatus to true
-                            this.props.setIsUploadReady(true);
-                        } else {
-                            this.props.setIsUploadReady(false);
-                        }
-                    } else {
-                        console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
-                    }
-                })
-                .catch(this.onErrorPromiseProxy);
+                    this.checkFormSubmissionReady();
+                });
         }
     },
 
@@ -502,42 +568,43 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onError(id, name, errorReason, xhr) {
+        const { errorNotificationMessage, showErrorPrompt } = this.props;
+        const { chunks, filesToUpload } = this.state;
+
         console.logGlobal(errorReason, false, {
-            files: this.state.filesToUpload,
-            chunks: this.state.chunks,
+            files: filesToUpload,
+            chunks: chunks,
             xhr: this.getXhrErrorComment(xhr)
         });
 
-        this.props.setIsUploadReady(true);
-        this.cancelUploads();
+        let notificationMessage;
 
-        let notification = new GlobalNotificationModel(errorReason || this.props.defaultErrorMessage, 'danger', 5000);
-        GlobalNotificationActions.appendGlobalNotification(notification);
-    },
+        if (showErrorPrompt) {
+            notificationMessage = errorNotificationMessage;
 
-    getXhrErrorComment(xhr) {
-        if (xhr) {
-            return {
-                response: xhr.response,
-                url: xhr.responseURL,
-                status: xhr.status,
-                statusText: xhr.statusText
-            };
-        }
-    },
+            this.setStatusOfFile(id, FileStatus.UPLOAD_FAILED);
 
-    isFileValid(file) {
-        if(file.size > this.props.validation.sizeLimit) {
+            // If we've already found an error on this upload, just ignore other errors
+            // that pop up. They'll likely pop up again when the user retries.
+            if (!this.state.errorState.errorClass) {
+                const errorState = React.addons.update(this.state.errorState, {
+                    errorClass: {
+                        $set: this.getUploadErrorClass({
+                            reason: errorReason,
+                            xhr
+                        })
+                    }
+                });
 
-            let fileSizeInMegaBytes = this.props.validation.sizeLimit / 1000000;
-
-            let notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-
-            return false;
+                this.setState({ errorState });
+            }
         } else {
-            return true;
+            notificationMessage = errorReason || errorNotificationMessage;
+            this.cancelUploads();
         }
+
+        const notification = new GlobalNotificationModel(notificationMessage, 'danger', 5000);
+        GlobalNotificationActions.appendGlobalNotification(notification);
     },
 
     onCancel(id) {
@@ -552,17 +619,18 @@ const ReactS3FineUploader = React.createClass({
         let notification = new GlobalNotificationModel(getLangText('File upload canceled'), 'success', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
 
-        // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitFile
-        // are optional, we'll only trigger them when they're actually defined
-        if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
-            if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
-                // if so, set uploadstatus to true
-                this.props.setIsUploadReady(true);
-            } else {
-                this.props.setIsUploadReady(false);
-            }
-        } else {
-            console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
+        this.checkFormSubmissionReady();
+
+        // FineUploader's onAllComplete event doesn't fire if all files are cancelled
+        // so we need to double check if this is the last file getting cancelled.
+        //
+        // Because we're calling FineUploader.getInProgress() in a cancel callback,
+        // the current file getting cancelled is still considered to be in progress
+        // so there will be one file left in progress when we're cancelling the last file.
+        if (this.state.uploader.getInProgress() === 1) {
+            this.setState({
+                uploadInProgress: false
+            });
         }
 
         return true;
@@ -619,20 +687,7 @@ const ReactS3FineUploader = React.createClass({
             GlobalNotificationActions.appendGlobalNotification(notification);
         }
 
-        // since the form validation props isReadyForFormSubmission, setIsUploadReady and submitFile
-        // are optional, we'll only trigger them when they're actually defined
-        if(this.props.isReadyForFormSubmission && this.props.setIsUploadReady) {
-            // also, lets check if after the completion of this upload,
-            // the form is ready for submission or not
-            if(this.props.isReadyForFormSubmission(this.state.filesToUpload)) {
-                // if so, set uploadstatus to true
-                this.props.setIsUploadReady(true);
-            } else {
-                this.props.setIsUploadReady(false);
-            }
-        } else {
-            console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
-        }
+        this.checkFormSubmissionReady();
     },
 
     handleDeleteFile(fileId) {
@@ -690,6 +745,27 @@ const ReactS3FineUploader = React.createClass({
         } else {
             throw new Error(getLangText('File upload could not be resumed.'));
         }
+    },
+
+    handleRetryFiles(fileIds) {
+        let filesToUpload = this.state.filesToUpload;
+
+        if (fileIds.constructor !== Array) {
+            fileIds = [ fileIds ];
+        }
+
+        fileIds.forEach((fileId) => {
+            this.state.uploader.retry(fileId);
+            filesToUpload = React.addons.update(filesToUpload, { [fileId]: { status: { $set: FileStatus.UPLOADING } } });
+        });
+
+        this.setState({
+            // Reset the error class along with the retry
+            errorState: {
+                manualRetryAttempt: this.state.errorState.manualRetryAttempt + 1
+            },
+            filesToUpload
+        });
     },
 
     handleUploadFile(files) {
@@ -819,6 +895,9 @@ const ReactS3FineUploader = React.createClass({
             if(files.length > 0) {
                 this.state.uploader.addFiles(files);
                 this.synchronizeFileLists(files);
+                this.setState({
+                    uploadInProgress: true
+                });
             }
         }
     },
@@ -920,7 +999,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isDropzoneInactive() {
-        const { areAssetsEditable, enableLocalHashing, multiple, showErrorStates, uploadMethod } = this.props;
+        const { areAssetsEditable, enableLocalHashing, multiple, showErrorPrompt, uploadMethod } = this.props;
         const { errorState, filesToUpload } = this.state;
 
         const filesToDisplay = filesToUpload.filter((file) => {
@@ -931,7 +1010,7 @@ const ReactS3FineUploader = React.createClass({
         });
 
         if ((enableLocalHashing && !uploadMethod) || !areAssetsEditable ||
-                (showErrorStates && errorState.errorClass) ||
+                (showErrorPrompt && errorState.errorClass) ||
                 (!multiple && filesToDisplay.length > 0)) {
             return true;
         } else {
@@ -940,7 +1019,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     getAllowedExtensions() {
-        let { validation } = this.props;
+        const { validation } = this.props;
 
         if(validation && validation.allowedExtensions && validation.allowedExtensions.length > 0) {
             return transformAllowedExtensionsToInputAcceptProp(validation.allowedExtensions);
@@ -950,6 +1029,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     render() {
+        const { errorState: { errorClass }, filesToUpload, uploadInProgress } = this.state;
         const {
             multiple,
             areAssetsDownloadable,
@@ -973,11 +1053,15 @@ const ReactS3FineUploader = React.createClass({
             uploadMethod,
             fileClassToUpload,
             filesToUpload,
+            uploadInProgress,
+            errorClass,
+            showError,
             onDrop: this.handleUploadFile,
             handleDeleteFile: this.handleDeleteFile,
             handleCancelFile: this.handleCancelFile,
             handlePauseFile: this.handlePauseFile,
             handleResumeFile: this.handleResumeFile,
+            handleRetryFiles: this.handleRetryFiles,
             handleCancelHashing: this.handleCancelHashing,
             dropzoneInactive: this.isDropzoneInactive(),
             hashingProgress: this.state.hashingProgress,

@@ -39,6 +39,12 @@ let FileDragAndDrop = React.createClass({
         // to -1 which is code for: aborted
         handleCancelHashing: React.PropTypes.func,
 
+        showError: React.PropTypes.bool,
+        errorClass: React.PropTypes.shape({
+            name: React.PropTypes.string,
+            prettifiedText: React.PropTypes.string
+        }),
+
         // A class of a file the user has to upload
         // Needs to be defined both in singular as well as in plural
         fileClassToUpload: React.PropTypes.shape({
@@ -144,6 +150,17 @@ let FileDragAndDrop = React.createClass({
         this.refs.fileSelector.getDOMNode().dispatchEvent(evt);
     },
 
+    getErrorDialog(failedFiles) {
+        const { errorClass } = this.props;
+
+        return (
+            <FileDragAndDropErrorDialog
+                errorClass={errorClass}
+                files={failedFiles}
+                handleRetryFiles={this.props.handleRetryFiles} />
+        );
+    },
+
     getPreviewIterator() {
         const { areAssetsDownloadable, areAssetsEditable, filesToUpload } = this.props;
 
@@ -179,6 +196,8 @@ let FileDragAndDrop = React.createClass({
             hashingProgress,
             handleCancelHashing,
             multiple,
+            showError,
+            errorClass,
             fileClassToUpload,
             allowedExtensions } = this.props;
 
@@ -216,6 +235,7 @@ let FileDragAndDrop = React.createClass({
                     onDrag={this.handleDrop}
                     onDragOver={this.handleDragOver}
                     onDrop={this.handleDrop}>
+                        {hasError ? this.getErrorDialog(failedFiles) : this.getPreviewIterator()}
                         {!hasFiles && !hasError ? this.getUploadDialog() : null}
                         {/*
                             Opera doesn't trigger simulated click events
