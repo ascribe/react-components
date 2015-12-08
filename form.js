@@ -124,8 +124,18 @@ let Form = React.createClass({
     getFormData() {
         let data = {};
 
-        for (let ref in this.refs) {
-            data[this.refs[ref].props.name] = this.refs[ref].state.value;
+        for (let refName in this.refs) {
+            const ref = this.refs[refName];
+
+            if (ref.state && 'value' in ref.state) {
+                // An input can also provide an `Object` as a value
+                // which we're going to merge with `data` (overwrites)
+                if(ref.state.value && ref.state.value.constructor === Object) {
+                    Object.assign(data, ref.state.value);
+                } else {
+                    data[ref.props.name] = ref.state.value;
+                }
+            }
         }
 
         if (typeof this.props.getFormData === 'function') {
@@ -238,7 +248,15 @@ let Form = React.createClass({
     renderChildren() {
         return ReactAddons.Children.map(this.props.children, (child, i) => {
             if (child) {
-                return ReactAddons.addons.cloneWithProps(child, {
+                // Since refs will be overwritten by this functions return statement,
+                // we still want to be able to define refs for nested `Form` or `Property`
+                // children, which is why we're upfront simply invoking the callback-ref-
+                // function before overwriting it.
+                if(typeof child.ref === 'function' && this.refs[child.props.name]) {
+                    child.ref(this.refs[child.props.name]);
+                }
+
+                return React.cloneElement(child, {
                     handleChange: this.handleChangeChild,
                     ref: child.props.name,
                     key: i,
