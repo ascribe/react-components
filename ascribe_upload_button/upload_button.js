@@ -61,7 +61,7 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
         },
 
         getUploadedFile() {
-            return this.props.filesToUpload.filter((file) => file.status === FileStatus.UPLOAD_SUCESSFUL)[0];
+            return this.props.filesToUpload.filter((file) => file.status === FileStatus.UPLOAD_SUCCESSFUL)[0];
         },
 
         clearSelection() {

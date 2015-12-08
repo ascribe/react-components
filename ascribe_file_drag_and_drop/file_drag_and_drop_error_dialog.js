@@ -57,7 +57,7 @@ let FileDragAndDropErrorDialog = React.createClass({
                     {this.getRetryButton('Retry')}
                 </div>
                 <span className={classNames('file-drag-and-drop-error-icon-container', { 'file-drag-and-drop-error-icon-container-multiple-files': multipleFiles })}>
-                    <span className='file-drag-and-drop-error-icon'></span>
+                    <span className='ascribe-icon icon-ascribe-thin-cross'></span>
                 </span>
                 <div className='file-drag-and-drop-error-file-names'>
                     <ul>
