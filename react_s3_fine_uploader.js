@@ -547,7 +547,7 @@ const ReactS3FineUploader = React.createClass({
                 xhr: this.getXhrErrorComment(xhr)
             });
         // onError will catch any errors, so we can ignore them here
-        } else if (!res.error || res.success) {
+        } else if (!res.error && res.success) {
             let files = this.state.filesToUpload;
 
             // Set the state of the completed file to 'upload successful' in order to
@@ -596,13 +596,13 @@ const ReactS3FineUploader = React.createClass({
         let notificationMessage;
 
         if (showErrorPrompt) {
-            notificationMessage = errorNotificationMessage;
-
             this.setStatusOfFile(id, FileStatus.UPLOAD_FAILED);
 
             // If we've already found an error on this upload, just ignore other errors
             // that pop up. They'll likely pop up again when the user retries.
             if (!this.state.errorState.errorClass) {
+                notificationMessage = errorNotificationMessage;
+
                 const errorState = React.addons.update(this.state.errorState, {
                     errorClass: {
                         $set: this.getUploadErrorClass({
@@ -620,8 +620,10 @@ const ReactS3FineUploader = React.createClass({
             this.cancelUploads();
         }
 
-        const notification = new GlobalNotificationModel(notificationMessage, 'danger', 5000);
-        GlobalNotificationActions.appendGlobalNotification(notification);
+        if (notificationMessage) {
+            const notification = new GlobalNotificationModel(notificationMessage, 'danger', 5000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
+        }
     },
 
     onCancel(id) {
@@ -1061,7 +1063,7 @@ const ReactS3FineUploader = React.createClass({
             uploadMethod } = this.props;
 
         // Only show the error state once all files are finished
-        const showError = !uploadInProgress && showErrorPrompt && errorClass;
+        const showError = !uploadInProgress && showErrorPrompt && errorClass != null;
 
         const props = {
             multiple,
