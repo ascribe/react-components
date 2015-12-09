@@ -479,8 +479,12 @@ const ReactS3FineUploader = React.createClass({
         } else {
             matchedErrorClass = testErrorAgainstAll({ type, reason, xhr });
 
-            // If none found, show the next error message
-            if (!matchedErrorClass) {
+            // If none found, check the internet connection
+            // TODO: use a better mechanism for checking network state, ie. offline.js
+            if ('onLine' in window.navigator && !window.navigator.onLine) {
+                matchedErrorClass = ErrorClasses.upload.offline;
+            } else {
+                // Otherwise, show the next error message in the queue
                 matchedErrorClass = ErrorQueueStore.getNextError('upload');
             }
         }
