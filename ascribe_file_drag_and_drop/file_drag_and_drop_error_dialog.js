@@ -38,7 +38,7 @@ let FileDragAndDropErrorDialog = React.createClass({
         return (
             <div className='file-drag-and-drop-error'>
                 <h4>Let us help you</h4>
-                <p>{getLangText('Still having problems? Send us a message!')}</p>
+                <p>{getLangText('Still having problems? Send us a message.')}</p>
                 {this.getRetryButton('Contact us', true)}
             </div>
         );
