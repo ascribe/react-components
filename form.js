@@ -208,7 +208,7 @@ let Form = React.createClass({
         if (this.state.submitted){
             return this.props.spinner;
         }
-        if (this.props.buttons){
+        if ('buttons' in this.props) {
             return this.props.buttons;
         }
         let buttons = null;
