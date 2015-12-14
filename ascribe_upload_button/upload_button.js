@@ -71,17 +71,9 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
         handleOnClick() {
             if(!this.state.disabled) {
                 let evt;
-                const uploadingFiles = this.getUploadingFiles();
-                const uploadedFile = this.getUploadedFile();
 
-                this.clearSelection();
-                if(uploadingFiles.length) {
-                    this.props.handleCancelFile(uploadingFiles[0].id);
-                } else if(uploadedFile && !uploadedFile.s3UrlSafe) {
-                    this.props.handleCancelFile(uploadedFile.id);
-                } else if(uploadedFile && uploadedFile.s3UrlSafe) {
-                    this.props.handleDeleteFile(uploadedFile.id);
-                }
+                // First, remove any currently uploading or uploaded items
+                this.onClickRemove();
 
                 try {
                     evt = new MouseEvent('click', {
@@ -99,18 +91,19 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
             }
         },
 
-        onClickCancel() {
-            this.clearSelection();
-            const uploadingFile = this.getUploadingFiles()[0];
-            this.props.handleCancelFile(uploadingFile.id);
-        },
-
         onClickRemove() {
-            this.clearSelection();
+            const uploadingFiles = this.getUploadingFiles();
             const uploadedFile = this.getUploadedFile();
-            this.props.handleDeleteFile(uploadedFile.id);
-        },
 
+            this.clearSelection();
+            if(uploadingFiles.length) {
+                this.props.handleCancelFile(uploadingFiles[0].id);
+            } else if(uploadedFile && !uploadedFile.s3UrlSafe) {
+                this.props.handleCancelFile(uploadedFile.id);
+            } else if(uploadedFile && uploadedFile.s3UrlSafe) {
+                this.props.handleDeleteFile(uploadedFile.id);
+            }
+        },
 
         getButtonLabel() {
             let { filesToUpload, fileClassToUpload } = this.props;
@@ -133,7 +126,7 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
                 return (
                     <span>
                         {' ' + truncateTextAtCharIndex(uploadingFiles[0].name, 40) + ' '}
-                        [<a onClick={this.onClickCancel}>{getLangText('cancel upload')}</a>]
+                        [<a onClick={this.onClickRemove}>{getLangText('cancel upload')}</a>]
                     </span>
                 );
             } else if(uploadedFile) {
