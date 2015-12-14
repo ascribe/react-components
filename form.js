@@ -182,7 +182,7 @@ let Form = React.createClass({
                 delete formData.password;
             }
 
-            console.logGlobal(err, false, formData);
+            console.logGlobal(err, formData);
 
             if(this.props.isInline) {
                 let notification = new GlobalNotificationModel(getLangText('Something went wrong, please try again later'), 'danger');
