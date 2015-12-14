@@ -344,6 +344,7 @@ const ReactS3FineUploader = React.createClass({
                 // still we warn the user of this component
                 console.warn('createBlobRoutine was not defined for ReactS3FineUploader. Continuing without creating the blob on the server.');
                 resolve();
+                return;
             }
 
             window.fetch(createBlobRoutine.url, {
