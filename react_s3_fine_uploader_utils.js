@@ -76,6 +76,7 @@ export function displayValidProgressFilesFilter(file) {
  */
 export function transformAllowedExtensionsToInputAcceptProp(allowedExtensions) {
     // Get the mime type of the extension if it's defined or add a dot in front of the extension
+    // This is important for Safari as it doesn't understand just the extension.
     let prefixedAllowedExtensions = allowedExtensions.map((ext) => {
         return MimeTypes[ext] || ('.' + ext);
     });
