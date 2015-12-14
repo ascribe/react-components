@@ -440,7 +440,7 @@ const ReactS3FineUploader = React.createClass({
     onComplete(id, name, res, xhr) {
         // There has been an issue with the server's connection
         if (xhr && xhr.status === 0 && res.success) {
-            console.logGlobal(new Error('Upload succeeded with a status code 0'), false, {
+            console.logGlobal(new Error('Upload succeeded with a status code 0'), {
                 files: this.state.filesToUpload,
                 chunks: this.state.chunks,
                 xhr: this.getXhrErrorComment(xhr)
@@ -498,7 +498,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onError(id, name, errorReason, xhr) {
-        console.logGlobal(errorReason, false, {
+        console.logGlobal(errorReason, {
             files: this.state.filesToUpload,
             chunks: this.state.chunks,
             xhr: this.getXhrErrorComment(xhr)
