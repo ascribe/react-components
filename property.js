@@ -241,6 +241,9 @@ const Property = React.createClass({
 
     handleCheckboxToggle() {
         this.setExpanded(!this.state.expanded);
+        this.setState({
+            value: this.state.initialValue
+        });
     },
 
     renderChildren(style) {
