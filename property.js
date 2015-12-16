@@ -240,10 +240,17 @@ const Property = React.createClass({
     },
 
     handleCheckboxToggle() {
-        this.setExpanded(!this.state.expanded);
-        this.setState({
-            value: this.state.initialValue
-        });
+        const expanded = !this.state.expanded;
+
+        this.setExpanded(expanded);
+
+        // Reset the value to be the initial value when the checkbox is unticked since the
+        // user doesn't want to specify their own value.
+        if (!expanded) {
+            this.setState({
+                value: this.state.initialValue
+            });
+        }
     },
 
     renderChildren(style) {
