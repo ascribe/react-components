@@ -50,6 +50,7 @@ const ReactS3FineUploader = React.createClass({
         }),
         handleChangedFile: func, // is for when a file is dropped or selected
         submitFile: func, // is for when a file has been successfully uploaded, TODO: rename to handleSubmitFile
+        onValidationFailed: func,
         autoUpload: bool,
         debug: bool,
         objectProperties: shape({
@@ -523,12 +524,15 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isFileValid(file) {
-        if(file.size > this.props.validation.sizeLimit) {
+        if (file.size > this.props.validation.sizeLimit) {
+            const fileSizeInMegaBytes = this.props.validation.sizeLimit / 1000000;
 
-            let fileSizeInMegaBytes = this.props.validation.sizeLimit / 1000000;
-
-            let notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
+            const notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
+
+            if (typeof this.props.onValidationFailed === 'function') {
+                this.props.onValidationFailed(file);
+            }
 
             return false;
         } else {
