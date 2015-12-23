@@ -49,7 +49,7 @@ const FileDragAndDropPreviewImage = React.createClass({
         };
 
         let actionSymbol;
-        
+
         // only if assets are actually downloadable, there should be a download icon if the process is already at
         // 100%. If not, no actionSymbol should be displayed
         if(progress === 100 && areAssetsDownloadable) {
@@ -68,7 +68,7 @@ const FileDragAndDropPreviewImage = React.createClass({
 
         return (
             <div
-                className="file-drag-and-drop-preview-image"
+                className="file-drag-and-drop-preview-image hidden-print"
                 style={imageStyle}>
                     <AclProxy
                         show={showProgress}>
