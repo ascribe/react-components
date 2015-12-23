@@ -26,7 +26,7 @@ let FileDragAndDropDialog = React.createClass({
     getDragDialog(fileClass) {
         if (dragAndDropAvailable) {
             return [
-                <p>{getLangText('Drag %s here', fileClass)}</p>,
+                <p className="file-drag-and-drop-dialog-title">{getLangText('Drag %s here', fileClass)}</p>,
                 <p>{getLangText('or')}</p>
             ];
         } else {
@@ -46,6 +46,8 @@ let FileDragAndDropDialog = React.createClass({
         if (hasFiles) {
             return null;
         } else {
+            let dialogElement;
+
             if (enableLocalHashing && !uploadMethod) {
                 const currentQueryParams = getCurrentQueryParams();
 
@@ -55,9 +57,9 @@ let FileDragAndDropDialog = React.createClass({
                 const queryParamsUpload = Object.assign({}, currentQueryParams);
                 queryParamsUpload.method = 'upload';
 
-                return (
-                    <div className="file-drag-and-drop-dialog present-options">
-                        <p>{getLangText('Would you rather')}</p>
+                dialogElement = (
+                    <div className="present-options">
+                        <p className="file-drag-and-drop-dialog-title">{getLangText('Would you rather')}</p>
                         {/*
                             The frontend in live is hosted under /app,
                             Since `Link` is appending that base url, if its defined
@@ -85,32 +87,40 @@ let FileDragAndDropDialog = React.createClass({
                 );
             } else {
                 if (multipleFiles) {
-                    return (
-                        <span className="file-drag-and-drop-dialog">
-                            {this.getDragDialog(fileClassToUpload.plural)}
-                            <span
-                                className="btn btn-default"
-                                onClick={onClick}>
-                                    {getLangText('choose %s to upload', fileClassToUpload.plural)}
-                            </span>
+                    dialogElement = [
+                        this.getDragDialog(fileClassToUpload.plural),
+                        <span
+                            className="btn btn-default"
+                            onClick={onClick}>
+                                {getLangText('choose %s to upload', fileClassToUpload.plural)}
                         </span>
-                    );
+                    ];
                 } else {
                     const dialog = uploadMethod === 'hash' ? getLangText('choose a %s to hash', fileClassToUpload.singular)
                                                            : getLangText('choose a %s to upload', fileClassToUpload.singular);
 
-                    return (
-                        <span className="file-drag-and-drop-dialog">
-                            {this.getDragDialog(fileClassToUpload.singular)}
-                            <span
-                                className="btn btn-default"
-                                onClick={onClick}>
-                                    {dialog}
-                            </span>
+                    dialogElement = [
+                        this.getDragDialog(fileClassToUpload.singular),
+                        <span
+                            className="btn btn-default"
+                            onClick={onClick}>
+                                {dialog}
                         </span>
-                    );
+                    ];
                 }
             }
+
+            return (
+                <div className="file-drag-and-drop-dialog">
+                    <div className="hidden-print">
+                        {dialogElement}
+                    </div>
+                    {/* Hide the uploader and just show that there's been on files uploaded yet when printing */}
+                    <p className="text-align-center visible-print">
+                        {getLangText('No files uploaded')}
+                    </p>
+                </div>
+            );
         }
     }
 });
