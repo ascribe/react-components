@@ -127,19 +127,18 @@ let FileDragAndDrop = React.createClass({
     },
 
     render: function () {
-        const {
-            filesToUpload,
-            dropzoneInactive,
-            className,
-            hashingProgress,
-            handleCancelHashing,
-            multiple,
-            enableLocalHashing,
-            uploadMethod,
-            fileClassToUpload,
-            areAssetsDownloadable,
-            areAssetsEditable,
-            allowedExtensions } = this.props;
+        const { allowedExtensions,
+                areAssetsDownloadable,
+                areAssetsEditable,
+                className,
+                dropzoneInactive,
+                enableLocalHashing,
+                fileClassToUpload,
+                filesToUpload,
+                handleCancelHashing,
+                hashingProgress,
+                multiple,
+                uploadMethod } = this.props;
 
         // has files only is true if there are files that do not have the status deleted or canceled
         let hasFiles = filesToUpload.filter((file) => file.status !== 'deleted' && file.status !== 'canceled' && file.size !== -1).length > 0;
