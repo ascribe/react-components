@@ -36,17 +36,11 @@ const ReactS3FineUploader = React.createClass({
         keyRoutine: shape({
             url: string,
             fileClass: string,
-            pieceId: oneOfType([
-                string,
-                number
-            ])
+            pieceId: number
         }),
         createBlobRoutine: shape({
             url: string,
-            pieceId: oneOfType([
-                string,
-                number
-            ])
+            pieceId: number
         }),
         handleChangedFile: func, // is for when a file is dropped or selected
         submitFile: func, // is for when a file has been successfully uploaded, TODO: rename to handleSubmitFile
