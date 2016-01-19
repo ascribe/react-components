@@ -178,20 +178,20 @@ let Form = React.createClass({
             let formData = this.getFormData();
 
             // sentry shouldn't post the user's password
-            if(formData.password) {
+            if (formData.password) {
                 delete formData.password;
             }
 
             console.logGlobal(err, formData);
 
-            if(this.props.isInline) {
+            if (this.props.isInline) {
                 let notification = new GlobalNotificationModel(getLangText('Something went wrong, please try again later'), 'danger');
                 GlobalNotificationActions.appendGlobalNotification(notification);
             } else {
                 this.setState({errors: [getLangText('Something went wrong, please try again later')]});
             }
-
         }
+
         this.setState({submitted: false});
     },
 
@@ -208,7 +208,7 @@ let Form = React.createClass({
         if (this.state.submitted){
             return this.props.spinner;
         }
-        if (this.props.buttons){
+        if ('buttons' in this.props) {
             return this.props.buttons;
         }
         let buttons = null;
