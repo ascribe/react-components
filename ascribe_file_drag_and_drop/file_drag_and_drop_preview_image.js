@@ -68,7 +68,7 @@ const FileDragAndDropPreviewImage = React.createClass({
 
         return (
             <div
-                className="file-drag-and-drop-preview-image"
+                className="file-drag-and-drop-preview-image hidden-print"
                 style={imageStyle}>
                     <AclProxy
                         show={showProgress}>

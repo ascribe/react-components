@@ -1,11 +1,13 @@
 'use strict';
 
+import MimeTypes from '../../constants/mime_types';
+
 export const formSubmissionValidation = {
     /**
      * Returns a boolean if there has been at least one file uploaded
      * successfully without it being deleted or canceled.
      * @param  {array of files}  files provided by react fine uploader
-     * @return {boolean}       
+     * @return {boolean}
      */
     atLeastOneUploadedFile(files) {
         files = files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled');
@@ -69,12 +71,15 @@ export function displayValidProgressFilesFilter(file) {
  *
  * Takes an array of file extensions (['pdf', 'png', ...]) and transforms them into a string
  * that can be passed into an html5 input via its 'accept' prop.
- * @param  {array} allowedExtensions Array of strings without a dot prefixed
+ * @param  {array}  allowedExtensions Array of strings without a dot prefixed
  * @return {string}                   Joined string (comma-separated) of the passed-in array
  */
 export function transformAllowedExtensionsToInputAcceptProp(allowedExtensions) {
-    // add a dot in front of the extension
-    let prefixedAllowedExtensions = allowedExtensions.map((ext) => '.' + ext);
+    // Get the mime type of the extension if it's defined or add a dot in front of the extension
+    // This is important for Safari as it doesn't understand just the extension.
+    let prefixedAllowedExtensions = allowedExtensions.map((ext) => {
+        return MimeTypes[ext] || ('.' + ext);
+    });
 
     // generate a comma separated list to add them to the DOM element
     // See: http://stackoverflow.com/questions/4328947/limit-file-format-when-using-input-type-file

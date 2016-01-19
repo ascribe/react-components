@@ -36,20 +36,15 @@ const ReactS3FineUploader = React.createClass({
         keyRoutine: shape({
             url: string,
             fileClass: string,
-            pieceId: oneOfType([
-                string,
-                number
-            ])
+            pieceId: number
         }),
         createBlobRoutine: shape({
             url: string,
-            pieceId: oneOfType([
-                string,
-                number
-            ])
+            pieceId: number
         }),
         handleChangedFile: func, // is for when a file is dropped or selected
         submitFile: func, // is for when a file has been successfully uploaded, TODO: rename to handleSubmitFile
+        onValidationFailed: func,
         autoUpload: bool,
         debug: bool,
         objectProperties: shape({
@@ -344,6 +339,7 @@ const ReactS3FineUploader = React.createClass({
                 // still we warn the user of this component
                 console.warn('createBlobRoutine was not defined for ReactS3FineUploader. Continuing without creating the blob on the server.');
                 resolve();
+                return;
             }
 
             window.fetch(createBlobRoutine.url, {
@@ -439,7 +435,7 @@ const ReactS3FineUploader = React.createClass({
     onComplete(id, name, res, xhr) {
         // There has been an issue with the server's connection
         if (xhr && xhr.status === 0 && res.success) {
-            console.logGlobal(new Error('Upload succeeded with a status code 0'), false, {
+            console.logGlobal(new Error('Upload succeeded with a status code 0'), {
                 files: this.state.filesToUpload,
                 chunks: this.state.chunks,
                 xhr: this.getXhrErrorComment(xhr)
@@ -497,7 +493,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onError(id, name, errorReason, xhr) {
-        console.logGlobal(errorReason, false, {
+        console.logGlobal(errorReason, {
             files: this.state.filesToUpload,
             chunks: this.state.chunks,
             xhr: this.getXhrErrorComment(xhr)
@@ -522,12 +518,15 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isFileValid(file) {
-        if(file.size > this.props.validation.sizeLimit) {
+        if (file.size > this.props.validation.sizeLimit) {
+            const fileSizeInMegaBytes = this.props.validation.sizeLimit / 1000000;
 
-            let fileSizeInMegaBytes = this.props.validation.sizeLimit / 1000000;
-
-            let notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
+            const notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
+
+            if (typeof this.props.onValidationFailed === 'function') {
+                this.props.onValidationFailed(file);
+            }
 
             return false;
         } else {
