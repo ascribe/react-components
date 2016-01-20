@@ -205,16 +205,15 @@ let Form = React.createClass({
     },
 
     getButtons() {
-        if (this.state.submitted){
+        if (this.state.submitted) {
             return this.props.spinner;
         }
-        if ('buttons' in this.props) {
+        if (this.props.buttons !== undefined) {
             return this.props.buttons;
         }
-        let buttons = null;
 
-        if (this.state.edited && !this.props.disabled){
-            buttons = (
+        if (this.state.edited && !this.props.disabled) {
+            return (
                 <div className="row" style={{margin: 0}}>
                     <p className="pull-right">
                         <Button
@@ -230,9 +229,9 @@ let Form = React.createClass({
                     </p>
                 </div>
             );
-
+        } else {
+            return null;
         }
-        return buttons;
     },
 
     getErrors() {
