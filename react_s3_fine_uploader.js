@@ -91,7 +91,7 @@ const ReactS3FineUploader = React.createClass({
         }),
         validation: shape({
             itemLimit: number,
-            sizeLimit: string,
+            sizeLimit: number,
             allowedExtensions: arrayOf(string)
         }),
         messages: shape({
