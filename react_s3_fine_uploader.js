@@ -518,15 +518,25 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isFileValid(file) {
-        if (file.size > this.props.validation.sizeLimit) {
-            const fileSizeInMegaBytes = this.props.validation.sizeLimit / 1000000;
+        let { validation, onValidationFailed } = this.props;
+
+        if (file.size > validation.sizeLimit) {
+            const fileSizeInMegaBytes = validation.sizeLimit / 1000000;
 
             const notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
             GlobalNotificationActions.appendGlobalNotification(notification);
 
-            if (typeof this.props.onValidationFailed === 'function') {
-                this.props.onValidationFailed(file);
+            if (typeof onValidationFailed === 'function') {
+                onValidationFailed(file);
             }
+
+            return false;
+        } else if (validation.allowedExtensions.indexOf(file.type) === -1) {
+
+            const prettyAllowedExtensions = validation.allowedExtensions.join(', ');
+
+            const notification = new GlobalNotificationModel(getLangText(`The file you've submitted is of an invalid file format: Valid format(s): ${prettyAllowedExtensions}`), 'danger', 5000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
 
             return false;
         } else {
