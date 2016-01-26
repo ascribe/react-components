@@ -13,9 +13,9 @@ import GlobalNotificationActions from '../../actions/global_notification_actions
 
 import AppConstants from '../../constants/application_constants';
 
-import { computeHashOfFile } from '../../utils/file_utils';
 import { displayValidFilesFilter, transformAllowedExtensionsToInputAcceptProp } from './react_s3_fine_uploader_utils';
 import { getCookie } from '../../utils/fetch_api_utils';
+import { computeHashOfFile, extractFileExtensionFromString } from '../../utils/file_utils';
 import { getLangText } from '../../utils/lang_utils';
 
 
@@ -415,6 +415,40 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
+    isFileValid(file) {
+        const { validation: { allowedExtensions, sizeLimit = 0 }, onValidationFailed } = this.props;
+        const fileExt = extractFileExtensionFromString(file.name);
+
+        if (file.size > sizeLimit) {
+            const fileSizeInMegaBytes = sizeLimit / 1000000;
+
+            const notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
+
+            if (typeof onValidationFailed === 'function') {
+                onValidationFailed(file);
+            }
+
+            return false;
+        } else if (allowedExtensions && !allowedExtensions.includes(fileExt)) {
+            const notification = new GlobalNotificationModel(getLangText(`The file you've submitted is of an invalid file format: Valid format(s): ${allowedExtensions.join(', ')}`), 'danger', 5000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
+
+            return false;
+        } else {
+            return true;
+        }
+    },
+
+    selectValidFiles(files) {
+        return Array.from(files).reduce((validFiles, file) => {
+            if (this.isFileValid(file)) {
+                validFiles.push(file);
+            }
+            return validFiles;
+        }, []);
+    },
+
     // This method has been made promise-based to immediately afterwards
     // call a callback function (instantly after this.setState went through)
     // This is e.g. needed when showing/hiding the optional thumbnail upload
@@ -555,33 +589,6 @@ const ReactS3FineUploader = React.createClass({
 
         let notification = new GlobalNotificationModel(errorReason || this.props.defaultErrorMessage, 'danger', 5000);
         GlobalNotificationActions.appendGlobalNotification(notification);
-    },
-
-    isFileValid(file) {
-        let { validation, onValidationFailed } = this.props;
-
-        if (file.size > validation.sizeLimit) {
-            const fileSizeInMegaBytes = validation.sizeLimit / 1000000;
-
-            const notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-
-            if (typeof onValidationFailed === 'function') {
-                onValidationFailed(file);
-            }
-
-            return false;
-        } else if (validation.allowedExtensions.indexOf(file.type) === -1) {
-
-            const prettyAllowedExtensions = validation.allowedExtensions.join(', ');
-
-            const notification = new GlobalNotificationModel(getLangText(`The file you've submitted is of an invalid file format: Valid format(s): ${prettyAllowedExtensions}`), 'danger', 5000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-
-            return false;
-        } else {
-            return true;
-        }
     },
 
     onCancel(id) {
@@ -755,15 +762,8 @@ const ReactS3FineUploader = React.createClass({
             return;
         }
 
-        // validate each submitted file if it fits the file size
-        let validFiles = [];
-        for(let i = 0; i < files.length; i++) {
-            if(this.isFileValid(files[i])) {
-                validFiles.push(files[i]);
-            }
-        }
-        // override standard files list with only valid files
-        files = validFiles;
+        // Select only the submitted files that fit the file size and allowed extensions
+        files = this.selectValidFiles(files);
 
         // if multiple is set to false and user drops multiple files into the dropzone,
         // take the first one and notify user that only one file can be submitted
