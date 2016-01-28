@@ -56,9 +56,9 @@ const FileDragAndDropPreviewOther = React.createClass({
                     target="_blank"
                     className="glyphicon glyphicon-download action-file"
                     aria-hidden="true"
-                    title={getLangText('Download file')}/>
+                    title={getLangText('Download file')} />
             );
-        } else if(progress >= 0 && progress < 100) {
+        } else if (progress >= 0 && progress < 100) {
             actionSymbol = (
                 <div className="spinner-file">
                     <AscribeSpinner color='dark-blue' size='md' />
@@ -66,22 +66,19 @@ const FileDragAndDropPreviewOther = React.createClass({
             );
         } else {
             actionSymbol = (
-                <span className='ascribe-icon icon-ascribe-ok action-file'/>
+                <span className='ascribe-icon icon-ascribe-ok action-file' />
             );
         }
 
         return (
-            <div
-                className="file-drag-and-drop-preview">
+            <div className="file-drag-and-drop-preview">
                 <ProgressBar
                     now={Math.ceil(progress)}
                     style={style}
-                    className="ascribe-progress-bar ascribe-progress-bar-xs"/>
-                <div className="file-drag-and-drop-preview-table-wrapper">
-                    <div className="file-drag-and-drop-preview-other">
-                        {actionSymbol}
-                        <p style={style}>{'.' + type}</p>
-                    </div>
+                    className="ascribe-progress-bar ascribe-progress-bar-xs" />
+                <div className="file-drag-and-drop-preview-other">
+                    {actionSymbol}
+                    <p style={style}>{'.' + (type ? type : 'file')}</p>
                 </div>
             </div>
         );
