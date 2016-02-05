@@ -1,6 +1,7 @@
 'use strict';
 
 import React from 'react';
+import classNames from 'classnames';
 
 import { displayValidProgressFilesFilter, FileStatus } from '../react_s3_fine_uploader_utils';
 import { getLangText } from '../../../utils/lang_utils';
@@ -9,7 +10,7 @@ import { truncateTextAtCharIndex } from '../../../utils/general_utils';
 const { func, array, bool, shape, string } = React.PropTypes;
 
 
-export default function UploadButton({ className = 'btn btn-default btn-sm' } = {}) {
+export default function UploadButton({ className = 'btn btn-default btn-sm', showLabel = true } = {}) {
     return React.createClass({
         displayName: 'UploadButton',
 
@@ -71,17 +72,9 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
         handleOnClick() {
             if(!this.state.disabled) {
                 let evt;
-                const uploadingFiles = this.getUploadingFiles();
-                const uploadedFile = this.getUploadedFile();
 
-                this.clearSelection();
-                if(uploadingFiles.length) {
-                    this.props.handleCancelFile(uploadingFiles[0].id);
-                } else if(uploadedFile && !uploadedFile.s3UrlSafe) {
-                    this.props.handleCancelFile(uploadedFile.id);
-                } else if(uploadedFile && uploadedFile.s3UrlSafe) {
-                    this.props.handleDeleteFile(uploadedFile.id);
-                }
+                // First, remove any currently uploading or uploaded items
+                this.onClickRemove();
 
                 try {
                     evt = new MouseEvent('click', {
@@ -99,18 +92,19 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
             }
         },
 
-        onClickCancel() {
-            this.clearSelection();
-            const uploadingFile = this.getUploadingFiles()[0];
-            this.props.handleCancelFile(uploadingFile.id);
-        },
-
         onClickRemove() {
-            this.clearSelection();
+            const uploadingFiles = this.getUploadingFiles();
             const uploadedFile = this.getUploadedFile();
-            this.props.handleDeleteFile(uploadedFile.id);
-        },
 
+            this.clearSelection();
+            if(uploadingFiles.length) {
+                this.props.handleCancelFile(uploadingFiles[0].id);
+            } else if(uploadedFile && !uploadedFile.s3UrlSafe) {
+                this.props.handleCancelFile(uploadedFile.id);
+            } else if(uploadedFile && uploadedFile.s3UrlSafe) {
+                this.props.handleDeleteFile(uploadedFile.id);
+            }
+        },
 
         getButtonLabel() {
             let { filesToUpload, fileClassToUpload } = this.props;
@@ -126,28 +120,28 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
         },
 
         getUploadedFileLabel() {
-            const uploadedFile = this.getUploadedFile();
-            const uploadingFiles = this.getUploadingFiles();
+            if (showLabel) {
+                const uploadedFile = this.getUploadedFile();
+                const uploadingFiles = this.getUploadingFiles();
 
-            if(uploadingFiles.length) {
-                return (
-                    <span>
-                        {' ' + truncateTextAtCharIndex(uploadingFiles[0].name, 40) + ' '}
-                        [<a onClick={this.onClickCancel}>{getLangText('cancel upload')}</a>]
-                    </span>
-                );
-            } else if(uploadedFile) {
-                return (
-                    <span>
-                        <span className='ascribe-icon icon-ascribe-ok'/>
-                        {' ' + truncateTextAtCharIndex(uploadedFile.name, 40) + ' '}
-                        [<a onClick={this.onClickRemove}>{getLangText('remove')}</a>]
-                    </span>
-                );
-            } else {
-                return (
-                    <span>{getLangText('No file chosen')}</span>
-                );
+                if (uploadingFiles.length) {
+                    return (
+                        <span>
+                            {' ' + truncateTextAtCharIndex(uploadingFiles[0].name, 40) + ' '}
+                            [<a onClick={this.onClickRemove}>{getLangText('cancel upload')}</a>]
+                        </span>
+                    );
+                } else if (uploadedFile) {
+                    return (
+                        <span>
+                            <span className='ascribe-icon icon-ascribe-ok'/>
+                            {' ' + truncateTextAtCharIndex(uploadedFile.name, 40) + ' '}
+                            [<a onClick={this.onClickRemove}>{getLangText('remove')}</a>]
+                        </span>
+                    );
+                } else {
+                    return <span>{getLangText('No file chosen')}</span>;
+                }
             }
         },
 
@@ -165,7 +159,7 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
              * Therefore the wrapping component needs to be an `anchor` tag instead of a `button`
              */
             return (
-                <div className="upload-button-wrapper">
+                <div className={classNames('ascribe-upload-button', {'ascribe-upload-button-has-label': showLabel})}>
                     {/*
                         The button needs to be of `type="button"` as it would
                         otherwise submit the form its in.

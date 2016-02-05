@@ -17,8 +17,8 @@ import AppConstants from '../../constants/application_constants';
 import { ErrorClasses, testErrorAgainstAll } from '../../constants/error_constants';
 
 import { displayValidFilesFilter, FileStatus, transformAllowedExtensionsToInputAcceptProp } from './react_s3_fine_uploader_utils';
-import { computeHashOfFile } from '../../utils/file_utils';
 import { getCookie } from '../../utils/fetch_api_utils';
+import { computeHashOfFile, extractFileExtensionFromString } from '../../utils/file_utils';
 import { getLangText } from '../../utils/lang_utils';
 
 
@@ -42,11 +42,11 @@ const ReactS3FineUploader = React.createClass({
         areAssetsDownloadable: bool,
         areAssetsEditable: bool,
         errorNotificationMessage: string,
-        showErrorPrompt: bool,
-        setWarning: func, // for when the parent component wants to be notified of uploader warnings (ie. upload failed)
-
         handleChangedFile: func, // for when a file is dropped or selected, TODO: rename to onChangedFile
         submitFile: func, // for when a file has been successfully uploaded, TODO: rename to onSubmitFile
+        onValidationFailed: func,
+        setWarning: func, // for when the parent component wants to be notified of uploader warnings (ie. upload failed)
+        showErrorPrompt: bool,
 
         // Handle form validation
         setIsUploadReady: func,     //TODO: rename to setIsUploaderValidated
@@ -82,25 +82,36 @@ const ReactS3FineUploader = React.createClass({
         ]),
 
         // S3 helpers
+        createBlobRoutine: shape({
+            url: string,
+            pieceId: number
+        }),
         keyRoutine: shape({
             url: string,
             fileClass: string,
-            pieceId: oneOfType([
-                string,
-                number
-            ])
-        }),
-        createBlobRoutine: shape({
-            url: string,
-            pieceId: oneOfType([
-                string,
-                number
-            ])
+            pieceId: number
         }),
 
         // FineUploader options
-        autoUpload: bool,
         debug: bool,
+
+        autoUpload: bool,
+        chunking: shape({
+            enabled: bool
+        }),
+        cors: shape({
+            expected: bool
+        }),
+        deleteFile: shape({
+            enabled: bool,
+            method: string,
+            endpoint: string,
+            customHeaders: object
+        }).isRequired,
+        formatFileName: func,
+        messages: shape({
+            unsupportedBrowser: string
+        }),
         multiple: bool,
         objectProperties: shape({
             acl: string
@@ -111,6 +122,18 @@ const ReactS3FineUploader = React.createClass({
             params: shape({
                 csrfmiddlewaretoken: string
             })
+        }),
+        resume: shape({
+            enabled: bool
+        }),
+        retry: shape({
+            enableAuto: bool
+        }),
+        session: shape({
+            customHeaders: object,
+            endpoint: string,
+            params: object,
+            refreshOnRequests: bool
         }),
         signature: shape({
             endpoint: string
@@ -123,38 +146,10 @@ const ReactS3FineUploader = React.createClass({
                 bitcoin_ID_noPrefix: string
             })
         }),
-        cors: shape({
-            expected: bool
-        }),
-        chunking: shape({
-            enabled: bool
-        }),
-        resume: shape({
-            enabled: bool
-        }),
-        deleteFile: shape({
-            enabled: bool,
-            method: string,
-            endpoint: string,
-            customHeaders: object
-        }).isRequired,
-        session: shape({
-            customHeaders: object,
-            endpoint: string,
-            params: object,
-            refreshOnRequests: bool
-        }),
         validation: shape({
             itemLimit: number,
-            sizeLimit: string,
+            sizeLimit: number,
             allowedExtensions: arrayOf(string)
-        }),
-        messages: shape({
-            unsupportedBrowser: string
-        }),
-        formatFileName: func,
-        retry: shape({
-            enableAuto: bool
         })
     },
 
@@ -314,22 +309,6 @@ const ReactS3FineUploader = React.createClass({
         this.setState(this.getInitialState());
     },
 
-    // Cancel uploads and clear previously selected files on the input element
-    cancelUploads(id) {
-        typeof id !== 'undefined' ? this.state.uploader.cancel(id) : this.state.uploader.cancelAll();
-
-        // Reset the file input element to clear the previously selected files so that
-        // the user can reselect them again.
-        this.clearFileSelection();
-    },
-
-    clearFileSelection() {
-        const { fileInput } = this.refs;
-        if (fileInput && typeof fileInput.clearSelection === 'function') {
-            fileInput.clearSelection();
-        }
-    },
-
     requestKey(fileId) {
         let filename = this.state.uploader.getName(fileId);
         let uuid = this.state.uploader.getUuid(fileId);
@@ -371,10 +350,11 @@ const ReactS3FineUploader = React.createClass({
             // if createBlobRoutine is not defined,
             // we're progressing right away without posting to S3
             // so that this can be done manually by the form
-            if(!createBlobRoutine) {
+            if (!createBlobRoutine) {
                 // still we warn the user of this component
                 console.warn('createBlobRoutine was not defined for ReactS3FineUploader. Continuing without creating the blob on the server.');
                 resolve();
+                return;
             }
 
             window.fetch(createBlobRoutine.url, {
@@ -419,25 +399,13 @@ const ReactS3FineUploader = React.createClass({
         });
     },
 
-    setThumbnailForFileId(fileId, url) {
-        const { filesToUpload } = this.state;
+    // Cancel uploads and clear previously selected files on the input element
+    cancelUploads(id) {
+        typeof id !== 'undefined' ? this.state.uploader.cancel(id) : this.state.uploader.cancelAll();
 
-        if(fileId < filesToUpload.length) {
-            const changeSet = { $set: url };
-            const newFilesToUpload = React.addons.update(filesToUpload, {
-                [fileId]: { thumbnailUrl: changeSet }
-            });
-
-            this.setState({ filesToUpload: newFilesToUpload });
-        } else {
-            throw new Error('Accessing an index out of range of filesToUpload');
-        }
-    },
-
-    setWarning(hasWarning) {
-        if (typeof this.props.setWarning === 'function') {
-            this.props.setWarning(hasWarning);
-        }
+        // Reset the file input element to clear the previously selected files so that
+        // the user can reselect them again.
+        this.clearFileSelection();
     },
 
     checkFormSubmissionReady() {
@@ -453,18 +421,20 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
-    isFileValid(file) {
-        const { validation } = this.props;
+    clearFileSelection() {
+        const { fileInput } = this.refs;
+        if (fileInput && typeof fileInput.clearSelection === 'function') {
+            fileInput.clearSelection();
+        }
+    },
 
-        if (validation && file.size > validation.sizeLimit) {
-            const fileSizeInMegaBytes = validation.sizeLimit / 1000000;
+    getAllowedExtensions() {
+        const { validation: { allowedExtensions } = {} } = this.props;
 
-            const notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-
-            return false;
+        if (allowedExtensions && allowedExtensions.length) {
+            return transformAllowedExtensionsToInputAcceptProp(allowedExtensions);
         } else {
-            return true;
+            return null;
         }
     },
 
@@ -503,8 +473,99 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
-    /* FineUploader specific callback function handlers */
+    isDropzoneInactive() {
+        const { areAssetsEditable, enableLocalHashing, multiple, showErrorPrompt, uploadMethod } = this.props;
+        const { errorState, filesToUpload } = this.state;
 
+        const filesToDisplay = filesToUpload.filter((file) => {
+            return file.status !== FileStatus.DELETED &&
+                   file.status !== FileStatus.CANCELED &&
+                   file.status !== FileStatus.UPLOAD_FAILED &&
+                   file.size !== -1;
+        });
+
+        return (enableLocalHashing && !uploadMethod) ||
+                !areAssetsEditable ||
+                (showErrorPrompt && errorState.errorClass) ||
+                (!multiple && filesToDisplay.length);
+    },
+
+    isFileValid(file) {
+        const { validation: { allowedExtensions, sizeLimit = 0 }, onValidationFailed } = this.props;
+        const fileExt = extractFileExtensionFromString(file.name);
+
+        if (file.size > sizeLimit) {
+            const fileSizeInMegaBytes = sizeLimit / 1000000;
+
+            const notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
+
+            if (typeof onValidationFailed === 'function') {
+                onValidationFailed(file);
+            }
+
+            return false;
+        } else if (allowedExtensions && !allowedExtensions.includes(fileExt)) {
+            const notification = new GlobalNotificationModel(getLangText(`The file you've submitted is of an invalid file format: Valid format(s): ${allowedExtensions.join(', ')}`), 'danger', 5000);
+            GlobalNotificationActions.appendGlobalNotification(notification);
+
+            return false;
+        } else {
+            return true;
+        }
+    },
+
+    selectValidFiles(files) {
+        return Array.from(files).reduce((validFiles, file) => {
+            if (this.isFileValid(file)) {
+                validFiles.push(file);
+            }
+            return validFiles;
+        }, []);
+    },
+
+    // This method has been made promise-based to immediately afterwards
+    // call a callback function (instantly after this.setState went through)
+    // This is e.g. needed when showing/hiding the optional thumbnail upload
+    // field in the registration form
+    setStatusOfFile(fileId, status) {
+        return Q.Promise((resolve) => {
+            let changeSet = {};
+
+            if (status === FileStatus.DELETED || status === FileStatus.CANCELED || status === FileStatus.UPLOAD_FAILED) {
+                changeSet.progress = { $set: 0 };
+            }
+
+            changeSet.status = { $set: status };
+
+            let filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
+
+            this.setState({ filesToUpload }, resolve);
+        });
+    },
+
+    setThumbnailForFileId(fileId, url) {
+        const { filesToUpload } = this.state;
+
+        if(fileId < filesToUpload.length) {
+            const changeSet = { $set: url };
+            const newFilesToUpload = React.addons.update(filesToUpload, {
+                [fileId]: { thumbnailUrl: changeSet }
+            });
+
+            this.setState({ filesToUpload: newFilesToUpload });
+        } else {
+            throw new Error('Accessing an index out of range of filesToUpload');
+        }
+    },
+
+    setWarning(hasWarning) {
+        if (typeof this.props.setWarning === 'function') {
+            this.props.setWarning(hasWarning);
+        }
+    },
+
+    /* FineUploader specific callback function handlers */
     onUploadChunk(id, name, chunkData) {
         let chunks = this.state.chunks;
 
@@ -546,7 +607,7 @@ const ReactS3FineUploader = React.createClass({
     onComplete(id, name, res, xhr) {
         // There has been an issue with the server's connection
         if (xhr && xhr.status === 0 && res.success) {
-            console.logGlobal(new Error('Upload succeeded with a status code 0'), false, {
+            console.logGlobal(new Error('Upload succeeded with a status code 0'), {
                 files: this.state.filesToUpload,
                 chunks: this.state.chunks,
                 xhr: this.getXhrErrorComment(xhr)
@@ -592,7 +653,7 @@ const ReactS3FineUploader = React.createClass({
         const { errorNotificationMessage, showErrorPrompt } = this.props;
         const { chunks, filesToUpload } = this.state;
 
-        console.logGlobal(errorReason, false, {
+        console.logGlobal(errorReason, {
             files: filesToUpload,
             chunks: chunks,
             xhr: this.getXhrErrorComment(xhr)
@@ -755,6 +816,13 @@ const ReactS3FineUploader = React.createClass({
         this.cancelUploads(fileId);
     },
 
+    handleCancelHashing() {
+        // Every progress tick of the hashing function in handleUploadFile there is a
+        // check if this.state.hashingProgress is -1. If so, there is an error thrown that cancels
+        // the hashing of all files immediately.
+        this.setState({ hashingProgress: -1 });
+    },
+
     handlePauseFile(fileId) {
         if(this.state.uploader.pauseUpload(fileId)) {
             this.setStatusOfFile(fileId, FileStatus.PAUSED);
@@ -806,15 +874,8 @@ const ReactS3FineUploader = React.createClass({
             return;
         }
 
-        // validate each submitted file if it fits the file size
-        let validFiles = [];
-        for(let i = 0; i < files.length; i++) {
-            if(this.isFileValid(files[i])) {
-                validFiles.push(files[i]);
-            }
-        }
-        // override standard files list with only valid files
-        files = validFiles;
+        // Select only the submitted files that fit the file size and allowed extensions
+        files = this.selectValidFiles(files);
 
         // if multiple is set to false and user drops multiple files into the dropzone,
         // take the first one and notify user that only one file can be submitted
@@ -928,13 +989,6 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
-    handleCancelHashing() {
-        // Every progress tick of the hashing function in handleUploadFile there is a
-        // check if this.state.hashingProgress is -1. If so, there is an error thrown that cancels
-        // the hashing of all files immediately.
-        this.setState({ hashingProgress: -1 });
-    },
-
     // ReactFineUploader is essentially just a react layer around s3 fineuploader.
     // However, since we need to display the status of a file (progress, uploading) as well as
     // be able to execute actions on a currently uploading file we need to exactly sync the file list
@@ -1002,56 +1056,6 @@ const ReactS3FineUploader = React.createClass({
                 this.props.handleChangedFile(this.state.filesToUpload.slice(-1)[0]);
             }
         });
-    },
-
-    // This method has been made promise-based to immediately afterwards
-    // call a callback function (instantly after this.setState went through)
-    // This is e.g. needed when showing/hiding the optional thumbnail upload
-    // field in the registration form
-    setStatusOfFile(fileId, status) {
-        return Q.Promise((resolve) => {
-            let changeSet = {};
-
-            if (status === FileStatus.DELETED || status === FileStatus.CANCELED || status === FileStatus.UPLOAD_FAILED) {
-                changeSet.progress = { $set: 0 };
-            }
-
-            changeSet.status = { $set: status };
-
-            let filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
-
-            this.setState({ filesToUpload }, resolve);
-        });
-    },
-
-    isDropzoneInactive() {
-        const { areAssetsEditable, enableLocalHashing, multiple, showErrorPrompt, uploadMethod } = this.props;
-        const { errorState, filesToUpload } = this.state;
-
-        const filesToDisplay = filesToUpload.filter((file) => {
-            return file.status !== FileStatus.DELETED &&
-                   file.status !== FileStatus.CANCELED &&
-                   file.status !== FileStatus.UPLOAD_FAILED &&
-                   file.size !== -1;
-        });
-
-        if ((enableLocalHashing && !uploadMethod) || !areAssetsEditable ||
-            (showErrorPrompt && errorState.errorClass) ||
-            (!multiple && filesToDisplay.length > 0)) {
-            return true;
-        } else {
-            return false;
-        }
-    },
-
-    getAllowedExtensions() {
-        const { validation } = this.props;
-
-        if (validation && validation.allowedExtensions && validation.allowedExtensions.length > 0) {
-            return transformAllowedExtensionsToInputAcceptProp(validation.allowedExtensions);
-        } else {
-            return null;
-        }
     },
 
     render() {
