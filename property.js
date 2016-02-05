@@ -294,18 +294,18 @@ const Property = React.createClass({
     },
 
     getCheckbox() {
-        const { checkboxLabel } = this.props;
+        const { checkboxLabel, name } = this.props;
 
-        if(checkboxLabel) {
+        if (checkboxLabel) {
             return (
                 <div
                     className="ascribe-property-collapsible-toggle"
                     onClick={this.handleCheckboxToggle}>
                     <input
-                        onChange={this.handleCheckboxToggle}
-                        type="checkbox"
+                        name={`${name}-checkbox`}
                         checked={this.state.expanded}
-                        ref="checkboxCollapsible"/>
+                        onChange={this.handleCheckboxToggle}
+                        type="checkbox" />
                     <span className="checkbox">{' ' + checkboxLabel}</span>
                 </div>
             );
