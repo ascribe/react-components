@@ -208,7 +208,7 @@ const ReactS3FineUploader = React.createClass({
             messages: {
                 unsupportedBrowser: '<h3>' + getLangText('Upload is not functional in IE7 as IE7 has no support for CORS!') + '</h3>'
             },
-            formatFileName: function(name){// fix maybe
+            formatFileName: function(name) { // fix maybe
                 if (name !== undefined && name.length > 26) {
                     name = name.slice(0, 15) + '...' + name.slice(-15);
                 }
@@ -224,7 +224,7 @@ const ReactS3FineUploader = React.createClass({
             csrfToken: getCookie(AppConstants.csrftoken),
             errorState: {
                 manualRetryAttempt: 0,
-                errorClass: undefined
+                errorClass: null
             },
             uploadInProgress: false,
 
@@ -472,19 +472,19 @@ const ReactS3FineUploader = React.createClass({
         const { manualRetryAttempt } = this.state.errorState;
         let matchedErrorClass;
 
-        // Use the contact us error class if they've retried a number of times
-        // and are still unsuccessful
-        if (manualRetryAttempt === RETRY_ATTEMPT_TO_SHOW_CONTACT_US) {
+        if ('onLine' in window.navigator && !window.navigator.onLine) {
+            // If the user's offline, this is definitely the most important error to show.
+            // TODO: use a better mechanism for checking network state, ie. offline.js
+            matchedErrorClass = ErrorClasses.upload.offline;
+        } else if (manualRetryAttempt === RETRY_ATTEMPT_TO_SHOW_CONTACT_US) {
+            // Use the contact us error class if they've retried a number of times
+            // and are still unsuccessful
             matchedErrorClass = ErrorClasses.upload.contactUs;
         } else {
             matchedErrorClass = testErrorAgainstAll({ type, reason, xhr });
 
-            // If none found, check the internet connection
-            // TODO: use a better mechanism for checking network state, ie. offline.js
-            if ('onLine' in window.navigator && !window.navigator.onLine) {
-                matchedErrorClass = ErrorClasses.upload.offline;
-            } else {
-                // Otherwise, show the next error message in the queue
+            if (!matchedErrorClass) {
+                // If none found, show the next error message in the queue for upload errors
                 matchedErrorClass = ErrorQueueStore.getNextError('upload');
             }
         }
@@ -1030,14 +1030,14 @@ const ReactS3FineUploader = React.createClass({
 
         const filesToDisplay = filesToUpload.filter((file) => {
             return file.status !== FileStatus.DELETED &&
-                        file.status !== FileStatus.CANCELED &&
-                        file.status !== FileStatus.UPLOAD_FAILED &&
-                        file.size !== -1;
+                   file.status !== FileStatus.CANCELED &&
+                   file.status !== FileStatus.UPLOAD_FAILED &&
+                   file.size !== -1;
         });
 
         if ((enableLocalHashing && !uploadMethod) || !areAssetsEditable ||
-                (showErrorPrompt && errorState.errorClass) ||
-                (!multiple && filesToDisplay.length > 0)) {
+            (showErrorPrompt && errorState.errorClass) ||
+            (!multiple && filesToDisplay.length > 0)) {
             return true;
         } else {
             return false;
@@ -1047,7 +1047,7 @@ const ReactS3FineUploader = React.createClass({
     getAllowedExtensions() {
         const { validation } = this.props;
 
-        if(validation && validation.allowedExtensions && validation.allowedExtensions.length > 0) {
+        if (validation && validation.allowedExtensions && validation.allowedExtensions.length > 0) {
             return transformAllowedExtensionsToInputAcceptProp(validation.allowedExtensions);
         } else {
             return null;

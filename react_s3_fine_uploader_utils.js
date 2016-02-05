@@ -1,9 +1,10 @@
 'use strict';
 
 import fineUploader from 'fineUploader';
+
 // Re-export qq.status from FineUploader with an additional online
 // state that we use to keep track of files from S3.
-export const FileStatus = Object.assign(fineUploader.status, {
+export const FileStatus = Object.assign({}, fineUploader.status, {
     ONLINE: 'online'
 });
 
@@ -17,11 +18,11 @@ export const formSubmissionValidation = {
     atLeastOneUploadedFile(files) {
         files = files.filter((file) => {
             return file.status !== FileStatus.DELETED &&
-                    file.status !== FileStatus.CANCELED &&
-                    file.status != FileStatus.UPLOADED_FAILED
+                   file.status !== FileStatus.CANCELED &&
+                   file.status != FileStatus.UPLOADED_FAILED
         });
 
-        if (files.length > 0 && files[0].status === FileStatus.UPLOAD_SUCCESSFUL) {
+        if (files.length && files[0].status === FileStatus.UPLOAD_SUCCESSFUL) {
             return true;
         } else {
             return false;
@@ -35,13 +36,9 @@ export const formSubmissionValidation = {
      * @return {boolean}       [description]
      */
     fileOptional(files) {
-        let uploadingFiles = files.filter((file) => file.status === FileStatus.SUBMITTING);
+        const uploadingFiles = files.filter((file) => file.status === FileStatus.SUBMITTING);
 
-        if (uploadingFiles.length === 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return uploadFiles.length === 0;
     }
 };
 
@@ -52,8 +49,8 @@ export const formSubmissionValidation = {
  */
 export function displayValidFilesFilter(file) {
     return file.status !== FileStatus.DELETED &&
-            file.status !== FileStatus.CANCELED &&
-            file.status !== FileStatus.UPLOAD_FAILED;
+           file.status !== FileStatus.CANCELED &&
+           file.status !== FileStatus.UPLOAD_FAILED;
 }
 
 /**
@@ -63,8 +60,8 @@ export function displayValidFilesFilter(file) {
  */
 export function displayRemovedFilesFilter(file) {
     return file.status === FileStatus.DELETED ||
-            file.status === FileStatus.CANCELED ||
-            file.status === FileStatus.UPLOAD_FAILED;
+           file.status === FileStatus.CANCELED ||
+           file.status === FileStatus.UPLOAD_FAILED;
 }
 
 
@@ -75,9 +72,9 @@ export function displayRemovedFilesFilter(file) {
  */
 export function displayValidProgressFilesFilter(file) {
     return file.status !== FileStatus.DELETED &&
-            file.status !== FileStatus.CANCELED &&
-            file.status !== FileStatus.UPLOAD_FAILED &&
-            file.status !== FileStatus.ONLINE;
+           file.status !== FileStatus.CANCELED &&
+           file.status !== FileStatus.UPLOAD_FAILED &&
+           file.status !== FileStatus.ONLINE;
 }
 
 
@@ -93,7 +90,7 @@ export function displayValidProgressFilesFilter(file) {
  */
 export function transformAllowedExtensionsToInputAcceptProp(allowedExtensions) {
     // add a dot in front of the extension
-    let prefixedAllowedExtensions = allowedExtensions.map((ext) => '.' + ext);
+    const prefixedAllowedExtensions = allowedExtensions.map((ext) => '.' + ext);
 
     // generate a comma separated list to add them to the DOM element
     // See: http://stackoverflow.com/questions/4328947/limit-file-format-when-using-input-type-file

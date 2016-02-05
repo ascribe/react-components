@@ -191,9 +191,9 @@ let FileDragAndDrop = React.createClass({
         const hasFiles = filesToUpload
                             .filter((file) => {
                                 return file.status !== FileStatus.DELETED &&
-                                    file.status !== FileStatus.CANCELED &&
-                                    file.status !== FileStatus.UPLOAD_FAILED &&
-                                    file.size !== -1;
+                                       file.status !== FileStatus.CANCELED &&
+                                       file.status !== FileStatus.UPLOAD_FAILED &&
+                                       file.size !== -1;
                             })
                             .length > 0;
 
@@ -201,7 +201,7 @@ let FileDragAndDrop = React.createClass({
         let hasError = showError && errorClass && failedFiles.length > 0;
 
         // if !== -2: triggers a FileDragAndDrop-global spinner
-        if(hashingProgress !== -2) {
+        if (hashingProgress !== -2) {
             return (
                 <div className="file-drag-and-drop-hashing-dialog">
                     <p>{getLangText('Computing hash(es)... This may take a few minutes.')}</p>
