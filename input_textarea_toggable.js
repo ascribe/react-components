@@ -4,17 +4,20 @@ import React from 'react';
 
 import TextareaAutosize from 'react-textarea-autosize';
 
+import { anchorize } from '../../utils/dom_utils';
+
 
 let InputTextAreaToggable = React.createClass({
     propTypes: {
         autoFocus: React.PropTypes.bool,
-        disabled: React.PropTypes.bool,
-        rows: React.PropTypes.number.isRequired,
-        required: React.PropTypes.bool,
+        convertLinks: React.PropTypes.bool,
         defaultValue: React.PropTypes.string,
-        placeholder: React.PropTypes.string,
+        disabled: React.PropTypes.bool,
         onBlur: React.PropTypes.func,
-        onChange: React.PropTypes.func
+        onChange: React.PropTypes.func,
+        placeholder: React.PropTypes.string,
+        required: React.PropTypes.bool,
+        rows: React.PropTypes.number.isRequired
     },
 
     getInitialState() {
@@ -36,7 +39,7 @@ let InputTextAreaToggable = React.createClass({
     componentDidUpdate() {
         // If the initial value of state.value is null, we want to set props.defaultValue
         // as a value. In all other cases TextareaAutosize.onChange is updating.handleChange already
-        if(this.state.value === null && this.props.defaultValue) {
+        if (this.state.value === null && this.props.defaultValue) {
             this.setState({
                 value: this.props.defaultValue
             });
@@ -49,28 +52,26 @@ let InputTextAreaToggable = React.createClass({
     },
 
     render() {
-        let className = 'form-control ascribe-textarea';
-        let textarea = null;
+        const { convertLinks, disabled, onBlur, placeholder, required, rows } = this.props;
+        const { value } = this.state;
 
-        if(!this.props.disabled) {
-            className = className + ' ascribe-textarea-editable';
-            textarea = (
+        if (!disabled) {
+            return (
                 <TextareaAutosize
                     ref='textarea'
-                    className={className}
-                    value={this.state.value}
-                    rows={this.props.rows}
+                    className='form-control ascribe-textarea ascribe-textarea-editable'
+                    value={value}
+                    rows={rows}
                     maxRows={10}
-                    required={this.props.required}
+                    required={required}
                     onChange={this.handleChange}
-                    onBlur={this.props.onBlur}
-                    placeholder={this.props.placeholder} />
+                    onBlur={onBlur}
+                    placeholder={placeholder} />
             );
         } else {
-            textarea = <pre className="ascribe-pre">{this.state.value}</pre>;
+            // Can only convert links when not editable, as textarea does not support anchors
+            return <pre className="ascribe-pre">{convertLinks ? anchorize(value) : value}</pre>;
         }
-
-        return textarea;
     }
 });
 
