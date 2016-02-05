@@ -156,7 +156,7 @@ let Form = React.createClass({
 
         for(let ref in this.refs) {
             if(this.refs[ref] && typeof this.refs[ref].handleSuccess === 'function'){
-                this.refs[ref].handleSuccess();
+                this.refs[ref].handleSuccess(response);
             }
         }
         this.setState({
@@ -178,20 +178,20 @@ let Form = React.createClass({
             let formData = this.getFormData();
 
             // sentry shouldn't post the user's password
-            if(formData.password) {
+            if (formData.password) {
                 delete formData.password;
             }
 
-            console.logGlobal(err, false, formData);
+            console.logGlobal(err, formData);
 
-            if(this.props.isInline) {
+            if (this.props.isInline) {
                 let notification = new GlobalNotificationModel(getLangText('Something went wrong, please try again later'), 'danger');
                 GlobalNotificationActions.appendGlobalNotification(notification);
             } else {
                 this.setState({errors: [getLangText('Something went wrong, please try again later')]});
             }
-
         }
+
         this.setState({submitted: false});
     },
 
@@ -205,16 +205,15 @@ let Form = React.createClass({
     },
 
     getButtons() {
-        if (this.state.submitted){
+        if (this.state.submitted) {
             return this.props.spinner;
         }
-        if (this.props.buttons){
+        if (this.props.buttons !== undefined) {
             return this.props.buttons;
         }
-        let buttons = null;
 
-        if (this.state.edited && !this.props.disabled){
-            buttons = (
+        if (this.state.edited && !this.props.disabled) {
+            return (
                 <div className="row" style={{margin: 0}}>
                     <p className="pull-right">
                         <Button
@@ -230,9 +229,9 @@ let Form = React.createClass({
                     </p>
                 </div>
             );
-
+        } else {
+            return null;
         }
-        return buttons;
     },
 
     getErrors() {

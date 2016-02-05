@@ -244,7 +244,17 @@ const Property = React.createClass({
     },
 
     handleCheckboxToggle() {
-        this.setExpanded(!this.state.expanded);
+        const expanded = !this.state.expanded;
+
+        this.setExpanded(expanded);
+
+        // Reset the value to be the initial value when the checkbox is unticked since the
+        // user doesn't want to specify their own value.
+        if (!expanded) {
+            this.setState({
+                value: this.state.initialValue
+            });
+        }
     },
 
     renderChildren(style) {
@@ -289,18 +299,18 @@ const Property = React.createClass({
     },
 
     getCheckbox() {
-        const { checkboxLabel } = this.props;
+        const { checkboxLabel, name } = this.props;
 
-        if(checkboxLabel) {
+        if (checkboxLabel) {
             return (
                 <div
                     className="ascribe-property-collapsible-toggle"
                     onClick={this.handleCheckboxToggle}>
                     <input
-                        onChange={this.handleCheckboxToggle}
-                        type="checkbox"
+                        name={`${name}-checkbox`}
                         checked={this.state.expanded}
-                        ref="checkboxCollapsible"/>
+                        onChange={this.handleCheckboxToggle}
+                        type="checkbox" />
                     <span className="checkbox">{' ' + checkboxLabel}</span>
                 </div>
             );

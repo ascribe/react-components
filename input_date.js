@@ -17,10 +17,7 @@ let InputDate = React.createClass({
     },
 
     getInitialState() {
-        return {
-            value: null,
-            value_moment: null
-        };
+        return this.getStateFromMoment(this.props.defaultValue);
     },
 
     // InputDate needs to support setting a defaultValue from outside.
@@ -28,20 +25,30 @@ let InputDate = React.createClass({
     // to the outer Property
     componentWillReceiveProps(nextProps) {
         if(!this.state.value && !this.state.value_moment && nextProps.defaultValue) {
-            this.handleChange(this.props.defaultValue);
+            this.handleChange(nextProps.defaultValue);
         }
     },
 
-    handleChange(date) {
-        let formattedDate = date.format('YYYY-MM-DD');
-        this.setState({
-            value: formattedDate,
-            value_moment: date
-        });
+    getStateFromMoment(date) {
+        const state = {};
 
+        if (date) {
+            state.value = date.format('YYYY-MM-DD');
+            state.value_moment = date;
+        }
+
+        return state;
+    },
+
+    handleChange(date) {
+        const newState = this.getStateFromMoment(date);
+
+        this.setState(newState);
+
+        // Propagate change up by faking event
         this.props.onChange({
             target: {
-                value: formattedDate
+                value: newState.value
             }
         });
     },
