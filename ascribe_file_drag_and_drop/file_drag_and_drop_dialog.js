@@ -9,7 +9,6 @@ import { getCurrentQueryParams } from '../../../utils/url_utils';
 
 let FileDragAndDropDialog = React.createClass({
     propTypes: {
-        hasFiles: React.PropTypes.bool,
         multipleFiles: React.PropTypes.bool,
         enableLocalHashing: React.PropTypes.bool,
         uploadMethod: React.PropTypes.string,
@@ -37,90 +36,86 @@ let FileDragAndDropDialog = React.createClass({
     render() {
         const { enableLocalHashing,
                 fileClassToUpload,
-                hasFiles,
                 multipleFiles,
                 onClick,
                 uploadMethod } = this.props;
+        let dialogElement;
 
-        if (hasFiles) {
-            return null;
-        } else {
-            let dialogElement;
+        if (enableLocalHashing && !uploadMethod) {
+            const currentQueryParams = getCurrentQueryParams();
 
-            if (enableLocalHashing && !uploadMethod) {
-                const currentQueryParams = getCurrentQueryParams();
+            const queryParamsHash = Object.assign({}, currentQueryParams);
+            queryParamsHash.method = 'hash';
 
-                const queryParamsHash = Object.assign({}, currentQueryParams);
-                queryParamsHash.method = 'hash';
+            const queryParamsUpload = Object.assign({}, currentQueryParams);
+            queryParamsUpload.method = 'upload';
 
-                const queryParamsUpload = Object.assign({}, currentQueryParams);
-                queryParamsUpload.method = 'upload';
-
-                dialogElement = (
-                    <div className="present-options">
-                        <p className="file-drag-and-drop-dialog-title">{getLangText('Would you rather')}</p>
-                        {/*
-                            The frontend in live is hosted under /app,
-                            Since `Link` is appending that base url, if its defined
-                            by itself, we need to make sure to not set it at this point.
-                            Otherwise it will be appended twice.
-                        */}
-                        <Link
-                            to={`/${window.location.pathname.split('/').pop()}`}
-                            query={queryParamsHash}>
-                            <span className="btn btn-default btn-sm">
-                                {getLangText('Hash your work')}
-                            </span>
-                        </Link>
-
-                        <span> or </span>
-
-                       <Link
-                            to={`/${window.location.pathname.split('/').pop()}`}
-                            query={queryParamsUpload}>
-                            <span className="btn btn-default btn-sm">
-                                {getLangText('Upload and hash your work')}
-                            </span>
-                        </Link>
-                    </div>
-                );
-            } else {
-                if (multipleFiles) {
-                    dialogElement = [
-                        this.getDragDialog(fileClassToUpload.plural),
-                        <span
-                            className="btn btn-default"
-                            onClick={onClick}>
-                                {getLangText('choose %s to upload', fileClassToUpload.plural)}
+            dialogElement = (
+                <div className="present-options">
+                    <p className="file-drag-and-drop-dialog-title">{getLangText('Would you rather')}</p>
+                    {/*
+                        The frontend in live is hosted under /app,
+                        Since `Link` is appending that base url, if its defined
+                        by itself, we need to make sure to not set it at this point.
+                        Otherwise it will be appended twice.
+                    */}
+                    <Link
+                        to={`/${window.location.pathname.split('/').pop()}`}
+                        query={queryParamsHash}>
+                        <span className="btn btn-default btn-sm">
+                            {getLangText('Hash your work')}
                         </span>
-                    ];
-                } else {
-                    const dialog = uploadMethod === 'hash' ? getLangText('choose a %s to hash', fileClassToUpload.singular)
-                                                           : getLangText('choose a %s to upload', fileClassToUpload.singular);
+                    </Link>
 
-                    dialogElement = [
-                        this.getDragDialog(fileClassToUpload.singular),
-                        <span
-                            className="btn btn-default"
-                            onClick={onClick}>
-                                {dialog}
+                    <span> {getLangText('or')} </span>
+
+                   <Link
+                        to={`/${window.location.pathname.split('/').pop()}`}
+                        query={queryParamsUpload}>
+                        <span className="btn btn-default btn-sm">
+                            {getLangText('Upload and hash your work')}
                         </span>
-                    ];
-                }
-            }
-
-            return (
-                <div className="file-drag-and-drop-dialog">
-                    <div className="hidden-print">
-                        {dialogElement}
-                    </div>
-                    {/* Hide the uploader and just show that there's been on files uploaded yet when printing */}
-                    <p className="text-align-center visible-print">
-                        {getLangText('No files uploaded')}
-                    </p>
+                    </Link>
                 </div>
             );
+        } else {
+            if (multipleFiles) {
+                dialogElement = [
+                    this.getDragDialog(fileClassToUpload.plural),
+                    (<span
+                        key='mutlipleFilesBtn'
+                        className="btn btn-default"
+                        onClick={onClick}>
+                            {getLangText('choose %s to upload', fileClassToUpload.plural)}
+                    </span>)
+                ];
+            } else {
+                const dialog = uploadMethod === 'hash' ? getLangText('choose a %s to hash', fileClassToUpload.singular)
+                                                       : getLangText('choose a %s to upload', fileClassToUpload.singular);
+
+                dialogElement = [
+                    this.getDragDialog(fileClassToUpload.singular),
+                    (<span
+                        key='singleFileBtn'
+                        className="btn btn-default"
+                        onClick={onClick}>
+                            {dialog}
+                    </span>)
+                ];
+            }
         }
+
+        return (
+            <div className="file-drag-and-drop-dialog">
+                <div className="hidden-print">
+                    {dialogElement}
+                </div>
+                {/* Hide the uploader and just show that there's been on files uploaded yet when printing */}
+                <p className="text-align-center visible-print">
+                    {getLangText('No files uploaded')}
+                </p>
+            </div>
+        );
     }
 });
 

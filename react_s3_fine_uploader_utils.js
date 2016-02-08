@@ -1,6 +1,14 @@
 'use strict';
 
+import fineUploader from 'fineUploader';
 import MimeTypes from '../../constants/mime_types';
+
+
+// Re-export qq.status from FineUploader with an additional online
+// state that we use to keep track of files from S3.
+export const FileStatus = Object.assign({}, fineUploader.status, {
+    ONLINE: 'online'
+});
 
 export const formSubmissionValidation = {
     /**
@@ -10,8 +18,13 @@ export const formSubmissionValidation = {
      * @return {boolean}
      */
     atLeastOneUploadedFile(files) {
-        files = files.filter((file) => file.status !== 'deleted' && file.status !== 'canceled');
-        if (files.length > 0 && files[0].status === 'upload successful') {
+        files = files.filter((file) => {
+            return file.status !== FileStatus.DELETED &&
+                   file.status !== FileStatus.CANCELED &&
+                   file.status != FileStatus.UPLOADED_FAILED
+        });
+
+        if (files.length && files[0].status === FileStatus.UPLOAD_SUCCESSFUL) {
             return true;
         } else {
             return false;
@@ -25,32 +38,32 @@ export const formSubmissionValidation = {
      * @return {boolean}       [description]
      */
     fileOptional(files) {
-        let uploadingFiles = files.filter((file) => file.status === 'submitting');
+        const uploadingFiles = files.filter((file) => file.status === FileStatus.SUBMITTING);
 
-        if (uploadingFiles.length === 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return uploadFiles.length === 0;
     }
 };
 
 /**
- * Filter function for filtering all deleted and canceled files
+ * Filter function for filtering all deleted, canceled, and failed files
  * @param  {object} file A file from filesToUpload that has status as a prop.
  * @return {boolean}
  */
 export function displayValidFilesFilter(file) {
-    return file.status !== 'deleted' && file.status !== 'canceled';
+    return file.status !== FileStatus.DELETED &&
+           file.status !== FileStatus.CANCELED &&
+           file.status !== FileStatus.UPLOAD_FAILED;
 }
 
 /**
- * Filter function for filtering all files except for deleted and canceled files
+ * Filter function for filtering all files except for deleted, canceled, and failed files
  * @param  {object} file A file from filesToUpload that has status as a prop.
  * @return {boolean}
  */
 export function displayRemovedFilesFilter(file) {
-    return file.status === 'deleted' || file.status === 'canceled';
+    return file.status === FileStatus.DELETED ||
+           file.status === FileStatus.CANCELED ||
+           file.status === FileStatus.UPLOAD_FAILED;
 }
 
 
@@ -60,7 +73,10 @@ export function displayRemovedFilesFilter(file) {
  * @return {boolean}
  */
 export function displayValidProgressFilesFilter(file) {
-    return file.status !== 'deleted' && file.status !== 'canceled' && file.status !== 'online';
+    return file.status !== FileStatus.DELETED &&
+           file.status !== FileStatus.CANCELED &&
+           file.status !== FileStatus.UPLOAD_FAILED &&
+           file.status !== FileStatus.ONLINE;
 }
 
 
@@ -77,7 +93,7 @@ export function displayValidProgressFilesFilter(file) {
 export function transformAllowedExtensionsToInputAcceptProp(allowedExtensions) {
     // Get the mime type of the extension if it's defined or add a dot in front of the extension
     // This is important for Safari as it doesn't understand just the extension.
-    let prefixedAllowedExtensions = allowedExtensions.map((ext) => {
+    const prefixedAllowedExtensions = allowedExtensions.map((ext) => {
         return MimeTypes[ext] || ('.' + ext);
     });
 

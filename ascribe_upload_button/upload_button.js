@@ -1,15 +1,16 @@
 'use strict';
 
 import React from 'react';
+import classNames from 'classnames';
 
-import { displayValidProgressFilesFilter } from '../react_s3_fine_uploader_utils';
+import { displayValidProgressFilesFilter, FileStatus } from '../react_s3_fine_uploader_utils';
 import { getLangText } from '../../../utils/lang_utils';
 import { truncateTextAtCharIndex } from '../../../utils/general_utils';
 
 const { func, array, bool, shape, string } = React.PropTypes;
 
 
-export default function UploadButton({ className = 'btn btn-default btn-sm' } = {}) {
+export default function UploadButton({ className = 'btn btn-default btn-sm', showLabel = true } = {}) {
     return React.createClass({
         displayName: 'UploadButton',
 
@@ -57,11 +58,11 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
         },
 
         getUploadingFiles(filesToUpload = this.props.filesToUpload) {
-            return filesToUpload.filter((file) => file.status === 'uploading');
+            return filesToUpload.filter((file) => file.status === FileStatus.UPLOADING);
         },
 
         getUploadedFile() {
-            return this.props.filesToUpload.filter((file) => file.status === 'upload successful')[0];
+            return this.props.filesToUpload.filter((file) => file.status === FileStatus.UPLOAD_SUCCESSFUL)[0];
         },
 
         clearSelection() {
@@ -119,28 +120,28 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
         },
 
         getUploadedFileLabel() {
-            const uploadedFile = this.getUploadedFile();
-            const uploadingFiles = this.getUploadingFiles();
+            if (showLabel) {
+                const uploadedFile = this.getUploadedFile();
+                const uploadingFiles = this.getUploadingFiles();
 
-            if(uploadingFiles.length) {
-                return (
-                    <span>
-                        {' ' + truncateTextAtCharIndex(uploadingFiles[0].name, 40) + ' '}
-                        [<a onClick={this.onClickRemove}>{getLangText('cancel upload')}</a>]
-                    </span>
-                );
-            } else if(uploadedFile) {
-                return (
-                    <span>
-                        <span className='ascribe-icon icon-ascribe-ok'/>
-                        {' ' + truncateTextAtCharIndex(uploadedFile.name, 40) + ' '}
-                        [<a onClick={this.onClickRemove}>{getLangText('remove')}</a>]
-                    </span>
-                );
-            } else {
-                return (
-                    <span>{getLangText('No file chosen')}</span>
-                );
+                if (uploadingFiles.length) {
+                    return (
+                        <span>
+                            {' ' + truncateTextAtCharIndex(uploadingFiles[0].name, 40) + ' '}
+                            [<a onClick={this.onClickRemove}>{getLangText('cancel upload')}</a>]
+                        </span>
+                    );
+                } else if (uploadedFile) {
+                    return (
+                        <span>
+                            <span className='ascribe-icon icon-ascribe-ok'/>
+                            {' ' + truncateTextAtCharIndex(uploadedFile.name, 40) + ' '}
+                            [<a onClick={this.onClickRemove}>{getLangText('remove')}</a>]
+                        </span>
+                    );
+                } else {
+                    return <span>{getLangText('No file chosen')}</span>;
+                }
             }
         },
 
@@ -156,7 +157,7 @@ export default function UploadButton({ className = 'btn btn-default btn-sm' } = 
              * Therefore the wrapping component needs to be an `anchor` tag instead of a `button`
              */
             return (
-                <div className="upload-button-wrapper">
+                <div className={classNames('ascribe-upload-button', {'ascribe-upload-button-has-label': showLabel})}>
                     {/*
                         The button needs to be of `type="button"` as it would
                         otherwise submit the form its in.
