@@ -224,7 +224,7 @@ let Form = React.createClass({
                         <Button
                             className="btn btn-danger btn-delete btn-sm ascribe-margin-1px"
                             type="reset">
-                            CANCEL
+                            {getLangText('CANCEL')}
                         </Button>
                     </p>
                 </div>
