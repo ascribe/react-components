@@ -102,19 +102,19 @@ let FileDragAndDropDialog = React.createClass({
                     </span>)
                 ];
             }
-
-            return (
-                <div className="file-drag-and-drop-dialog">
-                    <div className="hidden-print">
-                        {dialogElement}
-                    </div>
-                    {/* Hide the uploader and just show that there's been on files uploaded yet when printing */}
-                    <p className="text-align-center visible-print">
-                        {getLangText('No files uploaded')}
-                    </p>
-                </div>
-            );
         }
+
+        return (
+            <div className="file-drag-and-drop-dialog">
+                <div className="hidden-print">
+                    {dialogElement}
+                </div>
+                {/* Hide the uploader and just show that there's been on files uploaded yet when printing */}
+                <p className="text-align-center visible-print">
+                    {getLangText('No files uploaded')}
+                </p>
+            </div>
+        );
     }
 });
 
