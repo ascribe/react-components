@@ -84,6 +84,7 @@ let FileDragAndDropDialog = React.createClass({
                 dialogElement = [
                     this.getDragDialog(fileClassToUpload.plural),
                     (<span
+                        key='mutlipleFilesBtn'
                         className="btn btn-default"
                         onClick={onClick}>
                             {getLangText('choose %s to upload', fileClassToUpload.plural)}
@@ -96,6 +97,7 @@ let FileDragAndDropDialog = React.createClass({
                 dialogElement = [
                     this.getDragDialog(fileClassToUpload.singular),
                     (<span
+                        key='singleFileBtn'
                         className="btn btn-default"
                         onClick={onClick}>
                             {dialog}

@@ -487,7 +487,7 @@ const ReactS3FineUploader = React.createClass({
         return (enableLocalHashing && !uploadMethod) ||
                 !areAssetsEditable ||
                 (showErrorPrompt && errorState.errorClass) ||
-                (!multiple && filesToDisplay.length);
+                (!multiple && filesToDisplay.length > 0);
     },
 
     isFileValid(file) {
