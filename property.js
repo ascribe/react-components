@@ -72,7 +72,8 @@ const Property = React.createClass({
             initialValue: null,
             value: null,
             isFocused: false,
-            errors: null
+            errors: null,
+            hasWarning: false
         };
     },
 
@@ -218,17 +219,20 @@ const Property = React.createClass({
         this.setState({errors: null});
     },
 
+    setWarning(hasWarning) {
+        this.setState({ hasWarning });
+    },
+
     getClassName() {
-        if(!this.state.expanded && !this.props.checkboxLabel){
+        if (!this.state.expanded && !this.props.checkboxLabel) {
             return 'is-hidden';
-        }
-        if(!this.props.editable){
+        } else if (!this.props.editable) {
             return 'is-fixed';
-        }
-        if (this.state.errors){
+        } else if (this.state.errors) {
             return 'is-error';
-        }
-        if(this.state.isFocused) {
+        } else if (this.state.hasWarning) {
+            return 'is-warning';
+        } else if (this.state.isFocused) {
             return 'is-focused';
         } else {
             return '';
@@ -240,7 +244,17 @@ const Property = React.createClass({
     },
 
     handleCheckboxToggle() {
-        this.setExpanded(!this.state.expanded);
+        const expanded = !this.state.expanded;
+
+        this.setExpanded(expanded);
+
+        // Reset the value to be the initial value when the checkbox is unticked since the
+        // user doesn't want to specify their own value.
+        if (!expanded) {
+            this.setState({
+                value: this.state.initialValue
+            });
+        }
     },
 
     renderChildren(style) {
@@ -261,6 +275,7 @@ const Property = React.createClass({
                     onChange: this.handleChange,
                     onFocus: this.handleFocus,
                     onBlur: this.handleBlur,
+                    setWarning: this.setWarning,
                     disabled: !this.props.editable,
                     ref: 'input',
                     name: this.props.name,
@@ -284,18 +299,18 @@ const Property = React.createClass({
     },
 
     getCheckbox() {
-        const { checkboxLabel } = this.props;
+        const { checkboxLabel, name } = this.props;
 
-        if(checkboxLabel) {
+        if (checkboxLabel) {
             return (
                 <div
                     className="ascribe-property-collapsible-toggle"
                     onClick={this.handleCheckboxToggle}>
                     <input
-                        onChange={this.handleCheckboxToggle}
-                        type="checkbox"
+                        name={`${name}-checkbox`}
                         checked={this.state.expanded}
-                        ref="checkboxCollapsible"/>
+                        onChange={this.handleCheckboxToggle}
+                        type="checkbox" />
                     <span className="checkbox">{' ' + checkboxLabel}</span>
                 </div>
             );
