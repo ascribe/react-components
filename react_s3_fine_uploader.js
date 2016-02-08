@@ -15,6 +15,7 @@ import GlobalNotificationActions from '../../actions/global_notification_actions
 
 import AppConstants from '../../constants/application_constants';
 import { ErrorClasses, testErrorAgainstAll } from '../../constants/error_constants';
+import { RETRY_ATTEMPT_TO_SHOW_CONTACT_US } from '../../constants/uploader_constants';
 
 import { displayValidFilesFilter, FileStatus, transformAllowedExtensionsToInputAcceptProp } from './react_s3_fine_uploader_utils';
 import { getCookie } from '../../utils/fetch_api_utils';
@@ -33,9 +34,6 @@ const { shape,
         oneOf,
         element,
         arrayOf } = React.PropTypes;
-
-// After 5 manual retries, show the contact us prompt.
-const RETRY_ATTEMPT_TO_SHOW_CONTACT_US = 5;
 
 const ReactS3FineUploader = React.createClass({
     propTypes: {
