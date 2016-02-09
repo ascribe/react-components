@@ -40,7 +40,7 @@ export const formSubmissionValidation = {
     fileOptional(files) {
         const uploadingFiles = files.filter((file) => file.status === FileStatus.SUBMITTING);
 
-        return uploadFiles.length === 0;
+        return uploadingFiles.length === 0;
     }
 };
 
