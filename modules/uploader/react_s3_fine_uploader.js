@@ -21,6 +21,7 @@ import { displayValidFilesFilter, FileStatus, transformAllowedExtensionsToInputA
 import { getCookie } from '../../utils/fetch_api_utils';
 import { computeHashOfFile, extractFileExtensionFromString } from '../../utils/file_utils';
 import { getLangText } from '../../utils/lang_utils';
+import MimeTypes from '../../constants/mime_types';
 
 
 const { shape,
@@ -430,7 +431,7 @@ const ReactS3FineUploader = React.createClass({
         const { validation: { allowedExtensions } = {} } = this.props;
 
         if (allowedExtensions && allowedExtensions.length) {
-            return transformAllowedExtensionsToInputAcceptProp(allowedExtensions);
+            return transformAllowedExtensionsToInputAcceptProp(allowedExtensions, MimeTypes);
         } else {
             return null;
         }

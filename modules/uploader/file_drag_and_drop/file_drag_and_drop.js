@@ -8,11 +8,11 @@ import FileDragAndDropDialog from './file_drag_and_drop_dialog';
 import FileDragAndDropErrorDialog from './file_drag_and_drop_error_dialog';
 import FileDragAndDropPreviewIterator from './file_drag_and_drop_preview_iterator';
 
-import { FileStatus } from '../react_s3_fine_uploader_utils';
+import { FileStatus } from '../react_fine_uploader_utils';
 import { getLangText } from '../../../utils/lang_utils';
 
 
-// Taken from: https://github.com/fedosejev/react-file-drag-and-drop
+// Initially based off of https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDrop = React.createClass({
     propTypes: {
         areAssetsDownloadable: React.PropTypes.bool,
