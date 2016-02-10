@@ -14472,4 +14472,6 @@ code.google.com/p/crypto-js/wiki/License
     C.HmacSHA1 = Hasher._createHmacHelper(SHA1);
 }());
 
+module.exports = qq;
+
 /*! 2015-08-26 */

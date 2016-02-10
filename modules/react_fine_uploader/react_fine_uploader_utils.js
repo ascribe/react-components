@@ -1,6 +1,6 @@
 'use strict';
 
-import fineUploader from 'fineUploader';
+import fineUploader from './vendor/s3.fine-uploader';
 import MimeTypes from '../../constants/mime_types';
 
 

@@ -1,7 +1,7 @@
 'use strict';
 
 import React from 'react/addons';
-import fineUploader from 'fineUploader';
+import fineUploader from './vendor/s3.fine-uploader';
 import Q from 'q';
 
 import S3Fetcher from '../../fetchers/s3_fetcher';
