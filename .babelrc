@@ -1,0 +1,5 @@
+{
+    'presets': ['react'],
+    'plugins': ['transform-runtime', 'transform-react-display-name'],
+    'sourceMaps': true
+}
