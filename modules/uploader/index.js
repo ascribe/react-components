@@ -7,5 +7,5 @@ export UploadButton from './upload_button/upload_button';
 
 // Utilities and constants
 export FileStatus from './file_status';
-export MimeTypeMapping from './mime_type_mapping';
-export ValidationUtils from './validation_utils';
+export MimeTypeMapping from './utils/mime_type_mapping';
+export ValidationUtils from './utils/validation_utils';
