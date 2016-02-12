@@ -1,3 +1,5 @@
+es6/*
+lib/*
 node_modules/*
 
 **/__test__
