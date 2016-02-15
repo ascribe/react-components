@@ -26,7 +26,7 @@ Simply add:
 {
     ...
     "dependencies": {
-        "react-components": "git@github.com:ascribe/react-components.git"
+        "ascribe-react-components": "git@github.com:ascribe/react-components.git"
     }
     ...
 }
@@ -37,6 +37,31 @@ to your `package.json`.
 When deploying, ie. to Heroku, make sure that the target's deploy keys
 have the correct permissions to read this repo. A good guide for setting
 up private repos as modules [can be found here](http://fiznool.com/blog/2015/05/20/an-alternative-to-npm-private-modules/).
+
+To import components, you can either import the entire library, for example:
+
+```javascript
+import { Uploader } from 'ascribe-react-components';
+```
+
+Or, if you're not yet treeshaking and only want a particular component
+or module, you can also import directly from `ascribe-react-components/lib/...`:
+
+```javascript
+// Single component:
+import { ReactS3FineUploader } from 'ascribe-react-components/lib/uploader/react_s3_fine_uploader';
+
+// Whole module (each module exposes a index.js):
+import * as Uploader from 'ascribe-react-components/lib/uploader/index';
+```
+
+**Note**: If you do import only particular components or modules, make
+sure to include the babel runtime polyfill to your app.
+
+```javascript
+// At the top of your app
+import 'babel-runtime';
+```
 
 Versioning
 ----------
