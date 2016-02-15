@@ -18,13 +18,13 @@ let FileDragAndDrop = React.createClass({
         areAssetsDownloadable: React.PropTypes.bool,
         areAssetsEditable: React.PropTypes.bool,
         multiple: React.PropTypes.bool,
-        dropzoneInactive: React.PropTypes.bool,
+        disabled: React.PropTypes.bool,
         filesToUpload: React.PropTypes.array,
 
-        onDrop: React.PropTypes.func.isRequired,
-        onDragOver: React.PropTypes.func,
-        handleDeleteFile: React.PropTypes.func,
         handleCancelFile: React.PropTypes.func,
+        handleDragOver: React.PropTypes.func,
+        handleDeleteFile: React.PropTypes.func,
+        handleFileSubmit: React.PropTypes.func.isRequired,
         handlePauseFile: React.PropTypes.func,
         handleResumeFile: React.PropTypes.func,
         handleRetryFiles: React.PropTypes.func,
@@ -61,16 +61,16 @@ let FileDragAndDrop = React.createClass({
     handleDragOver(event) {
         event.preventDefault();
 
-        if (typeof this.props.onDragOver === 'function') {
-            this.props.onDragOver(event);
+        if (typeof this.props.handleDragOver === 'function') {
+            this.props.handleDragOver(event);
         }
     },
 
-    handleDrop(event) {
+    onFileSubmit(event) {
         event.preventDefault();
         event.stopPropagation();
 
-        if (!this.props.dropzoneInactive) {
+        if (!this.props.disabled) {
             let files;
 
             // handle Drag and Drop
@@ -80,8 +80,8 @@ let FileDragAndDrop = React.createClass({
                 files = event.target.files;
             }
 
-            if(typeof this.props.onDrop === 'function' && files) {
-              this.props.onDrop(files);
+            if(typeof this.props.handleFileSubmit === 'function' && files) {
+              this.props.handleFileSubmit(files);
             }
         }
     },
@@ -117,7 +117,7 @@ let FileDragAndDrop = React.createClass({
     handleOnClick() {
         // do not propagate event if the drop zone's inactive,
         // for example when multiple is set to false and the user already uploaded a piece
-        if (!this.props.dropzoneInactive) {
+        if (!this.props.disabled) {
             let evt;
 
             try {
@@ -177,7 +177,7 @@ let FileDragAndDrop = React.createClass({
 
     render: function () {
         const { allowedExtensions,
-                dropzoneInactive,
+                disabled,
                 errorClass,
                 filesToUpload,
                 handleCancelHashing,
@@ -215,10 +215,10 @@ let FileDragAndDrop = React.createClass({
         } else {
             return (
                 <div
-                    className={classNames('file-drag-and-drop', dropzoneInactive ? 'inactive-dropzone' : 'active-dropzone', { 'has-files': hasFiles })}
-                    onDrag={this.handleDrop}
+                    className={classNames('file-drag-and-drop', disabled ? 'inactive-dropzone' : 'active-dropzone', { 'has-files': hasFiles })}
+                    onDrag={this.onFileSubmit}
                     onDragOver={this.handleDragOver}
-                    onDrop={this.handleDrop}>
+                    onDrop={this.onFileSubmit}>
                         {hasError ? this.getErrorDialog(failedFiles) : this.getPreviewIterator()}
                         {!hasFiles && !hasError ? this.getUploadDialog() : null}
                         {/*
@@ -241,7 +241,7 @@ let FileDragAndDrop = React.createClass({
                                 height: 0,
                                 width: 0
                             }}
-                            onChange={this.handleDrop}
+                            onChange={this.onFileSubmit}
                             accept={allowedExtensions}/>
                 </div>
           );

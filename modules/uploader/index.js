@@ -7,5 +7,7 @@ export UploadButton from './upload_button/upload_button';
 
 // Utilities and constants
 export FileStatus from './file_status';
+export ValidationErrors from './validation_errors';
+
+export * as FormValidationUtils from './utils/form_validation_utils';
 export MimeTypeMapping from './utils/mime_type_mapping';
-export ValidationUtils from './utils/validation_utils';

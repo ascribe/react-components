@@ -1,3 +1,5 @@
+import FileStatus from '../file_status';
+
 /**
  * Filter function for filtering out all deleted, canceled, and failed files
  * @param  {object} file A file from filesToUpload that has status as a prop.

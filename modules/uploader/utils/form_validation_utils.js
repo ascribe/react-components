@@ -1,3 +1,5 @@
+import FileStatus from '../file_status';
+
 /**
  * Returns a boolean if there has been at least one file uploaded
  * successfully without it being deleted or canceled.

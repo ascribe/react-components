@@ -9,7 +9,8 @@
  * and some older browsers don't support just the extension on their input elements.
  * @param  {array}    allowedExtensions Array of strings without a dot prefixed
  * @param  {(object)} mimeTypeMap       Mapping of extension to mime type
- * @return {string}                     Joined string (comma-separated) of the passed-in array
+ * @return {string}                     The passed-in array's representation as an accept property
+ *                                      (comma-seperated string of values)
  */
 export function transformAllowedExtensionsToInputAcceptProp(allowedExtensions, mimeTypeMap) {
     // Get the mime type of the extension if it's defined or add a dot in front of the extension

@@ -37,7 +37,7 @@ const FileDragAndDropPreview = React.createClass({
     toggleUploadProcess() {
         const { file, handlePauseFile, handleResumeFile } = this.props;
 
-        if (file.status === FileStatus.UPLOADING) {
+        if (file.status === FileStatus.UPLOADING || file.status === FileStatus.UPLOAD_RETRYING) {
             handlePauseFile(file.id);
         } else if (file.status === FileStatus.PAUSED) {
             handleResumeFile(file.id);

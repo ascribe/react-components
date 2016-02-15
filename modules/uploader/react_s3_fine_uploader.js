@@ -1,97 +1,281 @@
-'use strict';
-
 import React from 'react/addons';
-import fineUploader from './vendor/s3.fine-uploader';
-import Q from 'q';
+import FineUploader from './vendor/s3.fine-uploader';
 
-import S3Fetcher from '../../fetchers/s3_fetcher';
+import FileDragAndDrop from './file_drag_and_drop/file_drag_and_drop';
 
-import FileDragAndDrop from './ascribe_file_drag_and_drop/file_drag_and_drop';
+import FileStatus from './file_status';
+import ValidationErrors from './validation_utils';
 
-import ErrorQueueStore from '../../stores/error_queue_store';
+import { transformAllowedExtensionsToInputAcceptProp } from './utils/dom_utils';
+import { displayValidFilesFilter } from './utils/file_filters';
+import MimeTypeMapping from './utils/mime_type_mapping';
 
-import GlobalNotificationModel from '../../models/global_notification_model';
-import GlobalNotificationActions from '../../actions/global_notification_actions';
+import { extractFileExtensionFromString } from '../utils/file';
+import { safeInvoke } from '../utils/general';
 
-import AppConstants from '../../constants/application_constants';
-import { ErrorClasses, testErrorAgainstAll } from '../../constants/error_constants';
-import { RETRY_ATTEMPT_TO_SHOW_CONTACT_US } from '../../constants/uploader_constants';
-
-import { displayValidFilesFilter, FileStatus, transformAllowedExtensionsToInputAcceptProp } from './react_s3_fine_uploader_utils';
-import { getCookie } from '../../utils/fetch_api_utils';
-import { computeHashOfFile, extractFileExtensionFromString } from '../../utils/file_utils';
-import { getLangText } from '../../utils/lang_utils';
-import MimeTypes from '../../constants/mime_types';
-
-
-const { shape,
-        string,
-        oneOfType,
-        number,
-        func,
+const { any,
+        arrayOf,
         bool,
-        any,
-        object,
-        oneOf,
         element,
-        arrayOf } = React.PropTypes;
+        func,
+        number,
+        object,
+        oneOfType,
+        shape,
+        string } = React.PropTypes;
 
 const ReactS3FineUploader = React.createClass({
     propTypes: {
-        areAssetsDownloadable: bool,
-        areAssetsEditable: bool,
-        errorNotificationMessage: string,
-        handleChangedFile: func, // for when a file is dropped or selected, TODO: rename to onChangedFile
-        submitFile: func, // for when a file has been successfully uploaded, TODO: rename to onSubmitFile
-        onValidationFailed: func,
-        setWarning: func, // for when the parent component wants to be notified of uploader warnings (ie. upload failed)
-        showErrorPrompt: bool,
+        disabled: bool,
 
-        // Handle form validation
-        setIsUploadReady: func,     //TODO: rename to setIsUploaderValidated
-        isReadyForFormSubmission: func,
-
-        // We encountered some cases where people had difficulties to upload their
-        // works to ascribe due to a slow internet connection.
-        // One solution we found in the process of tackling this problem was to hash
-        // the file in the browser using md5 and then uploading the resulting text document instead
-        // of the actual file.
-        //
-        // This boolean and string essentially enable that behavior.
-        // Right now, we determine which upload method to use by appending a query parameter,
-        // which should be passed into 'uploadMethod':
-        //   'hash':   upload using the hash
-        //   'upload': upload full file (default if not specified)
-        enableLocalHashing: bool,
-        uploadMethod: oneOf(['hash', 'upload']),
-
-        // A class of a file the user has to upload
-        // Needs to be defined both in singular as well as in plural
-        fileClassToUpload: shape({
-            singular: string,
-            plural: string
-        }),
-
-        // Uploading functionality of react fineuploader is disconnected from its UI
-        // layer, which means that literally every (properly adjusted) react element
-        // can handle the UI handling.
+        /**
+         * UI Component
+         * ============
+         *
+         * Uploading functionality of ReactS3FineUploader is disconnected from its UI
+         * layer, which means that literally every (properly adjusted) react element
+         * can handle the UI handling.
+         */
         fileInputElement: oneOfType([
-            func,
-            element
+            element,
+            func
         ]),
 
-        // S3 helpers
-        createBlobRoutine: shape({
-            url: string,
-            pieceId: number
-        }),
-        keyRoutine: shape({
-            url: string,
-            fileClass: string,
-            pieceId: number
-        }),
+        /**
+         * Mapping used to transform file extensions to mime types for filtering file types
+         * selectable through the input element's accept prop.
+         */
+        mimeTypeMapping: object,
 
-        // FineUploader options
+        /**
+         * Extension methods
+         * =================
+         *
+         * Available callbacks to allow for a parent component to extend uploader functionality.
+         */
+
+        /**
+         * Called if FineUploader is unable to automatically handle the deletion of a file because
+         * of the file originating from an online source requested as part of the initial session.
+         *
+         * It is expected that `handleDeleteOnlineFile` will attempt to delete the given file from
+         * the online source, returning a promise that resolves if the attempt succeeded or rejects
+         * if the attempt failed.
+         *
+         * This is not necessary unless your uploader works with an initial session. When a
+         * deletion that requires this function occurs and this is not specified, an error will
+         * be thrown.
+         *
+         * @param  {object}  file File to delete
+         * @return {Promise}      Promise that resolves when the deletion suceeds or rejects if
+         *                        an error occurred
+         */
+        handleDeleteOnlineFile: func,
+
+        /**
+         * Called just before user selected files are added to the upload queue.
+         *
+         * You can think of this as a general transform function that enables you to do anything
+         * you want with the files a user has selected for uploading just before they're added to
+         * the upload queue (for example, change all the file names, do client side encoding, etc).
+         *
+         * It is expected that `handleFilesBeforeUpload` will return a promise that resolves with
+         * an array of files to be added to the upload queue. Rejecting the promise will ignore
+         * the files and add nothing to the queue. Resolving with an empty array or something that
+         * is not an array is the same as rejecting.
+         *
+         * @param  {object[]} files Files to be uploaded
+         * @return {Promise}        Promise that resolves with an array of files to be added to the
+         *                          upload queue
+         */
+        handleFilesBeforeUpload: func,
+
+        /**
+         * Callbacks
+         * =========
+         *
+         * Available callbacks to allow for a parent component to handle uploader events.
+         *
+         * Most of these callbacks are similar to FineUploader's own event callbacks (see
+         * http://docs.fineuploader.com/branch/master/api/events.html), with a few exceptions:
+         *   * When FineUploader would give an `id` and a `name` argument, these callbacks will
+         *     instead give an object representing the file
+         *   * They are usually invoked later than FineUploader's own event invocations, as any
+         *     callback that changes a file's status as a side effect will wait until after this
+         *     component's state has been set with the new status
+         *   * Not all of FineUploader's events are available or behave exactly the same;
+         *     reference the list below. If you'd like to use another one, feel free to update
+         *     this component and submit pull requests.
+         */
+
+        /**
+         * Similar to FineUploader's onSubmitted
+         * (http://docs.fineuploader.com/branch/master/api/events.html#submitted), except it's
+         * only called after a file's been added to the uploader's uploading queue. As the given
+         * file here is already in the upload queue, it may be in any stage of the upload states
+         * (ie. from FileStatus.SUBMITTED all the way to FileStatus.UPLOADING).
+         *
+         * @param {object} file File that was added
+         */
+        onAdd: func,
+
+        /**
+         * Similar to FineUploader's onAllComplete
+         * (http://docs.fineuploader.com/branch/master/api/events.html#allComplete)
+         *
+         * @param {object[]} succeeded Array of succeeded file representations **(not ids)**
+         * @param {object[]} failed    Array of failed file representations **(not ids)**
+         */
+        onAllComplete: func,
+
+        /**
+         * Similar to FineUploader's onAutoRetry
+         * (http://docs.fineuploader.com/branch/master/api/events.html#autoRetry).
+         *
+         * @param {object} file          File that was retried
+         * @param {number} attemptNumber Number of times the file has been retried manually
+         */
+        onAutoRetry: func,
+
+        /**
+         * Called when a file has been canceled. Similar to FineUploader's onCancel
+         * (http://docs.fineuploader.com/branch/master/api/events.html#cancel), except it does not
+         * allow you to return false or a promise to prevent the cancellation. The given file will
+         * already have been queued to cancel.
+         *
+         * @param {object} file File that was canceled
+         */
+        onCanceled: func,
+
+        /**
+         * Similar to FineUploader's onDeleteComplete
+         * (http://docs.fineuploader.com/branch/master/api/events.html#deleteComplete). This is
+         * also called upon resolution of `handleDeleteOnlineFile()`.
+         *
+         * @param {object}  file    File that was deleted
+         * @param {xhr|xdr} xhr     The xhr used to make the request, `null` if called after
+         *                          `handleDeleteOnlineFile()`
+         * @param {boolean} isError If the delete completed with an error or not
+         */
+        onDeleteComplete: func,
+
+        /**
+         * Similar to FineUploader's onError
+         * (http://docs.fineuploader.com/branch/master/api/events.html#error)
+         *
+         * @param {object}  file        File that errored
+         * @param {string}  errorReason Reason for the error
+         * @param {xhr|xdr} xhr         The xhr used to make the request
+         */
+        onError: func,
+
+        /**
+         * Similar to FineUploader's onManualRetry
+         * (http://docs.fineuploader.com/branch/master/api/events.html#manualRetry), except like
+         * onAutoRetry, this will also give the number of previous retry attempts for the file.
+         *
+         * @param {object} file          File that was retried
+         * @param {number} attemptNumber Number of times the file has been retried manually
+         */
+        onManualRetry: func,
+
+        /**
+         * Called when a file has been paused.
+         *
+         * @param {object} file File that was paused
+         */
+        onPause: func,
+
+        /**
+         * Similar to FineUploader's onProgress
+         * (http://docs.fineuploader.com/branch/master/api/events.html#progress).
+         * Files will automatically have their `progress` property updated to be a percentage
+         * of the current upload progress (ie. uploadedBytes / totalBytes * 100).
+         *
+         * @param {object} file          File in progress
+         * @param {number} uploadedBytes Number of bytes that have been uploaded so far
+         * @param {number} totalBytes    Total number of bytes that comprise this file
+         */
+        onProgress: func,
+
+        /**
+         * Called when the uploader will reset.
+         */
+        onReset: func,
+
+        /**
+         * Unlike FineUploader's onResume (of which its docs are slightly misleading), this is
+         * called when a file in the current session is resumed from a paused state.
+         * FineUploader's onResume seems to only be called for the resuming of persistently paused
+         * files from previous sessions.
+         *
+         * @param {object} file File that was resumed
+         */
+        onResume: func,
+
+        /**
+         * Similar to FineUploader's onSessionRequestComplete
+         * (http://docs.fineuploader.com/branch/master/api/events.html#sessionRequestComplete).
+         * Assumes the response from the session request will contain an array of files to be
+         * initially loaded into the uploader. Files successfully requested from the session will
+         * also have their status set to FileStatus.ONLINE.
+         *
+         * @param {object[]} response Response from session request
+         * @param {boolean}  success  If the session request was successful or not
+         * @param {xhr|xdr}  xhr      The xhr used to make the request
+         */
+        onSessionRequestComplete: func,
+
+        /**
+         * Similar to FineUploader's onStatusChange
+         * (http://docs.fineuploader.com/branch/master/api/events.html#statusChange), except that
+         * it is only invoked on the following status changes:
+         *   * FileStatus.CANCELED
+         *   * FileStatus.DELETED
+         *   * FileStatus.PAUSED
+         *   * FileStatus.ONLINE (only when deletion failed)
+         *   * FileStatus.UPLOADING
+         *   * FileStatus.UPLOAD_FAILED
+         *   * FileStatus.UPLOAD_RETRYING
+         *   * FileStatus.UPLOAD_SUCCESSFUL
+         *
+         * @param {object}     file      File whose status changed
+         * @param {FileStatus} oldStatus Previous status of the file
+         * @param {FileStatus} newStatus New status of the file
+         */
+        onStatusChange: func,
+
+        /**
+         * Similar to FineUploader's onComplete
+         * (http://docs.fineuploader.com/branch/master/api/events.html#complete), except that it
+         * only gets called when the file was uploaded successfully (rather than also getting
+         * called when an error occurs)
+         *
+         * @param {object}  file File that was uploaded successfully
+         * @param {object}  res  The raw response from the server
+         * @param {xhr|xdr} xhr  The xhr used to make the request
+         */
+        onSuccess: func,
+
+        /**
+         * Called when validation of the submitted files fails.
+         *
+         * @param {object} file            File that failed validation, can be `null` if validation
+         *                                 applies in general and not just one file
+         * @param {object} validationError Error object describing the validation failure
+         * @param {string} validationError.error         Description of the failure
+         * @param {ValidationErrors} validationError.type Type of the failure
+         */
+        onValidationFailed: func,
+
+        /**
+         * FineUploader options
+         * ====================
+         *
+         * For an explaination of how to use these options, see the docs:
+         *   * http://docs.fineuploader.com/branch/master/api/options.html
+         *   * http://docs.fineuploader.com/branch/master/api/options-s3.html
+         */
         debug: bool,
 
         autoUpload: bool,
@@ -113,7 +297,12 @@ const ReactS3FineUploader = React.createClass({
         }),
         multiple: bool,
         objectProperties: shape({
-            acl: string
+            acl: string,
+            bucket: string,
+            key: oneOfType([
+                func,
+                string
+            ])
         }),
         request: shape({
             endpoint: string,
@@ -154,42 +343,30 @@ const ReactS3FineUploader = React.createClass({
 
     getDefaultProps() {
         return {
-            errorNotificationMessage: getLangText('Oops, we had a problem uploading your file. Please contact us if this happens repeatedly.'),
-            showErrorPrompt: false,
-            fileClassToUpload: {
-                singular: getLangText('file'),
-                plural: getLangText('files')
-            },
             fileInputElement: FileDragAndDrop,
+            mimeTypeMapping: MimeTypeMapping,
 
             // FineUploader options
-            autoUpload: true,
             debug: false,
-            multiple: false,
-            objectProperties: {
-                acl: 'public-read',
-                bucket: 'exampleBucket'
-            },
-            request: {
-                //endpoint: 'http://example-cdn-endpoint.com',
-                endpoint: 'http://example-amazons3-bucket.com',
-                accessKey: 'exampleAccessKey'
-            },
-            uploadSuccess: {
-                params: {
-                    isBrowserPreviewCapable: fineUploader.supportedFeatures.imagePreviews
-                }
-            },
-            cors: {
-                expected: true,
-                sendCredentials: true
-            },
+
+            autoUpload: true,
             chunking: {
                 enabled: true,
                 concurrent: {
                     enabled: true
                 }
             },
+            cors: {
+                expected: true,
+                sendCredentials: true
+            },
+            formatFileName: function(name) {
+                if (name != undefined && name.length > 30) {
+                    name = name.slice(0, 15) + '...' + name.slice(-15);
+                }
+                return name;
+            },
+            multiple: false,
             resume: {
                 enabled: true
             },
@@ -199,14 +376,14 @@ const ReactS3FineUploader = React.createClass({
             session: {
                 endpoint: null
             },
-            messages: {
-                unsupportedBrowser: '<h3>' + getLangText('Upload is not functional in IE7 as IE7 has no support for CORS!') + '</h3>'
-            },
-            formatFileName: function(name) { // fix maybe
-                if (name !== undefined && name.length > 26) {
-                    name = name.slice(0, 15) + '...' + name.slice(-15);
+            uploadSuccess: {
+                params: {
+                    isBrowserPreviewCapable: FineUploader.supportedFeatures.imagePreviews
                 }
-                return name;
+            },
+            validation: {
+                itemLimit: 0,
+                sizeLimit: 0
             }
         };
     },
@@ -215,298 +392,124 @@ const ReactS3FineUploader = React.createClass({
         return {
             filesToUpload: [],
             uploader: this.createNewFineUploader(),
-            csrfToken: getCookie(AppConstants.csrftoken),
-            errorState: {
-                manualRetryAttempt: 0,
-                errorClass: null
-            },
             uploadInProgress: false,
 
-            // -1: aborted
-            // -2: uninitialized
-            hashingProgress: -2,
-
-            // this is for logging
+            // for logging
             chunks: {}
         };
     },
 
-    componentWillUpdate() {
-        // since the csrf header is defined in this component's props,
-        // everytime the csrf cookie is changed we'll need to reinitalize
-        // fineuploader and update the actual csrf token
-        let potentiallyNewCSRFToken = getCookie(AppConstants.csrftoken);
-        if(this.state.csrfToken !== potentiallyNewCSRFToken) {
-            this.setState({
-                uploader: this.createNewFineUploader(),
-                csrfToken: potentiallyNewCSRFToken
-            });
-        }
+    componentWillMount() {
+        // Set up internal storage for file input ref that may need to also be propagated back up to the
+        // parent component
+        this._refs = {};
     },
 
     componentWillUnmount() {
-        // Without this method, fineuploader will continue to try to upload artworks
+        // If we don't do this, FineUploader will continue to try to upload files
         // even though this component is not mounted any more.
-        // Therefore we cancel all uploads
+        // Therefore we clean up after ourselves and cancel all uploads
         this.state.uploader.cancelAll();
     },
 
-    createNewFineUploader() {
-        return new fineUploader.s3.FineUploaderBasic(this.propsToConfig());
-    },
-
-    propsToConfig() {
-        const objectProperties = Object.assign({}, this.props.objectProperties);
-        objectProperties.key = this.requestKey;
-
-        return {
-            autoUpload: this.props.autoUpload,
-            debug: this.props.debug,
-            objectProperties: objectProperties, // do a special key handling here
-            request: this.props.request,
-            signature: this.props.signature,
-            uploadSuccess: this.props.uploadSuccess,
-            cors: this.props.cors,
-            chunking: this.props.chunking,
-            resume: this.props.resume,
-            deleteFile: this.props.deleteFile,
-            session: this.props.session,
-            validation: this.props.validation,
-            messages: this.props.messages,
-            formatFileName: this.props.formatFileName,
-            multiple: this.props.multiple,
-            retry: this.props.retry,
-            callbacks: {
-                onAllComplete: this.onAllComplete,
-                onComplete: this.onComplete,
-                onCancel: this.onCancel,
-                onProgress: this.onProgress,
-                onDeleteComplete: this.onDeleteComplete,
-                onSessionRequestComplete: this.onSessionRequestComplete,
-                onError: this.onError,
-                onUploadChunk: this.onUploadChunk,
-                onUploadChunkSuccess: this.onUploadChunkSuccess
-            }
-        };
-    },
-
-    // Resets the whole react fineuploader component to its initial state
-    reset() {
-        // Cancel all currently ongoing uploads
-        this.cancelUploads();
-
-        // and reset component in general
-        this.state.uploader.reset();
-
-        // proclaim that upload is not ready
-        this.props.setIsUploadReady(false);
-
-        // reset any warnings propagated to parent
-        this.setWarning(false);
-
-        // reset internal data structures of component
-        this.setState(this.getInitialState());
-    },
-
-    requestKey(fileId) {
-        let filename = this.state.uploader.getName(fileId);
-        let uuid = this.state.uploader.getUuid(fileId);
-
-        return Q.Promise((resolve, reject) => {
-            window.fetch(this.props.keyRoutine.url, {
-                method: 'post',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie(AppConstants.csrftoken)
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    'filename': filename,
-                    'category': this.props.keyRoutine.fileClass,
-                    'uuid': uuid,
-                    'piece_id': this.props.keyRoutine.pieceId
-                })
-            })
-            .then((res) => {
-                return res.json();
-            })
-            .then((res) =>{
-                resolve(res.key);
-            })
-            .catch((err) => {
-                this.onErrorPromiseProxy(err);
-                reject(err);
-            });
-        });
-    },
-
-    createBlob(file) {
-        const { createBlobRoutine } = this.props;
-
-        return Q.Promise((resolve, reject) => {
-
-            // if createBlobRoutine is not defined,
-            // we're progressing right away without posting to S3
-            // so that this can be done manually by the form
-            if (!createBlobRoutine) {
-                // still we warn the user of this component
-                console.warn('createBlobRoutine was not defined for ReactS3FineUploader. Continuing without creating the blob on the server.');
-                resolve();
-                return;
-            }
-
-            window.fetch(createBlobRoutine.url, {
-                method: 'post',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie(AppConstants.csrftoken)
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    'filename': file.name,
-                    'key': file.key,
-                    'piece_id': createBlobRoutine.pieceId
-                })
-            })
-            .then((res) => {
-                return res.json();
-            })
-            .then((res) => {
-                if(res.otherdata) {
-                    file.s3Url = res.otherdata.url_safe;
-                    file.s3UrlSafe = res.otherdata.url_safe;
-                } else if(res.digitalwork) {
-                    file.s3Url = res.digitalwork.url_safe;
-                    file.s3UrlSafe = res.digitalwork.url_safe;
-                } else if(res.contractblob) {
-                    file.s3Url = res.contractblob.url_safe;
-                    file.s3UrlSafe = res.contractblob.url_safe;
-                } else if(res.thumbnail) {
-                    file.s3Url = res.thumbnail.url_safe;
-                    file.s3UrlSafe = res.thumbnail.url_safe;
-                } else {
-                    throw new Error(getLangText('Could not find a url to download.'));
-                }
-                resolve(res);
-            })
-            .catch((err) => {
-                this.onErrorPromiseProxy(err);
-                reject(err);
-            });
-        });
-    },
-
     // Cancel uploads and clear previously selected files on the input element
-    cancelUploads(id) {
-        typeof id !== 'undefined' ? this.state.uploader.cancel(id) : this.state.uploader.cancelAll();
+    cancelUploads(fileId) {
+        typeof fileId !== 'undefined' ? this.state.uploader.cancel(fileId) : this.state.uploader.cancelAll();
 
         // Reset the file input element to clear the previously selected files so that
         // the user can reselect them again.
         this.clearFileSelection();
     },
 
-    checkFormSubmissionReady() {
-        const { isReadyForFormSubmission, setIsUploadReady } = this.props;
-
-        // since the form validation props isReadyForFormSubmission and setIsUploadReady
-        // are optional, we'll only trigger them when they're actually defined
-        if (typeof isReadyForFormSubmission === 'function' && typeof setIsUploadReady === 'function') {
-            // set uploadReady to true if the uploader's ready for submission
-            setIsUploadReady(isReadyForFormSubmission(this.state.filesToUpload));
-        } else {
-            console.warn('You didn\'t define the functions isReadyForFormSubmission and/or setIsUploadReady in as a prop in react-s3-fine-uploader');
+    clearFileSelection() {
+        const { fileInput } = this.refs;
+        if (fileInput) {
+            safeInvoke(fileInput.clearSelection);
         }
     },
 
-    clearFileSelection() {
-        const { fileInput } = this.refs;
-        if (fileInput && typeof fileInput.clearSelection === 'function') {
-            fileInput.clearSelection();
-        }
+    createNewFineUploader() {
+        const { autoUpload,
+                chunking,
+                cors,
+                debug,
+                deleteFile,
+                formatFileName,
+                messages,
+                multiple,
+                objectProperties,
+                request,
+                resume,
+                retry,
+                session,
+                signature,
+                uploadSuccess,
+                validation } = this.props;
+
+        const uploaderConfig = {
+            autoUpload,
+            chunking,
+            cors,
+            debug,
+            deleteFile,
+            formatFileName,
+            multiple,
+            messages,
+            objectProperties,
+            request,
+            resume,
+            retry,
+            session,
+            signature,
+            uploadSuccess,
+            validation,
+            callbacks: {
+                onAllComplete: this.onAllComplete,
+                onAutoRetry: this.onAutoRetry,
+                onCancel: this.onCancel,
+                onComplete: this.onComplete,
+                onDeleteComplete: this.onDeleteComplete,
+                onError: this.onError,
+                onManualRetry: this.onManualRetry,
+                onProgress: this.onProgress,
+                onSessionRequestComplete: this.onSessionRequestComplete,
+                onUploadChunk: this.onUploadChunk,
+                onUploadChunkSuccess: this.onUploadChunkSuccess
+            }
+        };
+
+        return new FineUploader.s3.FineUploaderBasic(uploaderConfig);
     },
 
     getAllowedExtensions() {
-        const { validation: { allowedExtensions } = {} } = this.props;
+        const { mimeTypeMapping, validation: { allowedExtensions = [] } } = this.props;
 
-        if (allowedExtensions && allowedExtensions.length) {
-            return transformAllowedExtensionsToInputAcceptProp(allowedExtensions, MimeTypes);
-        } else {
-            return null;
-        }
+        return transformAllowedExtensionsToInputAcceptProp(allowedExtensions, mimeTypeMapping);
     },
 
-    getUploadErrorClass({ type = 'upload', reason, xhr }) {
-        const { manualRetryAttempt } = this.state.errorState;
-        let matchedErrorClass;
-
-        if ('onLine' in window.navigator && !window.navigator.onLine) {
-            // If the user's offline, this is definitely the most important error to show.
-            // TODO: use a better mechanism for checking network state, ie. offline.js
-            matchedErrorClass = ErrorClasses.upload.offline;
-        } else if (manualRetryAttempt === RETRY_ATTEMPT_TO_SHOW_CONTACT_US) {
-            // Use the contact us error class if they've retried a number of times
-            // and are still unsuccessful
-            matchedErrorClass = ErrorClasses.upload.contactUs;
-        } else {
-            matchedErrorClass = testErrorAgainstAll({ type, reason, xhr });
-
-            if (!matchedErrorClass) {
-                // If none found, show the next error message in the queue for upload errors
-                matchedErrorClass = ErrorQueueStore.getNextError('upload');
-            }
-        }
-
-        return matchedErrorClass;
-    },
-
-    getXhrErrorComment(xhr) {
-        if (xhr) {
-            return {
-                response: xhr.response,
-                url: xhr.responseURL,
-                status: xhr.status,
-                statusText: xhr.statusText
-            };
-        }
-    },
-
-    isDropzoneInactive() {
-        const { areAssetsEditable, enableLocalHashing, multiple, showErrorPrompt, uploadMethod } = this.props;
-        const { errorState, filesToUpload } = this.state;
-
-        const filesToDisplay = filesToUpload.filter((file) => {
-            return file.status !== FileStatus.DELETED &&
-                   file.status !== FileStatus.CANCELED &&
-                   file.status !== FileStatus.UPLOAD_FAILED &&
-                   file.size !== -1;
-        });
-
-        return (enableLocalHashing && !uploadMethod) ||
-                !areAssetsEditable ||
-                (showErrorPrompt && errorState.errorClass) ||
-                (!multiple && filesToDisplay.length > 0);
+    getFiles() {
+        return this.state.filesToUpload;
     },
 
     isFileValid(file) {
-        const { validation: { allowedExtensions, sizeLimit = 0 }, onValidationFailed } = this.props;
+        const { onValidationFailed, validation: { allowedExtensions = [], sizeLimit = 0 }  } = this.props;
         const fileExt = extractFileExtensionFromString(file.name);
+        let validationError;
 
         if (file.size > sizeLimit) {
-            const fileSizeInMegaBytes = sizeLimit / 1000000;
+            validationError = {
+                error: `A file you submitted is bigger than ${sizeLimit / 1000000} MB`,
+                type: ValidationErrors.SIZE,
+            };
+        } else if (!allowedExtensions.includes(fileExt)) {
+            validationError = {
+                error: `The file you've submitted is of an invalid file format: Valid format(s): ${allowedExtensions.join(', ')}`,
+                type: ValidationErrors.EXTENSION
+            };
+        }
 
-            const notification = new GlobalNotificationModel(getLangText('A file you submitted is bigger than ' + fileSizeInMegaBytes + 'MB.'), 'danger', 5000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-
-            if (typeof onValidationFailed === 'function') {
-                onValidationFailed(file);
-            }
-
-            return false;
-        } else if (allowedExtensions && !allowedExtensions.includes(fileExt)) {
-            const notification = new GlobalNotificationModel(getLangText(`The file you've submitted is of an invalid file format: Valid format(s): ${allowedExtensions.join(', ')}`), 'danger', 5000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
+        if (validationError) {
+            safeInvoke(onValidationFailed, file, validationError);
 
             return false;
         } else {
@@ -514,202 +517,103 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
-    selectValidFiles(files) {
-        return Array.from(files).reduce((validFiles, file) => {
-            if (this.isFileValid(file)) {
-                validFiles.push(file);
-            }
-            return validFiles;
-        }, []);
+    isUploaderDisabled() {
+        const filesToDisplay = filesToUpload.filter((file) => {
+            return file.status !== FileStatus.DELETED &&
+                   file.status !== FileStatus.CANCELED &&
+                   file.status !== FileStatus.UPLOAD_FAILED &&
+                   file.size !== -1;
+        });
+
+        return this.props.disabled || (!multiple && filesToDisplay.length > 0);
     },
 
-    // This method has been made promise-based to immediately afterwards
-    // call a callback function (instantly after this.setState went through)
-    // This is e.g. needed when showing/hiding the optional thumbnail upload
-    // field in the registration form
-    setStatusOfFile(fileId, status) {
-        return Q.Promise((resolve) => {
-            let changeSet = {};
+    // Resets the whole react FineUploader component to its initial state
+    reset() {
+        // Tell the parent we're reseting
+        safeInvoke(this.props.onReset);
 
+        // then cancel all currently ongoing uploads
+        this.cancelUploads();
+
+        // reset uploader
+        this.state.uploader.reset();
+
+        // and finally reset internal data structures of component
+        this.setState(this.getInitialState());
+    },
+
+    selectValidFiles(files) {
+        return Array.from(files).filter(this.isFileValid);
+    },
+
+    // This method has been made promise-based to allow a callback function
+    // to execute immediately after the state is set.
+    setStatusOfFile(fileId, status, changeSet = {}) {
+        return new Promise((resolve) => {
+            const oldStatus = this.state.filesToUpload[fileId].status;
+
+            changeSet.status = { $set: status };
             if (status === FileStatus.DELETED || status === FileStatus.CANCELED || status === FileStatus.UPLOAD_FAILED) {
                 changeSet.progress = { $set: 0 };
             }
 
-            changeSet.status = { $set: status };
+            const filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
 
-            let filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
+            this.setState({ filesToUpload }, () => {
+                const updatedFile = this.state.filesToUpload[fileId]
 
-            this.setState({ filesToUpload }, resolve);
+                safeInvoke(this.props.onStatusChange, updatedFile, oldStatus, status);
+
+                resolve(updatedFile);
+            });
         });
     },
 
-    setThumbnailForFileId(fileId, url) {
-        const { filesToUpload } = this.state;
-
-        if(fileId < filesToUpload.length) {
-            const changeSet = { $set: url };
-            const newFilesToUpload = React.addons.update(filesToUpload, {
-                [fileId]: { thumbnailUrl: changeSet }
-            });
-
-            this.setState({ filesToUpload: newFilesToUpload });
-        } else {
-            throw new Error('Accessing an index out of range of filesToUpload');
+    transformUploaderFiles(transformFn) {
+        if (typeof transformFn !== 'function') {
+            throw new Error('Argument given as the transform function to transformUploaderFiles was not a function');
         }
+
+        // Give a new array to transformFn so users don't have to worry about not mutating our internal state
+        const transformedFiles = transformFn(Array.from(this.state.filesToUpload));
+
+        this.setState({ filesToUpload: transformedFiles });
     },
 
-    setWarning(hasWarning) {
-        if (typeof this.props.setWarning === 'function') {
-            this.props.setWarning(hasWarning);
-        }
-    },
 
-    /* FineUploader specific callback function handlers */
-    onUploadChunk(id, name, chunkData) {
-        let chunks = this.state.chunks;
+    /***** FINEUPLOADER SPECIFIC CALLBACK FUNCTION HANDLERS *****/
+    onAllComplete(succeeded, failed) {
+        const { filesToUpload, uploadInProgress } = this.state;
 
-        chunks[id + '-' + chunkData.startByte + '-' + chunkData.endByte] = {
-            id,
-            name,
-            chunkData,
-            completed: false
-        };
-
-        let startedChunks = React.addons.update(this.state.startedChunks, { $set: chunks });
-
-        this.setState({ startedChunks });
-    },
-
-    onUploadChunkSuccess(id, chunkData, responseJson, xhr) {
-        let chunks = this.state.chunks;
-        let chunkKey = id + '-' + chunkData.startByte + '-' + chunkData.endByte;
-
-        if(chunks[chunkKey]) {
-            chunks[chunkKey].completed = true;
-            chunks[chunkKey].responseJson = responseJson;
-            chunks[chunkKey].xhr = xhr;
-
-            let startedChunks = React.addons.update(this.state.startedChunks, { $set: chunks });
-
-            this.setState({ startedChunks });
-        }
-    },
-
-    onAllComplete(succeed, failed) {
-        if (this.state.uploadInProgress) {
+        if (uploadInProgress) {
             this.setState({
                 uploadInProgress: false
             });
         }
-    },
 
-    onComplete(id, name, res, xhr) {
-        // There has been an issue with the server's connection
-        if (xhr && xhr.status === 0 && res.success) {
-            console.logGlobal(new Error('Upload succeeded with a status code 0'), {
-                files: this.state.filesToUpload,
-                chunks: this.state.chunks,
-                xhr: this.getXhrErrorComment(xhr)
-            });
-        // onError will catch any errors, so we can ignore them here
-        } else if (!res.error && res.success) {
-            let files = this.state.filesToUpload;
+        if (typeof this.props.onAllComplete === 'function') {
+            const succeededFiles = succeeded.map((succeededId) => filesToUpload[succeededId]);
+            const failedFiles = failed.map((failedId) => filesToUpload[failedId]);
 
-            // Set the state of the completed file to 'upload successful' in order to
-            // remove it from the GUI
-            files[id].status = FileStatus.UPLOAD_SUCCESSFUL;
-            files[id].key = this.state.uploader.getKey(id);
-
-            let filesToUpload = React.addons.update(this.state.filesToUpload, { $set: files });
-            this.setState({ filesToUpload });
-
-            // Only after the blob has been created server-side, we can make the form submittable.
-            this.createBlob(files[id])
-                .then(() => {
-                    if (typeof this.props.submitFile === 'function') {
-                        this.props.submitFile(files[id]);
-                    } else {
-                        console.warn('You didn\'t define submitFile as a prop in react-s3-fine-uploader');
-                    }
-
-                    this.checkFormSubmissionReady();
-                });
+            this.props.onAllComplete(succeededFiles, failedFiles);
         }
     },
 
-    /**
-     * We want to channel all errors in this component through one single method.
-     * As fineuploader's `onError` method cannot handle the callback parameters of
-     * a promise we define this proxy method to crunch them into the correct form.
-     *
-     * @param  {error} err a plain Javascript error
-     */
-    onErrorPromiseProxy(err) {
-        this.onError(null, null, err.message);
+    onAutoRetry(fileId, name, attemptNumber) {
+        this.setStatusOfFile(fileId, FileStatus.UPLOAD_RETRYING)
+            .then((file) => safeInvoke(this.props.onAutoRetry, file, attemptNumber));
     },
 
-    onError(id, name, errorReason, xhr) {
-        const { errorNotificationMessage, showErrorPrompt } = this.props;
-        const { chunks, filesToUpload } = this.state;
+    onCancel(fileId) {
+        this.setStatusOfFile(fileId, FileStatus.CANCELED)
+            .then((file) => safeInvoke(this.props.onCanceled, file));
 
-        console.logGlobal(errorReason, {
-            files: filesToUpload,
-            chunks: chunks,
-            xhr: this.getXhrErrorComment(xhr)
-        });
-
-        let notificationMessage;
-
-        if (showErrorPrompt) {
-            this.setStatusOfFile(id, FileStatus.UPLOAD_FAILED);
-
-            // If we've already found an error on this upload, just ignore other errors
-            // that pop up. They'll likely pop up again when the user retries.
-            if (!this.state.errorState.errorClass) {
-                notificationMessage = errorNotificationMessage;
-
-                const errorState = React.addons.update(this.state.errorState, {
-                    errorClass: {
-                        $set: this.getUploadErrorClass({
-                            reason: errorReason,
-                            xhr
-                        })
-                    }
-                });
-
-                this.setState({ errorState });
-                this.setWarning(true);
-            }
-        } else {
-            notificationMessage = errorReason || errorNotificationMessage;
-            this.cancelUploads();
-        }
-
-        if (notificationMessage) {
-            const notification = new GlobalNotificationModel(notificationMessage, 'danger', 5000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-        }
-    },
-
-    onCancel(id) {
-        // when a upload is canceled, we need to update this components file array
-        this.setStatusOfFile(id, FileStatus.CANCELED)
-            .then(() => {
-                if(typeof this.props.handleChangedFile === 'function') {
-                    this.props.handleChangedFile(this.state.filesToUpload[id]);
-                }
-            });
-
-        let notification = new GlobalNotificationModel(getLangText('File upload canceled'), 'success', 5000);
-        GlobalNotificationActions.appendGlobalNotification(notification);
-
-        this.checkFormSubmissionReady();
-
-        // FineUploader's onAllComplete event doesn't fire if all files are cancelled
-        // so we need to double check if this is the last file getting cancelled.
+        // FineUploader's onAllComplete event doesn't fire if all files are canceled
+        // so we need to double check if this is the last file getting canceled.
         //
         // Because we're calling FineUploader.getInProgress() in a cancel callback,
-        // the current file getting cancelled is still considered to be in progress
+        // the current file getting canceled is still considered to be in progress
         // so there will be one file left in progress when we're cancelling the last file.
         if (this.state.uploader.getInProgress() === 1) {
             this.setState({
@@ -720,155 +624,199 @@ const ReactS3FineUploader = React.createClass({
         return true;
     },
 
-    onProgress(id, name, uploadedBytes, totalBytes) {
-        let filesToUpload = React.addons.update(this.state.filesToUpload, {
-            [id]: {
+    onComplete(fileId, name, res, xhr) {
+        // onComplete is still called even if the upload failed.
+        // onError will catch any errors, so we can ignore them here
+        if (!res.error && res.success) {
+            // Set the state of the completed file to 'upload successful' in order to
+            // remove it from the GUI
+            this.setStatusOfFile(fileId, FileStatus.UPLOAD_SUCCESSFUL, {
+                    key: { $set: this.state.uploader.getKey(fileId) }
+                })
+                .then((file) => safeInvoke(this.props.onSuccess, file, res, xhr));
+        }
+    },
+
+    onDeleteComplete(fileId, xhr, isError) {
+        const invokeCallback = (file = this.state.filesToUpload[fileId]) => safeInvoke(this.props.onDeleteComplete, file, xhr, isError);
+
+        if (isError) {
+            this.setStatusOfFile(fileId, FileStatus.ONLINE)
+                .then(invokeCallback);
+        } else {
+            invokeCallback();
+        }
+    },
+
+    onError(fileId, name, errorReason, xhr) {
+        this.setStatusOfFile(fileId, FileStatus.UPLOAD_FAILED)
+            .then((file) => safeInvoke(this.props.onError, file, errorReason, xhr));
+    },
+
+    /**
+     * We want to channel all errors in this component through one single method.
+     * As FineUploader's `onError` method cannot handle the callback parameters of
+     * a promise we define this proxy method to crunch them into the correct form.
+     *
+     * @param  {error} err a plain Javascript error
+     */
+    onErrorPromiseProxy(err) {
+        this.onError(null, null, err.message);
+    },
+
+    onManualRetry(fileId, name) {
+        this.setStatusOfFile(fileId, FileStatus.UPLOAD_RETRYING, {
+                manualRetryAttempt: { $set: filesToUpload[fileId].manualRetryAttempt + 1 }
+            })
+            .then((file) => safeInvoke(this.props.onManualRetry, file, file.manualRetryAttempt));
+    },
+
+    onProgress(fileId, name, uploadedBytes, totalBytes) {
+        const filesToUpload = React.addons.update(this.state.filesToUpload, {
+            [fileId]: {
                 progress: { $set: (uploadedBytes / totalBytes) * 100}
             }
         });
-        this.setState({ filesToUpload });
+
+        this.setState({ filesToUpload }, () => safeInvoke(this.props.onProgress, filesToUpload[fileId], uploadedBytes, totalBytes));
     },
 
-    onSessionRequestComplete(response, success) {
-        if(success) {
-            // fetch blobs for images
-            response = response.map((file) => {
-                file.url = file.s3UrlSafe;
+    onSessionRequestComplete(response, success, xhr) {
+        if (success && Array.isArray(response)) {
+            response.forEach((file) => {
                 file.status = FileStatus.ONLINE;
                 file.progress = 100;
-                return file;
+            });
+        }
+
+        safeInvoke(this.props.onSessionRequestComplete, response, success, xhr);
+    },
+
+    onUploadChunk(fileId, name, chunkData) {
+        const chunkKey = fileId + '-' + chunkData.startByte + '-' + chunkData.endByte;
+
+        const chunks = React.addons.update(this.state.chunks, {
+            [chunkKey]: {
+                $set: {
+                    name,
+                    chunkData,
+                    completed: false,
+                    id: fileId
+                }
+            }
+        });
+
+        this.setState({ chunks });
+    },
+
+    onUploadChunkSuccess(fileId, chunkData, responseJson, xhr) {
+        const chunkKey = fileId + '-' + chunkData.startByte + '-' + chunkData.endByte;
+
+        if (this.state.chunks[chunkKey]) {
+            const chunks = React.addons.update(this.state.chunks, {
+                [chunkKey]: {
+                    completed: { $set: true },
+                    responseJson: { $set: responseJson },
+                    xhr: { $set: xhr }
+                }
             });
 
-            // add file to filesToUpload
-            let updatedFilesToUpload = this.state.filesToUpload.concat(response);
-
-            // refresh all files ids,
-            updatedFilesToUpload = updatedFilesToUpload.map((file, i) => {
-                file.id = i;
-                return file;
-            });
-
-            let filesToUpload = React.addons.update(this.state.filesToUpload, {$set: updatedFilesToUpload});
-
-            this.setState({filesToUpload });
-        } else {
-            // server has to respond with 204
-            //let notification = new GlobalNotificationModel('Could not load attached files (Further data)', 'danger', 10000);
-            //GlobalNotificationActions.appendGlobalNotification(notification);
-            //
-            //throw new Error('The session request failed', response);
+            this.setState({ chunks });
         }
     },
 
-    onDeleteComplete(id, xhr, isError) {
-        if(isError) {
-            this.setStatusOfFile(id, FileStatus.ONLINE);
 
-            let notification = new GlobalNotificationModel(getLangText('There was an error deleting your file.'), 'danger', 10000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-        } else {
-            let notification = new GlobalNotificationModel(getLangText('File deleted'), 'success', 5000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
-        }
-
-        this.checkFormSubmissionReady();
+    /***** HANDLERS FOR ACTIONS *****/
+    handleCancelFile(fileId) {
+        this.cancelUploads(fileId);
     },
 
     handleDeleteFile(fileId) {
+        const { filesToUpload, uploader } = this.state;
+
         // We set the files state to 'deleted' immediately, so that the user is not confused with
         // the unresponsiveness of the UI
         //
         // If there is an error during the deletion, we will just change the status back to FileStatus.ONLINE
         // and display an error message
-        this.setStatusOfFile(fileId, FileStatus.DELETED)
-            .then(() => {
-                if(typeof this.props.handleChangedFile === 'function') {
-                    this.props.handleChangedFile(this.state.filesToUpload[fileId]);
-                }
-            });
+        this.setStatusOfFile(fileId, FileStatus.DELETED);
 
-        // In some instances (when the file was already uploaded and is just displayed to the user
-        // - for example in the contract or additional files dialog)
-        // fineuploader does not register an id on the file (we do, don't be confused by this!).
-        // Since you can only delete a file by its id, we have to implement this method ourselves
+        // FineUploader does not register an id on the file unless it handles the upload
+        // of the file itself (however, we always do internally; don't be confused by this!).
+        // This is problematic in some instances when FineUploader fetches an already uploaded
+        // file as part of its session (ie. when the file was already uploaded to S3 and
+        // is just pulled to be displayed to the user).
         //
-        //  So, if an id is not present, we delete the file manually
-        //  To check which files are already uploaded from previous sessions we check their status.
-        //  If they are, it is "online"
-
-        if(this.state.filesToUpload[fileId].status !== FileStatus.ONLINE) {
-            // delete file from server
-            this.state.uploader.deleteFile(fileId);
-            // this is being continued in onDeleteFile, as
-            // fineuploaders deleteFile does not return a correct callback or
-            // promise
+        // Since FineUploader can only handle file deletions if it can find an id associated with
+        // that file, it's not able to delete files that were loaded only as part of its session.
+        // Unfortunately, this means that you have to supply your own way of deleting these files
+        // that are already online.
+        //
+        // To check which files were uploaded from previous sessions we can check their status;
+        // If they are online, the status will be "online".
+        if (filesToUpload[fileId].status !== FileStatus.ONLINE) {
+            // FineUploader handled this file and internally registered an id to it, so
+            // we can just let FineUploader handle the deletion
+            //
+            // To check on the status of the deletion, see onDeleteComplete as
+            // FineUploader's deleteFile does not return a callback or promise
+            uploader.deleteFile(fileId);
         } else {
-            let fileToDelete = this.state.filesToUpload[fileId];
-            S3Fetcher
-                .deleteFile(fileToDelete.s3Key, fileToDelete.s3Bucket)
-                .then(() => this.onDeleteComplete(fileToDelete.id, null, false))
-                .catch(() => this.onDeleteComplete(fileToDelete.id, null, true));
+            const fileToDelete = filesToUpload[fileId];
+
+            if (this.props.handleDeleteOnlineFile === 'function') {
+                this.props.handleDeleteOnlineFile(fileToDelete)
+                    .then(() => this.onDeleteComplete(fileId, null, false))
+                    .catch(() => this.onDeleteComplete(fileId, null, true));
+            } else {
+                throw new Error(`ReactS3FineUploader cannot delete file (${fileToDelete.name}) ` +
+                                'originating from a previous session because ' +
+                                'handleDeleteOnlineFile() was not was specified as a prop.');
+            }
         }
     },
 
-    handleCancelFile(fileId) {
-        this.cancelUploads(fileId);
-    },
-
-    handleCancelHashing() {
-        // Every progress tick of the hashing function in handleUploadFile there is a
-        // check if this.state.hashingProgress is -1. If so, there is an error thrown that cancels
-        // the hashing of all files immediately.
-        this.setState({ hashingProgress: -1 });
-    },
-
     handlePauseFile(fileId) {
-        if(this.state.uploader.pauseUpload(fileId)) {
-            this.setStatusOfFile(fileId, FileStatus.PAUSED);
+        if (this.state.uploader.pauseUpload(fileId)) {
+            this.setStatusOfFile(fileId, FileStatus.PAUSED)
+                .then((file) => safeInvoke(this.props.onPause, file));
         } else {
-            throw new Error(getLangText('File upload could not be paused.'));
+            throw new Error('File upload could not be paused.');
         }
     },
 
     handleResumeFile(fileId) {
-        if(this.state.uploader.continueUpload(fileId)) {
-            this.setStatusOfFile(fileId, FileStatus.UPLOADING);
+        const resumeSuccessful = this.state.uploader.continueUpload(fileId);
+
+        if (resumeSuccessful) {
+            // FineUploader's onResume callback is **ONLY** used for when a file is resumed from
+            // persistent storage, not when they're paused and continued, so we have to handle
+            // this callback ourselves
+            this.setStatusOfFile(fileId, FileStatus.UPLOADING)
+                .then((file) => safeInvoke(this.props.onResume, file));
         } else {
-            throw new Error(getLangText('File upload could not be resumed.'));
+            throw new Error('File upload could not be resumed.');
         }
     },
 
     handleRetryFiles(fileIds) {
-        let filesToUpload = this.state.filesToUpload;
-
-        if (fileIds.constructor !== Array) {
-            fileIds = [ fileIds ];
+        if (!Array.isArray(fileIds)) {
+            fileIds = [fileIds];
         }
 
         fileIds.forEach((fileId) => {
-            this.state.uploader.retry(fileId);
-            filesToUpload = React.addons.update(filesToUpload, { [fileId]: { status: { $set: FileStatus.UPLOADING } } });
-        });
+            const { filesToUpload, uploader } = this.state;
 
-        this.setState({
-            // Reset the error class along with the retry
-            errorState: {
-                manualRetryAttempt: this.state.errorState.manualRetryAttempt + 1
-            },
-            filesToUpload
+            uploader.retry(fileId);
         });
-
-        this.setWarning(false);
     },
 
     handleUploadFile(files) {
-        // While files are being uploaded, the form cannot be ready
-        // for submission
-        this.props.setIsUploadReady(false);
+        const { multiple, onValidationFailed, validation: { itemLimit = 0 } } = this.props;
+        const { filesToUpload, uploader } = this.state;
 
-        // If multiple set and user already uploaded its work,
-        // cancel upload
-        if(!this.props.multiple && this.state.filesToUpload.filter(displayValidFilesFilter).length > 0) {
+        // If multiple set and user already uploaded its work cancel upload
+        if (!multiple && filesToUpload.filter(displayValidFilesFilter).length) {
             this.clearFileSelection();
             return;
         }
@@ -876,229 +824,160 @@ const ReactS3FineUploader = React.createClass({
         // Select only the submitted files that fit the file size and allowed extensions
         files = this.selectValidFiles(files);
 
-        // if multiple is set to false and user drops multiple files into the dropzone,
-        // take the first one and notify user that only one file can be submitted
-        if(!this.props.multiple && files.length > 1) {
-            let tempFilesList = [];
-            tempFilesList.push(files[0]);
+        // If the user selects or drops too many files, take as many as possible and use
+        // onValidationFailed to notify the parent component that some files were omitted
+        let extraFilesError;
 
-            // replace filelist with first-element file list
-            files = tempFilesList;
-            // TOOD translate?
-            let notification = new GlobalNotificationModel(getLangText('Only one file allowed (took first one)'), 'danger', 10000);
-            GlobalNotificationActions.appendGlobalNotification(notification);
+        if ((!multiple || itemLimit === 1) && files.length > 1) {
+            // If multiple is set to false, the user shouldn't be able to select more than
+            // one file using the file selector, but he could always drop multiple files
+            // into the dropzone.
+            extraFilesError = 'Only one file allowed (took first one)';
+            files = files.slice(0, 1);
+        } else if (files.length > itemLimit) {
+            extraFilesError = `Too many files selected (only took first ${itemLimit})`;
+            files = files.slice(0, itemLimit);
         }
 
-        // As mentioned already in the propTypes declaration, in some instances we need to calculate the
-        // md5 hash of a file locally and just upload a txt file containing that hash.
-        //
-        // In the view this only happens when the user is allowed to do local hashing as well
-        // as when the correct method prop is present ('hash' and not 'upload')
-        if (this.props.enableLocalHashing && this.props.uploadMethod === 'hash') {
-            const convertedFilePromises = [];
-            let overallFileSize = 0;
+        if (extraFilesError) {
+            safeInvoke(onValidationFailed, null, {
+                error: extraFilesError,
+                type: ValidationErrors.EXTRA_FILES
+            });
+        }
 
-            // "files" is not a classical Javascript array but a Javascript FileList, therefore
-            // we can not use map to convert values
-            for(let i = 0; i < files.length; i++) {
-                // for calculating the overall progress of all submitted files
-                // we'll need to calculate the overall sum of all files' sizes
-                overallFileSize += files[i].size;
-
-                // also, we need to set the files' initial progress value
-                files[i].progress = 0;
-
-                // since the actual computation of a file's hash is an async task ,
-                // we're using promises to handle that
-                let hashedFilePromise = computeHashOfFile(files[i]);
-                convertedFilePromises.push(hashedFilePromise);
-            }
-
-            // To react after the computation of all files, we define the resolvement
-            // with the all function for iterables and essentially replace all original files
-            // with their txt representative
-            Q.all(convertedFilePromises)
-                .progress(({index, value: {progress, reject}}) => {
-                    // hashing progress has been aborted from outside
-                    // To get out of the executing, we need to call reject from the
-                    // inside of the promise's execution.
-                    // This is why we're passing (along with value) a function that essentially
-                    // just does that (calling reject(err))
-                    //
-                    // In the promises catch method, we're then checking if the interruption
-                    // was due to that error or another generic one.
-                    if(this.state.hashingProgress === -1) {
-                        reject(new Error(getLangText('Hashing canceled')));
+        if (files.length) {
+            this.props.handleFilesBeforeUpload(files)
+                .then((files) => {
+                    if (Array.isArray(files) && files.length) {
+                        this.state.uploader.addFiles(files);
+                        this.synchronizeFileLists(files);
+                        this.setState({
+                            uploadInProgress: true
+                        });
                     }
-
-                    // update file's progress
-                    files[index].progress = progress;
-
-                    // calculate weighted average for overall progress of all
-                    // currently hashing files
-                    let overallHashingProgress = 0;
-                    for(let i = 0; i < files.length; i++) {
-                        let filesSliceOfOverall = files[i].size / overallFileSize;
-                        overallHashingProgress += filesSliceOfOverall * files[i].progress;
-                    }
-
-                    // Multiply by 100, since react-progressbar expects decimal numbers
-                    this.setState({ hashingProgress: overallHashingProgress * 100});
-                })
-                .then((convertedFiles) => {
-                    // clear hashing progress, since its done
-                    this.setState({ hashingProgress: -2});
-
-                    // actually replacing all files with their txt-hash representative
-                    files = convertedFiles;
-
-                    // routine for adding all the files submitted to fineuploader for actual uploading them
-                    // to the server
-                    this.state.uploader.addFiles(files);
-                    this.synchronizeFileLists(files);
-
-                })
-                .catch((err) => {
-                    // If the error is that hashing has been canceled, we want to display a success
-                    // message instead of a danger message
-                    let typeOfMessage = 'danger';
-
-                    if(err.message === getLangText('Hashing canceled')) {
-                        typeOfMessage = 'success';
-                        this.setState({ hashingProgress: -2 });
-                    } else {
-                        // if there was a more generic error, we also log it
-                        console.logGlobal(err);
-                    }
-
-                    let notification = new GlobalNotificationModel(err.message, typeOfMessage, 5000);
-                    GlobalNotificationActions.appendGlobalNotification(notification);
                 });
-
-        // if we're not hashing the files locally, we're just going to hand them over to fineuploader
-        // to upload them to the server
-        } else {
-            if(files.length > 0) {
-                this.state.uploader.addFiles(files);
-                this.synchronizeFileLists(files);
-                this.setState({
-                    uploadInProgress: true
-                });
-            }
         }
     },
 
-    // ReactFineUploader is essentially just a react layer around s3 fineuploader.
-    // However, since we need to display the status of a file (progress, uploading) as well as
-    // be able to execute actions on a currently uploading file we need to exactly sync the file list
-    // fineuploader is keeping internally.
+    // ReactFineUploader is essentially just a react layer around s3 FineUploader.
+    // However, since we'd like to display the status of a file (progress, uploading) as well as
+    // be able to execute actions on a currently uploading file we need to mirror the internal
+    // state that FineUploader is keeping internally.
     //
-    // Unfortunately though fineuploader is not keeping all of a File object's properties after
-    // submitting them via .addFiles (it deletes the type, key as well as the ObjectUrl (which we need for
-    // displaying a thumbnail)), we need to readd them manually after each file that gets submitted
-    // to the dropzone.
-    // This method is essentially taking care of all these steps.
-    synchronizeFileLists(files) {
-        let oldFiles = this.state.filesToUpload;
-        let oldAndNewFiles = this.state.uploader.getUploads();
+    // Unfortunately, FineUploader is not keeping all of a File object's properties after submitting
+    // them via .addFiles (it deletes the type, key, and as well, the ObjectUrl (which is needed
+    // to display a thumbnail)) so we need to re-add them manually after each file that gets submitted.
+    synchronizeFileLists(newFiles) {
+        const { filesToUpload: previousFiles, uploader } = this.state;
+        const newTrackedFiles = [];
+        const largestIdInPreviousFiles = previousFiles.reduce((largestId, file) => {
+            return file.id > largestId ? file.id : largestId;
+        }, 0);
 
-        // Add fineuploader specific information to new files
-        for(let i = 0; i < oldAndNewFiles.length; i++) {
-            for(let j = 0; j < files.length; j++) {
-                if(oldAndNewFiles[i].originalName === files[j].name) {
-                    oldAndNewFiles[i].progress = 0;
-                    oldAndNewFiles[i].type = files[j].type;
-                    oldAndNewFiles[i].url = URL.createObjectURL(files[j]);
-                }
-            }
+        // We use the file list we get from FineUploader as the source of truth for our internal file list
+        // as we want to mirror FineUploader
+        let filesTrackedByFineUploader = uploader.getUploads();
+
+        if (!Array.isArray(filesTrackedByFineUploader)) {
+            filesTrackedByFineUploader = [filesTrackedByFineUploader];
         }
 
-        // and re-add fineuploader specific information for old files as well
-        for(let i = 0; i < oldAndNewFiles.length; i++) {
-            for(let j = 0; j < oldFiles.length; j++) {
+        filesTrackedByFineUploader.forEach((trackedFile) => {
+            let matchedFile;
+            const findMatchingFile = (filesToTest, fn) => {
+                matchedFile = filesToTest.find(fn);
 
-                // EXCEPTION:
+                return matchedFile;
+            };
+
+            if (trackedFile.size === -1 && !trackedFile.progress && trackedFile.status === FileStatus.UPLOAD_SUCCESSFUL) {
+                // EDGE CASE:
                 //
                 // Files do not necessarily come from the user's hard drive but can also be fetched
-                // from Amazon S3. This is handled in onSessionRequestComplete.
+                // from S3. This is handled in onSessionRequestComplete.
                 //
-                // If the user deletes one of those files, then fineuploader will still keep it in his
-                // files array but with key, progress undefined and size === -1 but
+                // If the user deletes one of those files, then FineUploader will still keep it in
+                // its uploaded array but with the key and progress undefined, and size === -1 but
                 // status === FileStatus.UPLOAD_SUCCESSFUL.
-                // This poses a problem as we depend on the amount of files that have
-                // status === FileStatus.UPLOAD_SUCCESSFUL, therefore once the file is synced,
-                // we need to tag its status as FileStatus.DELETED (which basically happens here)
-                if(oldAndNewFiles[i].size === -1 && (!oldAndNewFiles[i].progress || oldAndNewFiles[i].progress === 0)) {
-                    oldAndNewFiles[i].status = FileStatus.DELETED;
-                }
+                // This poses a problem as it's misleading and other components are likely to depend
+                // on the amount of files that have status === FileStatus.UPLOAD_SUCCESSFUL.
+                // Therefore, we need to make sure we set these files' statuses to
+                // FileStatus.DELETED for our internal state when we sync with FineUploader here.
 
-                if(oldAndNewFiles[i].originalName === oldFiles[j].name) {
-                    oldAndNewFiles[i].progress = oldFiles[j].progress;
-                    oldAndNewFiles[i].type = oldFiles[j].type;
-                    oldAndNewFiles[i].url = oldFiles[j].url;
-                    oldAndNewFiles[i].key = oldFiles[j].key;
-                }
+                trackedFile.status = FileStatus.DELETED;
+            } else if (trackedFile.id <= largestIdInPreviousFiles &&
+                       findMatchingFile(previousFiles, (prevFile) => trackedFile.originalName === prevFile.name &&
+                                                                     trackedFile.id === prevFile.id)) {
+                // Add information stripped by FineUploader to the previous files
+                // Check the ids to make sure that the trackedFile is indeed the same as the
+                // prevFile, since the same name might be used for multple files
+                trackedFile.manualRetryAttempt = matchedFile.manualRetryAttempt;
+                trackedFile.key = matchedFile.key;
+                trackedFile.progress = matchedFile.progress;
+                trackedFile.type = matchedFile.type;
+                trackedFile.url = matchedFile.url;
+            } else if (findMatchingFile(newFiles, (newFile) => trackedFile.originalName === newFile.name)) {
+                // Add information stripped by FineUploader to the newly added files
+                // Since the file wasn't found in the previous files, it must be newly added
+                trackedFile.manualRetryAttempt = 0;
+                trackedFile.progress = 0;
+                trackedFile.type = matchedFile.type;
+                trackedFile.url = URL.createObjectURL(matchedFile);
+
+                newTrackedFiles.push(trackedFile);
             }
-        }
+        });
 
-        // set the new file array
-        let filesToUpload = React.addons.update(this.state.filesToUpload, { $set: oldAndNewFiles });
-
-        this.setState({ filesToUpload }, () => {
-            // when files have been dropped or selected by a user, we want to propagate that
-            // information to the outside components, so they can act on it (in our case, because
-            // we want the user to define a thumbnail when the actual work is not renderable
-            // (like e.g. a .zip file))
-            if(typeof this.props.handleChangedFile === 'function') {
-                // its save to assume that the last file in `filesToUpload` is always
-                // the latest file added
-                this.props.handleChangedFile(this.state.filesToUpload.slice(-1)[0]);
-            }
+        // Set the new file array by mirroring the updated array from FineUploader
+        this.setState({ filesTrackedByFineUploader }, () => {
+            // When files have been dropped or selected by a user, we want to propagate that
+            // information to the outside components, so they can act on it
+            safeInvoke(this.props.onAdd, newTrackedFiles);
         });
     },
 
     render() {
-        const { errorState: { errorClass }, filesToUpload, uploadInProgress } = this.state;
-        const { areAssetsDownloadable,
-                areAssetsEditable,
-                enableLocalHashing,
-                fileClassToUpload,
+        const { filesToUpload, uploadInProgress } = this.state;
+        const { disabled,
                 fileInputElement: FileInputElement,
-                multiple,
-                showErrorPrompt,
-                uploadMethod } = this.props;
-
-        // Only show the error state once all files are finished
-        const showError = !uploadInProgress && showErrorPrompt && errorClass != null;
+                multiple } = this.props;
 
         const props = {
-            multiple,
-            areAssetsDownloadable,
-            areAssetsEditable,
-            enableLocalHashing,
-            uploadMethod,
-            fileClassToUpload,
+            disabled,
             filesToUpload,
+            multiple,
             uploadInProgress,
-            errorClass,
-            showError,
-            onDrop: this.handleUploadFile,
-            handleDeleteFile: this.handleDeleteFile,
+            allowedExtensions: this.getAllowedExtensions(),
+            disabled: this.isUploaderDisabled(),
             handleCancelFile: this.handleCancelFile,
+            handleDeleteFile: this.handleDeleteFile,
+            handleFileSubmit: this.handleUploadFile,
             handlePauseFile: this.handlePauseFile,
             handleResumeFile: this.handleResumeFile,
-            handleRetryFiles: this.handleRetryFiles,
-            handleCancelHashing: this.handleCancelHashing,
-            dropzoneInactive: this.isDropzoneInactive(),
-            hashingProgress: this.state.hashingProgress,
-            allowedExtensions: this.getAllowedExtensions()
+            handleRetryFiles: this.handleRetryFiles
         };
 
-        return (
-            <FileInputElement
-                ref="fileInput"
-                {...props} />
-        );
+        if (React.isValidElement(FileInputElement)) {
+            return React.cloneElement(FileInputElement, {
+                ...props,
+                ref: (ref) => {
+                    this._refs.fileInput = ref;
+
+                    // If the given FileInputElement has a ref callback defined, propagate the new
+                    // component back up to the parent component so it can keep a ref to it too
+                    if (typeof FileInputElement.ref === 'function') {
+                        FileInputElement.ref(ref);
+                    }
+                }
+            });
+        } else {
+            return (
+                <FileInputElement
+                    ref={ref => this._refs.fileInput = ref}
+                    {...props} />
+            );
+        }
     }
 });
 

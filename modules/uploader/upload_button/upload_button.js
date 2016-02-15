@@ -15,7 +15,7 @@ export default function UploadButton({ className = 'btn btn-default btn-sm', sho
         displayName: 'UploadButton',
 
         propTypes: {
-            onDrop: func.isRequired,
+            handleFileSubmit: func.isRequired,
             filesToUpload: array,
             multiple: bool,
 
@@ -47,18 +47,18 @@ export default function UploadButton({ className = 'btn btn-default btn-sm', sho
             }
         },
 
-        handleDrop(event) {
+        onFileSubmit(event) {
             event.preventDefault();
             event.stopPropagation();
             let files = event.target.files;
 
-            if(typeof this.props.onDrop === 'function' && files) {
-                this.props.onDrop(files);
+            if(typeof this.props.handleFileSubmit === 'function' && files) {
+                this.props.handleFileSubmit(files);
             }
         },
 
         getUploadingFiles(filesToUpload = this.props.filesToUpload) {
-            return filesToUpload.filter((file) => file.status === FileStatus.UPLOADING);
+            return filesToUpload.filter((file) => file.status === FileStatus.UPLOADING || file.status === FileStatus.UPLOAD_RETRYING);
         },
 
         getUploadedFile() {
@@ -177,7 +177,7 @@ export default function UploadButton({ className = 'btn btn-default btn-sm', sho
                                 height: 0,
                                 width: 0
                             }}
-                            onChange={this.handleDrop}
+                            onChange={this.onFileSubmit}
                             accept={allowedExtensions}/>
                    </button>
                    {this.getUploadedFileLabel()}
