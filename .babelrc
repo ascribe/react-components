@@ -1,5 +1,11 @@
 {
     'presets': ['react'],
-    'plugins': ['transform-runtime', 'transform-react-display-name', 'transform-export-extensions'],
+    'plugins': [
+        'transform-runtime',
+        'transform-react-display-name',
+        'transform-export-extensions',
+        'transform-object-assign',
+        'transform-object-rest-spread'
+    ],
     'sourceMaps': true
 }

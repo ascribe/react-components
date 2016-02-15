@@ -59,3 +59,10 @@ Style guide
 -----------
 
 See the [ascribe/javascript](https://github.com/ascribe/javascript) styleguide.
+
+Future ES features
+------------------
+
+This project uses a few experimental features not yet in ES2015:
+  * [Extended-export-from](https://github.com/leebyron/ecmascript-more-export-from): Stage 1
+  * [Object-rest-spread](https://github.com/sebmarkbage/ecmascript-rest-spread): Stage 2

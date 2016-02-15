@@ -1,3 +1,3 @@
 import 'babel-runtime';
 
-export uploader from './uploader/index';
+export * as Uploader from './uploader/index';
