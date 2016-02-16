@@ -1,186 +1,146 @@
-'use strict';
-
 import React from 'react';
 import classNames from 'classnames';
 
-import { displayValidProgressFilesFilter, FileStatus } from '../react_s3_fine_uploader_utils';
-import { getLangText } from '../../../utils/lang_utils';
-import { truncateTextAtCharIndex } from '../../../utils/general_utils';
+import FileInput from '../file_input';
+import FileStatus from '../file_status';
 
-const { func, array, bool, shape, string } = React.PropTypes;
+import { successfullyUploadedFilter, uploadingFilter, validProgressFilesFilter } from '../utils/file_filters';
+
+import { safeInvoke, truncateTextAtCharIndex } from '../../utils/general';
 
 
-export default function UploadButton({ className = 'btn btn-default btn-sm', showLabel = true } = {}) {
+const { array, bool, func, string } = React.PropTypes;
+
+export default function UploadButton({
+            className = 'btn btn-default btn-sm',
+            fileLabels = {
+                singular: 'file',
+                plural: 'files'
+            },
+            getDefaultButtonLabel = (multiple) => {
+                return multiple ? fileLabels.plural : fileLabels.singular;
+            },
+            getUploadingButtonLabel = (progress) => {
+                return `Upload progress: ${progress}%`;
+            },
+            getLabel = (files, handleRemoveFiles) => {
+                if (files.length) {
+                    return (
+                        <span>
+                            {` ${truncateTextAtCharIndex(uploadedFile.name, 40)} `}
+                            <a onClick={handleRemoveFiles}>remove</a>
+                        </span>
+                    );
+                } else {
+                    return <span>No file chosen</span>;
+                }
+            }
+        } = {}) {
+
     return React.createClass({
         displayName: 'UploadButton',
 
         propTypes: {
-            handleFileSubmit: func.isRequired,
-            filesToUpload: array,
-            multiple: bool,
-
-            // For simplification purposes we're just going to use this prop as a
-            // label for the upload button
-            fileClassToUpload: shape({
-                singular: string,
-                plural: string
-            }),
+            // Provided by ReactS3FineUploader
+            filesToUpload: array.isRequired,
+            handleCancelFile: func.isRequired,
+            handleDeleteFile: func.isRequired,
+            handleSubmitFile: func.isRequired,
 
             allowedExtensions: string,
-
-            // provided by ReactS3FineUploader
-            handleCancelFile: func,
-            handleDeleteFile: func
-        },
-
-        getInitialState() {
-            return {
-                disabled: this.getUploadingFiles().length !== 0
-            };
-        },
-
-        componentWillReceiveProps(nextProps) {
-            if(this.props.filesToUpload !== nextProps.filesToUpload) {
-                this.setState({
-                    disabled: this.getUploadingFiles(nextProps.filesToUpload).length !== 0
-                });
-            }
+            disabled: bool,
+            multiple: bool
         },
 
         onFileSubmit(event) {
+            const { handleSubmitFile } = this.props;
+            const disabled = this.isDisabled();
+            const files = event.target.files;
+
             event.preventDefault();
             event.stopPropagation();
-            let files = event.target.files;
 
-            if(typeof this.props.handleFileSubmit === 'function' && files) {
-                this.props.handleFileSubmit(files);
+            if (!disabled && files) {
+                safeInvoke(handleSubmitFile, files);
+            }
+        },
+
+        clearSelection() {
+            this.refs.fileSelector.reset();
+        },
+
+        getButtonLabel() {
+            const { filesToUpload, multiple } = this.props;
+
+            if (this.getUploadingFiles().length) {
+                // Filter invalid files that might have been deleted or canceled before finding progress
+                const validFiles = filesToUpload.filter(validProgressFilesFilter);
+                const progress = validFiles.reduce((sum, file) => sum + file.progress, 0) / validFiles.length;
+
+                return getUploadingButtonLabel(progress);
+            } else {
+                return getDefaultButtonLabel(multiple);
             }
         },
 
         getUploadingFiles(filesToUpload = this.props.filesToUpload) {
-            return filesToUpload.filter((file) => file.status === FileStatus.UPLOADING || file.status === FileStatus.UPLOAD_RETRYING);
+            return filesToUpload.filter(uploadingFilter);
         },
 
-        getUploadedFile() {
-            return this.props.filesToUpload.filter((file) => file.status === FileStatus.UPLOAD_SUCCESSFUL)[0];
-        },
-
-        clearSelection() {
-            this.refs.fileSelector.getDOMNode().value = '';
+        getUploadedFiles() {
+            return this.props.filesToUpload.filter(successfullyUploadedFilter);
         },
 
         handleOnClick() {
-            if(!this.state.disabled) {
-                let evt;
+            if (!this.isDisabled()) {
+                // First, remove any currently uploading or uploaded items before selecting more
+                // items to upload
+                this.handleRemoveFiles();
 
-                // First, remove any currently uploading or uploaded items
-                this.onClickRemove();
-
-                try {
-                    evt = new MouseEvent('click', {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true
-                    });
-                } catch(e) {
-                    // For browsers that do not support the new MouseEvent syntax
-                    evt = document.createEvent('MouseEvents');
-                    evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null);
-                }
-                evt.stopPropagation();
-                this.refs.fileSelector.getDOMNode().dispatchEvent(evt);
+                // Dispatch a fake click through the fileSelector to show the native file selector
+                this.refs.fileSelector.dispatchClickEvent();
             }
         },
 
-        onClickRemove() {
+        handleRemoveFiles() {
+            const { handleCancelFile, handleDeleteFile } = this.props;
             const uploadingFiles = this.getUploadingFiles();
-            const uploadedFile = this.getUploadedFile();
 
             this.clearSelection();
-            if(uploadingFiles.length) {
-                this.props.handleCancelFile(uploadingFiles[0].id);
-            } else if(uploadedFile && !uploadedFile.s3UrlSafe) {
-                this.props.handleCancelFile(uploadedFile.id);
-            } else if(uploadedFile && uploadedFile.s3UrlSafe) {
-                this.props.handleDeleteFile(uploadedFile.id);
-            }
-        },
 
-        getButtonLabel() {
-            let { filesToUpload, fileClassToUpload } = this.props;
-
-            // filter invalid files that might have been deleted or canceled...
-            filesToUpload = filesToUpload.filter(displayValidProgressFilesFilter);
-
-            if(this.getUploadingFiles().length !== 0) {
-                return getLangText('Upload progress') + ': ' + Math.ceil(filesToUpload[0].progress) + '%';
+            if (uploadingFiles.length) {
+                uploadingFiles.forEach((file) => handleCancelFile(file.id));
             } else {
-                return fileClassToUpload.singular;
+                this.getUploadedFiles().forEach((file) => handleDeleteFile(file.id));
             }
         },
 
-        getUploadedFileLabel() {
-            if (showLabel) {
-                const uploadedFile = this.getUploadedFile();
-                const uploadingFiles = this.getUploadingFiles();
-
-                if (uploadingFiles.length) {
-                    return (
-                        <span>
-                            {' ' + truncateTextAtCharIndex(uploadingFiles[0].name, 40) + ' '}
-                            [<a onClick={this.onClickRemove}>{getLangText('cancel upload')}</a>]
-                        </span>
-                    );
-                } else if (uploadedFile) {
-                    return (
-                        <span>
-                            <span className='ascribe-icon icon-ascribe-ok'/>
-                            {' ' + truncateTextAtCharIndex(uploadedFile.name, 40) + ' '}
-                            [<a onClick={this.onClickRemove}>{getLangText('remove')}</a>]
-                        </span>
-                    );
-                } else {
-                    return <span>{getLangText('No file chosen')}</span>;
-                }
-            }
+        isDisabled() {
+            return this.props.disabled || !!this.getUploadingFiles().length;
         },
 
         render() {
-            const { allowedExtensions, multiple } = this.props;
-            const { disabled } = this.state;
+            const { allowedExtensions, filesToUpload, multiple } = this.props;
+            const disabled = this.isDisabled();
+            const label = getLabel(filesToUpload, this.handleRemoveFiles);
 
-
-            /*
-             * We do not want a button that submits here.
-             * As UploadButton could be used in forms that want to be submitted independent
-             * of clicking the selector.
-             * Therefore the wrapping component needs to be an `anchor` tag instead of a `button`
-             */
             return (
-                <div className={classNames('ascribe-upload-button', {'ascribe-upload-button-has-label': showLabel})}>
-                    {/*
-                        The button needs to be of `type="button"` as it would
-                        otherwise submit the form its in.
-                    */}
+                <div className={classNames('upload-button', { 'has-label': !!label })}>
+                    {/* The button needs to be of `type="button"` as it may be nested in a form that should not
+                        be submitted through this button */}
                     <button
-                        type="button"
-                        onClick={this.handleOnClick}
                         className={className}
-                        disabled={disabled}>
+                        disabled={disabled}
+                        onClick={this.handleOnClick}
+                        type="button">
                         {this.getButtonLabel()}
-                        <input
-                            multiple={multiple}
+                        <FileInput
                             ref="fileSelector"
-                            type="file"
-                            style={{
-                                display: 'none',
-                                height: 0,
-                                width: 0
-                            }}
-                            onChange={this.onFileSubmit}
-                            accept={allowedExtensions}/>
+                            accept={allowedExtensions}
+                            multiple={multiple}
+                            onChange={this.onFileSubmit} />
                    </button>
-                   {this.getUploadedFileLabel()}
+                   {label}
                 </div>
             );
         }

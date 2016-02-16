@@ -2,7 +2,8 @@
 export ReactS3FineUploader from './react_s3_fine_uploader';
 
 // Uploader UI
-export FileDragAndDrop from './file_drag_and_drop/file_drag_and_drop';
+export FileDragAndDropInput from './file_drag_and_drop_input/file_drag_and_drop_input';
+export FileInput from './file_input';
 export UploadButton from './upload_button/upload_button';
 
 // Utilities and constants

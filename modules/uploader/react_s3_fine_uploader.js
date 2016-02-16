@@ -7,11 +7,12 @@ import FileStatus from './file_status';
 import ValidationErrors from './validation_utils';
 
 import { transformAllowedExtensionsToInputAcceptProp } from './utils/dom_utils';
-import { displayValidFilesFilter } from './utils/file_filters';
+import { validFilesFilter } from './utils/file_filters';
 import MimeTypeMapping from './utils/mime_type_mapping';
 
 import { extractFileExtensionFromString } from '../utils/file';
 import { safeInvoke } from '../utils/general';
+
 
 const { any,
         arrayOf,
@@ -518,12 +519,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isUploaderDisabled() {
-        const filesToDisplay = filesToUpload.filter((file) => {
-            return file.status !== FileStatus.DELETED &&
-                   file.status !== FileStatus.CANCELED &&
-                   file.status !== FileStatus.UPLOAD_FAILED &&
-                   file.size !== -1;
-        });
+        const filesToDisplay = filesToUpload.filter(validFilesFilter);
 
         return this.props.disabled || (!multiple && filesToDisplay.length > 0);
     },
@@ -811,12 +807,12 @@ const ReactS3FineUploader = React.createClass({
         });
     },
 
-    handleUploadFile(files) {
+    handleSubmitFile(files) {
         const { multiple, onValidationFailed, validation: { itemLimit = 0 } } = this.props;
         const { filesToUpload, uploader } = this.state;
 
         // If multiple set and user already uploaded its work cancel upload
-        if (!multiple && filesToUpload.filter(displayValidFilesFilter).length) {
+        if (!multiple && filesToUpload.filter(validFilesFilter).length) {
             this.clearFileSelection();
             return;
         }
@@ -938,13 +934,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     render() {
+        const { fileInputElement: FileInputElement, multiple } = this.props;
         const { filesToUpload, uploadInProgress } = this.state;
-        const { disabled,
-                fileInputElement: FileInputElement,
-                multiple } = this.props;
 
         const props = {
-            disabled,
             filesToUpload,
             multiple,
             uploadInProgress,
@@ -952,7 +945,7 @@ const ReactS3FineUploader = React.createClass({
             disabled: this.isUploaderDisabled(),
             handleCancelFile: this.handleCancelFile,
             handleDeleteFile: this.handleDeleteFile,
-            handleFileSubmit: this.handleUploadFile,
+            handleSubmitFile: this.handleSubmitFile,
             handlePauseFile: this.handlePauseFile,
             handleResumeFile: this.handleResumeFile,
             handleRetryFiles: this.handleRetryFiles
