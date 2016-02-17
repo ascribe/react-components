@@ -1,0 +1,11 @@
+.base {
+    cursor: default;
+}
+
+.active {
+    composes: base;
+}
+
+.disabled {
+    composes: base;
+}

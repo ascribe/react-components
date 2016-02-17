@@ -1,4 +1,5 @@
 import React from 'react';
+import CssModules from 'react-css-modules';
 import classNames from 'classnames';
 
 import FileInput from '../file_input';
@@ -8,11 +9,13 @@ import { successfullyUploadedFilter, uploadingFilter, validProgressFilesFilter }
 
 import { safeInvoke, truncateTextAtCharIndex } from '../../utils/general';
 
+import styles from './upload_button.scss';
+
 
 const { array, bool, func, string } = React.PropTypes;
 
 export default function UploadButton({
-            className = 'btn btn-default btn-sm',
+            className = '',
             fileLabels = {
                 singular: 'file',
                 plural: 'files'
@@ -37,7 +40,7 @@ export default function UploadButton({
             }
         } = {}) {
 
-    return React.createClass({
+    const Component = React.createClass({
         displayName: 'UploadButton',
 
         propTypes: {
@@ -122,6 +125,7 @@ export default function UploadButton({
         render() {
             const { allowedExtensions, filesToUpload, multiple } = this.props;
             const disabled = this.isDisabled();
+            const buttonLabel = this.getButtonLabel();
             const label = getLabel(filesToUpload, this.handleRemoveFiles);
 
             return (
@@ -132,8 +136,9 @@ export default function UploadButton({
                         className={className}
                         disabled={disabled}
                         onClick={this.handleOnClick}
+                        styleName={'button'}
                         type="button">
-                        {this.getButtonLabel()}
+                        {buttonLabel}
                         <FileInput
                             ref="fileSelector"
                             accept={allowedExtensions}
@@ -145,4 +150,6 @@ export default function UploadButton({
             );
         }
     });
+
+    return CssModules(Component, styles);
 }

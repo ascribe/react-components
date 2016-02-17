@@ -7,19 +7,18 @@ import FileInput from '../file_input';
 import FileStatus from '../file_status';
 
 import { validFilesFilter } from '../utils/file_filters';
-
 import { safeInvoke } from '../../utils/general';
+import { childrenType } from '../../utils/prop_types';
+
+import styles from './file_drag_and_drop_input.scss';
 
 
-const { array, arrayOf, bool, element, func, object, string } = React.PropTypes;
+const { bool, func, string } = React.PropTypes;
 
 // Initially based off of https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDropInput = React.createClass({
     propTypes: {
-        children: oneOfType([
-            element,
-            arrayOf(element)
-        ]),
+        children: childrenType,
         className: string,
         handleDragOver: func,
 
@@ -78,14 +77,16 @@ let FileDragAndDropInput = React.createClass({
         const { allowedExtensions,
                 children,
                 className,
+                disabled,
                 multiple } = this.props;
 
         return (
             <div
-                className={'file-drag-and-drop-input'}
+                className={className}
                 onDrag={this.onFileSubmit}
                 onDragOver={this.onDragOver}
-                onDrop={this.onFileSubmit}>
+                onDrop={this.onFileSubmit}
+                styleName={disabled ? 'disabled' : 'active'}>
                 {children}
                 <FileInput
                     ref="fileSelector"
@@ -97,4 +98,4 @@ let FileDragAndDropInput = React.createClass({
     }
 });
 
-export default FileDragAndDrop;
+export default FileDragAndDropInput;

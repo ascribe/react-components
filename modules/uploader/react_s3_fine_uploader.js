@@ -344,7 +344,7 @@ const ReactS3FineUploader = React.createClass({
 
     getDefaultProps() {
         return {
-            fileInputElement: UploadButton,
+            fileInputElement: UploadButton(),
             mimeTypeMapping: MimeTypeMapping,
 
             // FineUploader options
