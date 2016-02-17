@@ -5,6 +5,8 @@ import classNames from 'classnames';
 import FileInput from '../file_input';
 import FileStatus from '../file_status';
 
+import ButtonContainer from '../../buttons/button_container';
+
 import { successfullyUploadedFilter, uploadingFilter, validProgressFilesFilter } from '../utils/file_filters';
 
 import { safeInvoke, truncateTextAtCharIndex } from '../../utils/general';
@@ -129,7 +131,7 @@ export default function UploadButton({
             const label = getLabel(filesToUpload, this.handleRemoveFiles);
 
             return (
-                <div className={classNames('upload-button', { 'has-label': !!label })}>
+                <ButtonContainer label={label}>
                     {/* The button needs to be of `type="button"` as it may be nested in a form that should not
                         be submitted through this button */}
                     <button
@@ -145,8 +147,7 @@ export default function UploadButton({
                             multiple={multiple}
                             onChange={this.onFileSubmit} />
                    </button>
-                   {label}
-                </div>
+                </ButtonContainer>
             );
         }
     });

@@ -2,6 +2,9 @@
     cursor: default;
 }
 
+/* TODO: Add more styling to this as appropriate, or potentially strip away all styling if parent /
+ * child components handle the UI
+ */
 .active {
     composes: base;
 }
