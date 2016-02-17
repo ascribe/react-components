@@ -43,6 +43,7 @@
     "shallow-equals": "0.0.0"
   },
   "peerDependencies": {
+    "babel-polyfill": "*",
     "react": "~0.13.0"
   },
   "keywords": [
