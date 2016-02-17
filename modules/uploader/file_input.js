@@ -1,6 +1,6 @@
 import React from 'react';
 
-const { func, array, bool, shape, string } = React.PropTypes;
+const { bool, func, string } = React.PropTypes;
 
 const FileInput = React.createClass({
     propTypes: {

@@ -790,7 +790,7 @@ const ReactS3FineUploader = React.createClass({
         }
 
         fileIds.forEach((fileId) => {
-            const { filesToUpload, uploader } = this.state;
+            const { uploader } = this.state;
 
             uploader.retry(fileId);
         });
@@ -835,7 +835,10 @@ const ReactS3FineUploader = React.createClass({
             this.props.handleFilesBeforeUpload(files)
                 .then((files) => {
                     if (Array.isArray(files) && files.length) {
-                        this.state.uploader.addFiles(files);
+                        uploader.addFiles(files);
+
+                        // Once we've added the files to the uploader, sync our state with the
+                        // uploader's internal state
                         this.synchronizeFileLists(files);
                         this.setState({
                             uploadInProgress: true
