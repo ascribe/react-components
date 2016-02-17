@@ -16,7 +16,8 @@
     "build": "npm run build:main && npm run build:es6 && npm run build:dist",
     "build:main": "rimraf ./lib && babel ./modules -d ./lib --presets es2015",
     "build:es6": "rimraf ./es6 && babel ./modules -d ./es6 --presets es2015-no-commonjs",
-    "build:dist": "rimraf ./dist && webpack -p"
+    "build:dist": "rimraf ./dist && NODE_ENV=production webpack -p",
+    "build:extract": "NODE_ENV=extract webpack"
   },
   "author": "Ascribe",
   "license": "Copyright",
@@ -49,7 +50,9 @@
     "sass-loader": "^3.1.2",
     "style-loader": "^0.13.0",
     "url-loader": "^0.5.7",
-    "webpack-dev-server": "^1.14.1"
+    "webpack": "^2.0.7-beta",
+    "webpack-combine-loaders": "^1.0.0",
+    "webpack-dev-server": "^2.0.0-beta"
   },
   "dependencies": {
     "babel-runtime": "^6.5.0",

@@ -2,7 +2,11 @@ const path = require('path');
 
 const webpack = require('webpack');
 const autoPrefixer = require('autoprefixer');
+const combineLoaders = require('webpack-combine-loaders');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+
+const PRODUCTION = process.env.NODE_ENV === 'production';
+const EXTRACT = process.env.NODE_ENV === 'extract';
 
 const PATHS = {
     dist: path.join(__dirname, 'dist'),
@@ -13,9 +17,6 @@ const PATHS = {
 // Browsers to target when prefixing CSS.
 const COMPATIBILITY = ['Chrome >= 30', 'Safari >= 6.1', 'Firefox >= 35', 'Opera >= 32', 'iOS >= 8', 'Android >= 2.3', 'ie >= 10'];
 
-// CSS loader
-const CSS_LOADER = 'css?sourceMap&modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]!postcss!sass?sourceMap&output=expanded&precision=8';
-
 // React externals
 const REACT_EXTERNAL = {
     root: 'React',
@@ -24,14 +25,84 @@ const REACT_EXTERNAL = {
     amd: 'react'
 };
 
-module.exports = {
+// Plugins
+const plugins = [
+    new webpack.DefinePlugin({
+        'process.env': { NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development') }
+    }),
+    new webpack.NoErrorsPlugin(),
+];
+
+const devPlugins = [
+    new webpack.HotModuleReplacementPlugin()
+];
+
+const extractPlugins = [
+    new ExtractTextPlugin(PRODUCTION ? 'styles.min.css' : 'styles.css', {
+        allChunks: true
+    }),
+];
+
+const prodPlugins = [
+    ...extractPlugins,
+    new webpack.optimize.UglifyJsPlugin({
+        compress: {
+            warnings: false
+        },
+        output: {
+            comments: false
+        }
+    }),
+    new webpack.LoaderOptionsPlugin({
+        debug: false,
+        minimize: true
+    })
+];
+
+if (PRODUCTION) {
+    plugins.push(...prodPlugins);
+} else {
+    plugins.push(...devPlugins);
+}
+
+if (EXTRACT) {
+    plugins.push(...extractPlugins);
+}
+
+// Modules
+// CSS loader
+const CSS_LOADER = combineLoaders([
+    {
+        loader: 'css',
+        query: {
+            modules: true,
+            importLoaders: 1,
+            localIdentName: '[path]___[name]__[local]___[hash:base64:5]',
+            sourceMap: true
+        }
+    },
+    {
+        loader: 'postcss'
+    },
+    {
+        loader: 'sass',
+        query: {
+            precision: '8', // See https://github.com/twbs/bootstrap-sass#sass-number-precision
+            output: 'expanded',
+            sourceMap: true
+        }
+    }
+]);
+
+
+const config = {
     entry: [
-        'bootstrap-loader',
+        PRODUCTION || EXTRACT ? 'bootstrap-loader/extractStyles' : 'bootstrap-loader',
         PATHS.modules
     ],
 
     output: {
-        filename: 'bundle.js',
+        filename: PRODUCTION ? 'bundle.min.js' : 'bundle.js',
         library: 'ascribe-react-components',
         libraryTarget: 'umd',
         path: PATHS.dist
@@ -42,21 +113,16 @@ module.exports = {
         'react/addons': REACT_EXTERNAL
     },
 
-    debug: true,
+    debug: !PRODUCTION,
 
-    devtool: '#inline-source-map',
+    devtool: PRODUCTION ? '#source-map' : '#inline-source-map',
 
     resolve: {
         extensions: ['', '.js'],
         modules: [PATHS.nodeModules]
     },
 
-    plugins: [
-        new webpack.NoErrorsPlugin(),
-        new ExtractTextPlugin('styles.css', {
-            allChunks: true
-        })
-    ],
+    plugins: plugins,
 
     module: {
         loaders: [
@@ -72,14 +138,8 @@ module.exports = {
             {
                 test: /\.s[ac]ss$/,
                 include: [PATHS.modules],
-                /* FIXME: this apparently doesn't work with hot reloading, as we should be directly
-                 * using `style!${CSS_LOADER}` instead. If we do that though, our html file will
-                 * need to include the styles.css file based on the environment, or use a dummy
-                 * file during development.
-                 *
-                 * See: https://github.com/webpack/extract-text-webpack-plugin/issues/30
-                 */
-                loader: ExtractTextPlugin.extract('style', CSS_LOADER)
+                loader: PRODUCTION || EXTRACT ? ExtractTextPlugin.extract('style', CSS_LOADER)
+                                              : `style!${CSS_LOADER}`
             }
         ]
     },
@@ -87,3 +147,4 @@ module.exports = {
     postcss: [ autoPrefixer({ browsers: COMPATIBILITY }) ]
 };
 
+module.exports = config;
