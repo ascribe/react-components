@@ -1,10 +1,10 @@
 import React from 'react/addons';
 import FineUploader from './vendor/s3.fine-uploader';
 
-import FileDragAndDrop from './file_drag_and_drop/file_drag_and_drop';
+import UploadButton from './upload_button/upload_button';
 
 import FileStatus from './file_status';
-import ValidationErrors from './validation_utils';
+import ValidationErrors from './validation_errors';
 
 import { transformAllowedExtensionsToInputAcceptProp } from './utils/dom_utils';
 import { validFilesFilter } from './utils/file_filters';
@@ -344,7 +344,7 @@ const ReactS3FineUploader = React.createClass({
 
     getDefaultProps() {
         return {
-            fileInputElement: FileDragAndDrop,
+            fileInputElement: UploadButton,
             mimeTypeMapping: MimeTypeMapping,
 
             // FineUploader options
@@ -647,17 +647,6 @@ const ReactS3FineUploader = React.createClass({
     onError(fileId, name, errorReason, xhr) {
         this.setStatusOfFile(fileId, FileStatus.UPLOAD_FAILED)
             .then((file) => safeInvoke(this.props.onError, file, errorReason, xhr));
-    },
-
-    /**
-     * We want to channel all errors in this component through one single method.
-     * As FineUploader's `onError` method cannot handle the callback parameters of
-     * a promise we define this proxy method to crunch them into the correct form.
-     *
-     * @param  {error} err a plain Javascript error
-     */
-    onErrorPromiseProxy(err) {
-        this.onError(null, null, err.message);
     },
 
     onManualRetry(fileId, name) {
