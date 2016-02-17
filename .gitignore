@@ -15,6 +15,7 @@ pids
 logs
 results
 
+dist/*
 es6/*
 lib/*
 

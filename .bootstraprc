@@ -1,0 +1,17 @@
+---
+bootstrapVersion: 3
+
+styleLoaders:
+    - style
+    - css?sourceMap
+    - postcss
+    - sass?sourceMap&output=expanded&precision=8
+
+extractStyles: true
+
+styles:
+    buttons: true
+    mixins: true
+    normalize: true
+
+scripts: false
