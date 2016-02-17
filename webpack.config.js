@@ -9,9 +9,8 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
 const EXTRACT = process.env.NODE_ENV === 'extract';
 
 const PATHS = {
-    dist: path.join(__dirname, 'dist'),
-    modules: path.join(__dirname, 'modules'),
-    nodeModules: path.join(__dirname, 'node_modules')
+    dist: path.resolve(__dirname, 'dist'),
+    modules: path.resolve(__dirname, 'modules')
 };
 
 // Browsers to target when prefixing CSS.
@@ -23,6 +22,12 @@ const REACT_EXTERNAL = {
     commonjs: 'react',
     commonjs2: 'react',
     amd: 'react'
+};
+
+// Externals
+const externals = {
+    'react': REACT_EXTERNAL,
+    'react/addons': REACT_EXTERNAL
 };
 
 // Plugins
@@ -108,10 +113,7 @@ const config = {
         path: PATHS.dist
     },
 
-    externals: {
-        'react': REACT_EXTERNAL,
-        'react/addons': REACT_EXTERNAL
-    },
+    externals: PRODUCTION ? externals : null,
 
     debug: !PRODUCTION,
 
@@ -119,7 +121,7 @@ const config = {
 
     resolve: {
         extensions: ['', '.js'],
-        modules: [PATHS.nodeModules]
+        modules: ['node_modules'] // Don't use absolute path here to allow recursive matching
     },
 
     plugins: plugins,
