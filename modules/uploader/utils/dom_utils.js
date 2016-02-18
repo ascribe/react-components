@@ -14,7 +14,7 @@
  */
 export function transformAllowedExtensionsToInputAcceptProp(allowedExtensions, mimeTypeMap) {
     // Get the mime type of the extension if it's defined or add a dot in front of the extension
-    const prefixedAllowedExtensions = allowedExtensions.map((ext) => {
+    const prefixedAllowedExtensions = (allowedExtensions || []).map((ext) => {
         return (mimeTypeMap && mimeTypeMap[ext]) || ('.' + ext);
     });
 

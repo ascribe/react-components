@@ -12,7 +12,7 @@ import MimeTypeMapping from './utils/mime_type_mapping';
 
 import Addons from '../utils/addons';
 import { extractFileExtensionFromString } from '../utils/file';
-import { safeInvoke } from '../utils/general';
+import { arrayFrom, safeInvoke } from '../utils/general';
 
 
 const { any,
@@ -281,66 +281,20 @@ const ReactS3FineUploader = React.createClass({
         debug: bool,
 
         autoUpload: bool,
-        chunking: shape({
-            enabled: bool
-        }),
-        cors: shape({
-            expected: bool
-        }),
-        deleteFile: shape({
-            enabled: bool,
-            method: string,
-            endpoint: string,
-            customHeaders: object
-        }).isRequired,
+        chunking: object,
+        cors: object,
+        deleteFile: object,
         formatFileName: func,
-        messages: shape({
-            unsupportedBrowser: string
-        }),
+        messages: object,
         multiple: bool,
-        objectProperties: shape({
-            acl: string,
-            bucket: string,
-            key: oneOfType([
-                func,
-                string
-            ])
-        }),
-        request: shape({
-            endpoint: string,
-            accessKey: string,
-            params: shape({
-                csrfmiddlewaretoken: string
-            })
-        }),
-        resume: shape({
-            enabled: bool
-        }),
-        retry: shape({
-            enableAuto: bool
-        }),
-        session: shape({
-            customHeaders: object,
-            endpoint: string,
-            params: object,
-            refreshOnRequests: bool
-        }),
-        signature: shape({
-            endpoint: string
-        }).isRequired,
-        uploadSuccess: shape({
-            method: string,
-            endpoint: string,
-            params: shape({
-                isBrowserPreviewCapable: any, // maybe fix this later
-                bitcoin_ID_noPrefix: string
-            })
-        }),
-        validation: shape({
-            itemLimit: number,
-            sizeLimit: number,
-            allowedExtensions: arrayOf(string)
-        })
+        objectProperties: object,
+        request: object,
+        resume: object,
+        retry: object,
+        session: object,
+        signature: object,
+        uploadSuccess: object,
+        validation: object
     },
 
     getDefaultProps() {
@@ -362,13 +316,18 @@ const ReactS3FineUploader = React.createClass({
                 expected: true,
                 sendCredentials: true
             },
+            deleteFile: {},
             formatFileName: function(name) {
                 if (name != undefined && name.length > 30) {
                     name = name.slice(0, 15) + '...' + name.slice(-15);
                 }
                 return name;
             },
+            handleFilesBeforeUpload: (files) => Promise.resolve(files),
+            messages: {},
             multiple: false,
+            objectProperties: {},
+            request: {},
             resume: {
                 enabled: true
             },
@@ -484,7 +443,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     getAllowedExtensions() {
-        const { mimeTypeMapping, validation: { allowedExtensions = [] } } = this.props;
+        const { mimeTypeMapping, validation: { allowedExtensions } } = this.props;
 
         return transformAllowedExtensionsToInputAcceptProp(allowedExtensions, mimeTypeMapping);
     },
@@ -494,16 +453,16 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isFileValid(file) {
-        const { onValidationFailed, validation: { allowedExtensions = [], sizeLimit = 0 }  } = this.props;
+        const { onValidationFailed, validation: { allowedExtensions, sizeLimit = 0 }  } = this.props;
         const fileExt = extractFileExtensionFromString(file.name);
         let validationError;
 
-        if (file.size > sizeLimit) {
+        if (sizeLimit && file.size > sizeLimit) {
             validationError = {
                 error: `A file you submitted is bigger than ${sizeLimit / 1000000} MB`,
                 type: ValidationErrors.SIZE,
             };
-        } else if (!allowedExtensions.includes(fileExt)) {
+        } else if (allowedExtensions && !allowedExtensions.includes(fileExt)) {
             validationError = {
                 error: `The file you've submitted is of an invalid file format: Valid format(s): ${allowedExtensions.join(', ')}`,
                 type: ValidationErrors.EXTENSION
@@ -520,9 +479,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isUploaderDisabled() {
-        const filesToDisplay = filesToUpload.filter(validFilesFilter);
+        const { disabled, multiple } = this.props;
+        const filesToDisplay = this.state.filesToUpload.filter(validFilesFilter);
 
-        return this.props.disabled || (!multiple && filesToDisplay.length > 0);
+        return disabled || (!multiple && filesToDisplay.length > 0);
     },
 
     // Resets the whole react FineUploader component to its initial state
@@ -541,7 +501,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     selectValidFiles(files) {
-        return Array.from(files).filter(this.isFileValid);
+        return arrayFrom(files).filter(this.isFileValid);
     },
 
     // This method has been made promise-based to allow a callback function
@@ -567,6 +527,17 @@ const ReactS3FineUploader = React.createClass({
         });
     },
 
+    /**
+     * Obtain this component's internally tracked files (**NOT** FineUploader's!!) and return a
+     * transformation on them that will be set to this component's state.
+     * An example use case could be changing all the names or urls of the files so that the files
+     * given to the FileInputElement or passed to parents are different. Alternatively, you could
+     * filter out files held by this component.
+     *
+     * @param {function} transformFn Synchronous transformation function applied to all the files
+     *                               tracked by this component. The returned list will then be set
+     *                               to be this component's tracked files.
+     */
     transformUploaderFiles(transformFn) {
         if (typeof transformFn !== 'function') {
             throw new Error('Argument given as the transform function to transformUploaderFiles was not a function');
@@ -574,6 +545,10 @@ const ReactS3FineUploader = React.createClass({
 
         // Give a new array to transformFn so users don't have to worry about not mutating our internal state
         const transformedFiles = transformFn(Array.from(this.state.filesToUpload));
+
+        if (!Array.isArray(transformedFiles)) {
+            throw new Error('Returned transformation of uploaded files is not an array.');
+        }
 
         this.setState({ filesToUpload: transformedFiles });
     },
@@ -820,7 +795,7 @@ const ReactS3FineUploader = React.createClass({
             // into the dropzone.
             extraFilesError = 'Only one file allowed (took first one)';
             files = files.slice(0, 1);
-        } else if (files.length > itemLimit) {
+        } else if (itemLimit && files.length > itemLimit) {
             extraFilesError = `Too many files selected (only took first ${itemLimit})`;
             files = files.slice(0, itemLimit);
         }
@@ -919,7 +894,7 @@ const ReactS3FineUploader = React.createClass({
         });
 
         // Set the new file array by mirroring the updated array from FineUploader
-        this.setState({ filesTrackedByFineUploader }, () => {
+        this.setState({ filesToUpload: filesTrackedByFineUploader }, () => {
             // When files have been dropped or selected by a user, we want to propagate that
             // information to the outside components, so they can act on it
             safeInvoke(this.props.onAdd, newTrackedFiles);
