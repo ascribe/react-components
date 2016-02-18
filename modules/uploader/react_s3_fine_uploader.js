@@ -1,4 +1,4 @@
-import React from 'react/addons';
+import React from 'react';
 import FineUploader from './vendor/s3.fine-uploader';
 
 import UploadButton from './upload_button/upload_button';
@@ -10,6 +10,7 @@ import { transformAllowedExtensionsToInputAcceptProp } from './utils/dom_utils';
 import { validFilesFilter } from './utils/file_filters';
 import MimeTypeMapping from './utils/mime_type_mapping';
 
+import Addons from '../utils/addons';
 import { extractFileExtensionFromString } from '../utils/file';
 import { safeInvoke } from '../utils/general';
 
@@ -554,7 +555,7 @@ const ReactS3FineUploader = React.createClass({
                 changeSet.progress = { $set: 0 };
             }
 
-            const filesToUpload = React.addons.update(this.state.filesToUpload, { [fileId]: changeSet });
+            const filesToUpload = Addons.update(this.state.filesToUpload, { [fileId]: changeSet });
 
             this.setState({ filesToUpload }, () => {
                 const updatedFile = this.state.filesToUpload[fileId]
@@ -657,7 +658,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onProgress(fileId, name, uploadedBytes, totalBytes) {
-        const filesToUpload = React.addons.update(this.state.filesToUpload, {
+        const filesToUpload = Addons.update(this.state.filesToUpload, {
             [fileId]: {
                 progress: { $set: (uploadedBytes / totalBytes) * 100}
             }
@@ -680,7 +681,7 @@ const ReactS3FineUploader = React.createClass({
     onUploadChunk(fileId, name, chunkData) {
         const chunkKey = fileId + '-' + chunkData.startByte + '-' + chunkData.endByte;
 
-        const chunks = React.addons.update(this.state.chunks, {
+        const chunks = Addons.update(this.state.chunks, {
             [chunkKey]: {
                 $set: {
                     name,
@@ -698,7 +699,7 @@ const ReactS3FineUploader = React.createClass({
         const chunkKey = fileId + '-' + chunkData.startByte + '-' + chunkData.endByte;
 
         if (this.state.chunks[chunkKey]) {
-            const chunks = React.addons.update(this.state.chunks, {
+            const chunks = Addons.update(this.state.chunks, {
                 [chunkKey]: {
                     completed: { $set: true },
                     responseJson: { $set: responseJson },

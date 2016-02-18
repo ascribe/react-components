@@ -1,7 +1,6 @@
 'use strict';
 
 import React from 'react';
-import classNames from 'classnames';
 
 import FileInput from '../file_input';
 import FileStatus from '../file_status';

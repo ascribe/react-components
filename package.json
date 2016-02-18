@@ -48,7 +48,9 @@
     "file-loader": "^0.8.5",
     "node-sass": "^3.4.2",
     "postcss-loader": "^0.8.1",
-    "react": "~0.13.0",
+    "react": "^0.14.7",
+    "react-addons-update": "^0.14.7",
+    "react-dom": "^0.14.7",
     "react-transform-hmr": "^1.0.2",
     "resolve-url-loader": "^1.4.3",
     "rimraf": "^2.5.2",
@@ -62,13 +64,13 @@
   "dependencies": {
     "babel-runtime": "^6.5.0",
     "bootstrap-css": "^3.0.0",
-    "classnames": "^2.2.3",
     "react-css-modules": "^3.7.4",
     "shallow-equals": "0.0.0"
   },
   "peerDependencies": {
     "babel-polyfill": "*",
-    "react": "~0.13.0"
+    "react": "~0.14.0",
+    "react-addons-update": "~0.14.0"
   },
   "keywords": [
     "react",

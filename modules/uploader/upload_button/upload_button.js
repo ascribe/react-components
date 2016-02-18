@@ -1,6 +1,5 @@
 import React from 'react';
 import CssModules from 'react-css-modules';
-import classNames from 'classnames';
 
 import FileInput from '../file_input';
 import FileStatus from '../file_status';

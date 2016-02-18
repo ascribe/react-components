@@ -1,6 +1,9 @@
 import 'babel-polyfill';
 
 import React from 'react';
+import ReactDOM from 'react-dom';
+
+import { ButtonContainer } from '../modules/buttons';
 
 const App = React.createClass({
     render() {
@@ -13,4 +16,4 @@ const App = React.createClass({
 });
 
 // TODO: use ReactDOM when upgrading to React 1.4
-React.render((<App />), document.getElementById('demo-app'));
+ReactDOM.render((<App />), document.getElementById('demo-app'));

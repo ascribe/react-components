@@ -21,17 +21,10 @@ const PATHS = {
 const COMPATIBILITY = ['Chrome >= 30', 'Safari >= 6.1', 'Firefox >= 35', 'Opera >= 32', 'iOS >= 8', 'Android >= 2.3', 'ie >= 10'];
 
 // External libraries
-const REACT_EXTERNAL = {
-    root: 'React',
-    commonjs: 'react',
-    commonjs2: 'react',
-    amd: 'react'
-};
-
-const externals = {
-    'react': REACT_EXTERNAL,
-    'react/addons': REACT_EXTERNAL
-};
+// Catch all react lib related imports
+const externals = [
+    /^react(-dom|-addons.*)?$/
+];
 
 // Plugins
 const plugins = [
