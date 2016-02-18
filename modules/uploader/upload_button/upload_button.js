@@ -27,16 +27,18 @@ export default function UploadButton({
             getUploadingButtonLabel = (progress) => {
                 return `Upload progress: ${progress}%`;
             },
-            getLabel = (files, handleRemoveFiles) => {
+            getLabel = (files, handleRemoveFiles, canBeMultiple) => {
                 if (files.length) {
+                    const labelText = files.length > 1 ? `${files.length} files`
+                                                       : truncateTextAtCharIndex(files[0].name, 40);
                     return (
                         <span>
-                            {` ${truncateTextAtCharIndex(uploadedFile.name, 40)} `}
+                            {` ${labelText} `}
                             <a onClick={handleRemoveFiles}>remove</a>
                         </span>
                     );
                 } else {
-                    return <span>No file chosen</span>;
+                    return <span>{`No ${canBeMultiple ? 'files' : 'file'} selected`}</span>;
                 }
             }
         } = {}) {
@@ -127,7 +129,7 @@ export default function UploadButton({
             const { allowedExtensions, filesToUpload, multiple } = this.props;
             const disabled = this.isDisabled();
             const buttonLabel = this.getButtonLabel();
-            const label = getLabel(filesToUpload, this.handleRemoveFiles);
+            const label = getLabel(filesToUpload, this.handleRemoveFiles, multiple);
 
             return (
                 <ButtonContainer label={label}>

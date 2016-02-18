@@ -18,15 +18,17 @@ const ButtonContainer = React.createClass({
 
     render() {
         const { children, className, label } = this.props;
+        const labelComponent = label ? (
+            <span className={styles.label}>
+                {label}
+            </span>
+        ) : null;
 
         return (
             <div
-                className={className}
-                styleName={label ? 'container-has-label' : 'container'}>
+                className={labelComponent ? styles['container-has-label'] : styles['container']}>
                 {children}
-                <div styleName={label ? 'label' : null}>
-                    {label}
-                </div>
+                {labelComponent}
             </div>
         );
     }

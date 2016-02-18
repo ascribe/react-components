@@ -826,12 +826,12 @@ const ReactS3FineUploader = React.createClass({
 
     // ReactFineUploader is essentially just a react layer around s3 FineUploader.
     // However, since we'd like to display the status of a file (progress, uploading) as well as
-    // be able to execute actions on a currently uploading file we need to mirror the internal
-    // state that FineUploader is keeping internally.
+    // be able to execute actions on a currently uploading file, we need to mirror the internal
+    // state of FineUploader and pass the tracked files down to the UI components.
     //
-    // Unfortunately, FineUploader is not keeping all of a File object's properties after submitting
-    // them via .addFiles (it deletes the type, key, and as well, the ObjectUrl (which is needed
-    // to display a thumbnail)) so we need to re-add them manually after each file that gets submitted.
+    // Unfortunately, FineUploader does not keep all of a File object's properties after submitting
+    // them via .addFiles (it deletes the type, key, and some others) so we need to re-add them
+    // manually back to our mirrored instance every time files are submitted.
     synchronizeFileLists(newFiles) {
         const { filesToUpload: previousFiles, uploader } = this.state;
         const newTrackedFiles = [];
