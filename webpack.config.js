@@ -1,3 +1,5 @@
+'use strict';
+
 const path = require('path');
 
 const webpack = require('webpack');
@@ -9,14 +11,16 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
 const EXTRACT = process.env.NODE_ENV === 'extract';
 
 const PATHS = {
+    build: path.resolve(__dirname, 'build'),
     dist: path.resolve(__dirname, 'dist'),
-    modules: path.resolve(__dirname, 'modules')
+    modules: path.resolve(__dirname, 'modules'),
+    nodeModules: path.resolve(__dirname, 'node_modules')
 };
 
 // Browsers to target when prefixing CSS.
 const COMPATIBILITY = ['Chrome >= 30', 'Safari >= 6.1', 'Firefox >= 35', 'Opera >= 32', 'iOS >= 8', 'Android >= 2.3', 'ie >= 10'];
 
-// React externals
+// External libraries
 const REACT_EXTERNAL = {
     root: 'React',
     commonjs: 'react',
@@ -24,7 +28,6 @@ const REACT_EXTERNAL = {
     amd: 'react'
 };
 
-// Externals
 const externals = {
     'react': REACT_EXTERNAL,
     'react/addons': REACT_EXTERNAL
@@ -36,10 +39,6 @@ const plugins = [
         'process.env': { NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development') }
     }),
     new webpack.NoErrorsPlugin(),
-];
-
-const devPlugins = [
-    new webpack.HotModuleReplacementPlugin()
 ];
 
 const extractPlugins = [
@@ -66,8 +65,6 @@ const prodPlugins = [
 
 if (PRODUCTION) {
     plugins.push(...prodPlugins);
-} else {
-    plugins.push(...devPlugins);
 }
 
 if (EXTRACT) {
@@ -109,7 +106,8 @@ const config = {
         filename: PRODUCTION ? 'bundle.min.js' : 'bundle.js',
         library: 'ascribe-react-components',
         libraryTarget: 'umd',
-        path: PATHS.dist
+        path: PRODUCTION ? PATHS.dist : PATHS.build,
+        publicPath: PRODUCTION ? null :'/assets/'
     },
 
     externals: PRODUCTION ? externals : null,
@@ -129,7 +127,7 @@ const config = {
         loaders: [
             {
                 test: /\.js$/,
-                include: [PATHS.modules],
+                exclude: [PATHS.nodeModules],
                 loader: 'babel',
                 query: {
                     cacheDirectory: true,

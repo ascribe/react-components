@@ -6,7 +6,7 @@ import { childrenType } from '../utils/prop_types';
 import styles from './button_container.scss';
 
 
-const { string } = React.PropTypes;
+const { node, string } = React.PropTypes;
 
 const ButtonContainer = React.createClass({
     propTypes: {

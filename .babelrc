@@ -5,7 +5,21 @@
         'transform-react-display-name',
         'transform-export-extensions',
         'transform-object-assign',
-        'transform-object-rest-spread'
+        'transform-object-rest-spread',
     ],
-    'sourceMaps': true
+    'sourceMaps': true,
+
+    'env': {
+        'demo': {
+            'plugins': [
+                [ 'react-transform', {
+                    'transforms': [{
+                        'transform': 'react-transform-hmr',
+                        'imports': ['react'],
+                        'locals': ['module']
+                    }]
+                } ]
+            ]
+        }
+    }
 }
