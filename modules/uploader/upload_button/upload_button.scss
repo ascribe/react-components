@@ -1,6 +1,3 @@
 .button {
-    composes: btn from "bootstrap-css/lib/buttons.css";
-    composes: btn-sm from "bootstrap-css/lib/buttons.css";
-    composes: btn-default from "bootstrap-css/lib/buttons.css";
     font-size: 1em;
 }
