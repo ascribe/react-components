@@ -10,6 +10,5 @@ styleLoaders:
 styles:
     buttons: true
     mixins: true
-    normalize: true
 
 scripts: false
