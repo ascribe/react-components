@@ -92,6 +92,7 @@ const CSS_LOADER = combineLoaders([
 
 const config = {
     entry: [
+        PRODUCTION || EXTRACT ? 'bootstrap-loader/extractStyles' : 'bootstrap-loader',
         PATHS.modules
     ],
 
