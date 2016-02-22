@@ -1,3 +1,4 @@
 .button {
+    composes: btn btn-sm btn-default from global;
     font-size: 1em;
 }
