@@ -7,17 +7,16 @@ import FileStatus from '../file_status';
 
 import { validFilesFilter } from '../utils/file_filters';
 import { safeInvoke } from '../../utils/general';
-import { childrenType } from '../../utils/prop_types';
 
 import styles from './file_drag_and_drop_input.scss';
 
 
-const { bool, func, string } = React.PropTypes;
+const { bool, func, node, string } = React.PropTypes;
 
 // Initially based off of https://github.com/fedosejev/react-file-drag-and-drop
 let FileDragAndDropInput = React.createClass({
     propTypes: {
-        children: childrenType,
+        children: node,
         className: string,
         handleDragOver: func,
 

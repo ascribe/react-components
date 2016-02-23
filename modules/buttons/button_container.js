@@ -1,8 +1,6 @@
 import React from 'react';
 import CssModules from 'react-css-modules';
 
-import { childrenType } from '../utils/prop_types';
-
 import styles from './button_container.scss';
 
 
@@ -10,7 +8,7 @@ const { node, string } = React.PropTypes;
 
 const ButtonContainer = React.createClass({
     propTypes: {
-        children: childrenType.isRequired,
+        children: node,
 
         className: string,
         label: node
