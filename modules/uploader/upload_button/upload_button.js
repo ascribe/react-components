@@ -38,7 +38,7 @@ export default function UploadButton({
                         </span>
                     );
                 } else {
-                    return <span>{`No ${canBeMultiple ? 'files' : 'file'} selected`}</span>;
+                    return `No ${canBeMultiple ? 'files' : 'file'} selected`;
                 }
             }
         } = {}) {
