@@ -1,4 +1,5 @@
 import React from 'react';
+import update from 'react-addons-update'
 import FineUploader from './vendor/s3.fine-uploader';
 
 import UploadButton from './upload_button/upload_button';
@@ -6,11 +7,10 @@ import UploadButton from './upload_button/upload_button';
 import FileStatus from './file_status';
 import ValidationErrors from './validation_errors';
 
-import { transformAllowedExtensionsToInputAcceptProp } from './utils/dom_utils';
 import { validFilesFilter } from './utils/file_filters';
 import MimeTypeMapping from './utils/mime_type_mapping';
+import { transformAllowedExtensionsToInputAcceptProp } from './utils/private/dom_utils';
 
-import Addons from '../utils/addons';
 import { extractFileExtensionFromString } from '../utils/file';
 import { arrayFrom, safeInvoke } from '../utils/general';
 
@@ -317,11 +317,9 @@ const ReactS3FineUploader = React.createClass({
                 sendCredentials: true
             },
             deleteFile: {},
-            formatFileName: function(name) {
-                if (name != undefined && name.length > 30) {
-                    name = name.slice(0, 15) + '...' + name.slice(-15);
-                }
-                return name;
+            formatFileName: (name) => {
+                return (name && name.length > 30) ? `${name.slice(0, 15)}...${name.slice(-15)}`
+                                                  : name;
             },
             handleFilesBeforeUpload: (files) => Promise.resolve(files),
             messages: {},
@@ -453,7 +451,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isFileValid(file) {
-        const { onValidationFailed, validation: { allowedExtensions, sizeLimit = 0 }  } = this.props;
+        const { onValidationFailed, validation: { allowedExtensions, sizeLimit }  } = this.props;
         const fileExt = extractFileExtensionFromString(file.name);
         let validationError;
 
@@ -633,7 +631,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onProgress(fileId, name, uploadedBytes, totalBytes) {
-        const filesToUpload = Addons.update(this.state.filesToUpload, {
+        const filesToUpload = update(this.state.filesToUpload, {
             [fileId]: {
                 progress: { $set: (uploadedBytes / totalBytes) * 100}
             }
@@ -654,9 +652,9 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onUploadChunk(fileId, name, chunkData) {
-        const chunkKey = fileId + '-' + chunkData.startByte + '-' + chunkData.endByte;
+        const chunkKey = `${fileId}-${chunkData.startByte}-${chunkData.endByte}`;
 
-        const chunks = Addons.update(this.state.chunks, {
+        const chunks = update(this.state.chunks, {
             [chunkKey]: {
                 $set: {
                     name,
@@ -671,10 +669,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onUploadChunkSuccess(fileId, chunkData, responseJson, xhr) {
-        const chunkKey = fileId + '-' + chunkData.startByte + '-' + chunkData.endByte;
+        const chunkKey = `${fileId}-${chunkData.startByte}-${chunkData.endByte}`;
 
         if (this.state.chunks[chunkKey]) {
-            const chunks = Addons.update(this.state.chunks, {
+            const chunks = update(this.state.chunks, {
                 [chunkKey]: {
                     completed: { $set: true },
                     responseJson: { $set: responseJson },
@@ -761,19 +759,17 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleRetryFiles(fileIds) {
+        const { uploader } = this.state;
+
         if (!Array.isArray(fileIds)) {
             fileIds = [fileIds];
         }
 
-        fileIds.forEach((fileId) => {
-            const { uploader } = this.state;
-
-            uploader.retry(fileId);
-        });
+        fileIds.forEach(uploader.retry);
     },
 
     handleSubmitFile(files) {
-        const { multiple, onValidationFailed, validation: { itemLimit = 0 } } = this.props;
+        const { multiple, onValidationFailed, validation: { itemLimit } } = this.props;
         const { filesToUpload, uploader } = this.state;
 
         // If multiple set and user already uploaded its work cancel upload
@@ -927,9 +923,7 @@ const ReactS3FineUploader = React.createClass({
 
                     // If the given FileInputElement has a ref callback defined, propagate the new
                     // component back up to the parent component so it can keep a ref to it too
-                    if (typeof FileInputElement.ref === 'function') {
-                        FileInputElement.ref(ref);
-                    }
+                    safeInvoke(FileInputElement.ref, ref);
                 }
             });
         } else {
