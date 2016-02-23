@@ -172,6 +172,20 @@ const ReactS3FineUploader = React.createClass({
         onError: func,
 
         /**
+         * Called when an error occurs with the internal files kept by this component
+         * (**NOT** FineUploader's), such as trying to set the status of a nonexisting
+         * (or for example, filtered out) file.
+         *
+         * Errors:
+         *   'Delete completed for unfound file with id: ${id}'
+         *   'Failed to delete unfound file with id: ${id}'
+         *   'Failed to set status of unfound file with id: {id} to: {status}'
+         *
+         * @param {string} desc  Description of error
+         */
+        onFileError: func,
+
+        /**
          * Similar to FineUploader's onManualRetry
          * (http://docs.fineuploader.com/branch/master/api/events.html#manualRetry), except like
          * onAutoRetry, this will also give the number of previous retry attempts for the file.
@@ -505,23 +519,31 @@ const ReactS3FineUploader = React.createClass({
     // This method has been made promise-based to allow a callback function
     // to execute immediately after the state is set.
     setStatusOfFile(fileId, status, changeSet = {}) {
+        const { onFileError, onStatusChange } = this.props;
+
         return new Promise((resolve) => {
-            const oldStatus = this.state.filesToUpload[fileId].status;
+            const file = this.state.filesToUpload[fileId];
 
-            changeSet.status = { $set: status };
-            if (status === FileStatus.DELETED || status === FileStatus.CANCELED || status === FileStatus.UPLOAD_FAILED) {
-                changeSet.progress = { $set: 0 };
+            if (file) {
+                const oldStatus = file.status;
+
+                changeSet.status = { $set: status };
+                if (status === FileStatus.DELETED || status === FileStatus.CANCELED || status === FileStatus.UPLOAD_FAILED) {
+                    changeSet.progress = { $set: 0 };
+                }
+
+                const filesToUpload = update(this.state.filesToUpload, { [fileId]: changeSet });
+
+                this.setState({ filesToUpload }, () => {
+                    const updatedFile = this.state.filesToUpload[fileId];
+
+                    safeInvoke(onStatusChange, updatedFile, oldStatus, status);
+                    resolve(updatedFile);
+                });
+            } else {
+                safeInvoke(onFileError, `Failed to change status of unfound file with id: ${fileId} to: ${status}`);
+                reject();
             }
-
-            const filesToUpload = Addons.update(this.state.filesToUpload, { [fileId]: changeSet });
-
-            this.setState({ filesToUpload }, () => {
-                const updatedFile = this.state.filesToUpload[fileId]
-
-                safeInvoke(this.props.onStatusChange, updatedFile, oldStatus, status);
-
-                resolve(updatedFile);
-            });
         });
     },
 
@@ -608,7 +630,15 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onDeleteComplete(fileId, xhr, isError) {
-        const invokeCallback = (file = this.state.filesToUpload[fileId]) => safeInvoke(this.props.onDeleteComplete, file, xhr, isError);
+        const { onDeleteComplete, onFileError } = this.prop;s
+
+        const invokeCallback = (file = this.state.filesToUpload[fileId]) => {
+            if (file) {
+                safeInvoke(onDeleteComplete, file, xhr, isError);
+            } else {
+                safeInvoke(onFileError, `Delete completed for unfound file with id: ${fileId}`);
+            }
+        }
 
         if (isError) {
             this.setStatusOfFile(fileId, FileStatus.ONLINE)
@@ -691,14 +721,14 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleDeleteFile(fileId) {
+        const { handleDeleteOnlineFile, onFileError } = this.props;
         const { filesToUpload, uploader } = this.state;
+        const fileToDelete = filesToUpload[fileId];
 
-        // We set the files state to 'deleted' immediately, so that the user is not confused with
-        // the unresponsiveness of the UI
-        //
-        // If there is an error during the deletion, we will just change the status back to FileStatus.ONLINE
-        // and display an error message
-        this.setStatusOfFile(fileId, FileStatus.DELETED);
+        if (!fileToDelete) {
+            safeInvoke(onFileError, `Failed to delete unfound file with id: ${fileId}`);
+            return;
+        }
 
         // FineUploader does not register an id on the file unless it handles the upload
         // of the file itself (however, we always do internally; don't be confused by this!).
@@ -713,7 +743,7 @@ const ReactS3FineUploader = React.createClass({
         //
         // To check which files were uploaded from previous sessions we can check their status;
         // If they are online, the status will be "online".
-        if (filesToUpload[fileId].status !== FileStatus.ONLINE) {
+        if (fileToDelete.status !== FileStatus.ONLINE) {
             // FineUploader handled this file and internally registered an id to it, so
             // we can just let FineUploader handle the deletion
             //
@@ -721,10 +751,8 @@ const ReactS3FineUploader = React.createClass({
             // FineUploader's deleteFile does not return a callback or promise
             uploader.deleteFile(fileId);
         } else {
-            const fileToDelete = filesToUpload[fileId];
-
-            if (this.props.handleDeleteOnlineFile === 'function') {
-                this.props.handleDeleteOnlineFile(fileToDelete)
+            if (handleDeleteOnlineFile === 'function') {
+                handleDeleteOnlineFile(fileToDelete)
                     .then(() => this.onDeleteComplete(fileId, null, false))
                     .catch(() => this.onDeleteComplete(fileId, null, true));
             } else {
@@ -733,6 +761,13 @@ const ReactS3FineUploader = React.createClass({
                                 'handleDeleteOnlineFile() was not was specified as a prop.');
             }
         }
+
+        // We set the files state to 'deleted' immediately, so that the user is not confused with
+        // the unresponsiveness of the UI
+        //
+        // If there is an error during the deletion, we will just change the status back to FileStatus.ONLINE
+        // and display an error message
+        this.setStatusOfFile(fileId, FileStatus.DELETED);
     },
 
     handlePauseFile(fileId) {
