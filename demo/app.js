@@ -4,7 +4,7 @@ import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { ButtonContainer } from '../modules/buttons';
+import { Button, ButtonContainer } from '../modules/buttons';
 
 import { FileDragAndDropInput, ReactS3FineUploader, UploadButton } from '../modules/uploader';
 
@@ -42,6 +42,42 @@ const App = () => {
                 Well, this could certainly be made better, ideally we'd have an auto-generated styleguide or something... but for now you can enjoy this
             </marquee>
             <h2>Buttons</h2>
+            <h3>Primary Button</h3>
+            <div>
+                <Button>Primary</Button>
+                <Button className="active focus">Primary Active</Button>
+                <Button disabled>Primary Disabled</Button>
+                <Button size="xs">Primary XS</Button>
+                <Button size="sm">Primary SM</Button>
+                <Button size="lg">Primary LG</Button>
+                <div>
+                    <Button wide>Primary Wide</Button>
+                </div>
+            </div>
+            <h3>Secondary Button</h3>
+            <div>
+                <Button classType="secondary">Secondary</Button>
+                <Button classType="secondary" className="active focus">Secondary Active</Button>
+                <Button classType="secondary" disabled>Secondary Disabled</Button>
+                <Button classType="secondary" size="xs">Secondary XS</Button>
+                <Button classType="secondary" size="sm">Secondary SM</Button>
+                <Button classType="secondary" size="lg">Secondary LG</Button>
+                <div>
+                    <Button classType="secondary" wide>Secondary Wide</Button>
+                </div>
+            </div>
+            <h3>Tertiary Button</h3>
+            <div>
+                <Button classType="tertiary">Tertiary</Button>
+                <Button classType="tertiary" className="active focus">Tertiary Active</Button>
+                <Button classType="tertiary" disabled>Tertiary Disabled</Button>
+                <Button classType="tertiary" size="xs">Tertiary XS</Button>
+                <Button classType="tertiary" size="sm">Tertiary SM</Button>
+                <Button classType="tertiary" size="lg">Tertiary LG</Button>
+                <div>
+                    <Button classType="tertiary" wide>Tertiary Wide</Button>
+                </div>
+            </div>
             <h3>Button Container</h3>
             <div>
                 <ButtonContainer>
@@ -62,6 +98,7 @@ const App = () => {
                 <ReactS3FineUploader
                     {...dummyUploaderProps}
                     fileInputElement={UploadButton({
+                        buttonElement: (<Button classType="secondary" />),
                         getLabel: () => null
                     })} />
             </div>

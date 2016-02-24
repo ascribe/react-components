@@ -72,7 +72,7 @@ const CSS_LOADER = combineLoaders([
         query: {
             modules: true,
             importLoaders: 1,
-            localIdentName: '[path]___[name]__[local]___[hash:base64:5]',
+            localIdentName: '[path]__[name]__[local]_[hash:base64:5]',
             sourceMap: true
         }
     },
@@ -83,7 +83,7 @@ const CSS_LOADER = combineLoaders([
         loader: 'sass',
         query: {
             precision: '8', // See https://github.com/twbs/bootstrap-sass#sass-number-precision
-            output: 'expanded',
+            outputStyle: 'expanded',
             sourceMap: true
         }
     }
@@ -130,14 +130,14 @@ const config = {
             },
             {
                 test: /\.s[ac]ss$/,
-                include: [PATHS.modules],
+                exclude: [PATHS.nodeModules],
                 loader: PRODUCTION || EXTRACT ? ExtractTextPlugin.extract('style', CSS_LOADER)
                                               : `style!${CSS_LOADER}`
             }
         ]
     },
 
-    postcss: [ autoPrefixer({ browsers: COMPATIBILITY }) ]
+    postcss: [autoPrefixer({ browsers: COMPATIBILITY })]
 };
 
 module.exports = config;
