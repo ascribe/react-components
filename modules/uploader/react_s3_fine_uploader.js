@@ -26,6 +26,12 @@ const { any,
         shape,
         string } = React.PropTypes;
 
+// ReactS3FineUploader is essentially just a react layer around FineUploader's s3 uploader that
+// mirrors the internally tracked files of FineUploader to pass them down as props for child
+// components to access (ie. be able to display and manipulate) the files submitted to the uploader.
+//
+// Although most of the component API is similar to FineUploader, see the comments below for the
+// full descriptions of available callbacks and options.
 const ReactS3FineUploader = React.createClass({
     propTypes: {
         disabled: bool,
@@ -50,13 +56,6 @@ const ReactS3FineUploader = React.createClass({
         mimeTypeMapping: object,
 
         /**
-         * Extension methods
-         * =================
-         *
-         * Available callbacks to allow for a parent component to extend uploader functionality.
-         */
-
-        /**
          * Called if FineUploader is unable to automatically handle the deletion of a file because
          * of the file originating from an online source requested as part of the initial session.
          *
@@ -75,24 +74,6 @@ const ReactS3FineUploader = React.createClass({
         handleDeleteOnlineFile: func,
 
         /**
-         * Called just before user selected files are added to the upload queue.
-         *
-         * You can think of this as a general transform function that enables you to do anything
-         * you want with the files a user has selected for uploading just before they're added to
-         * the upload queue (for example, change all the file names, do client side encoding, etc).
-         *
-         * It is expected that `handleFilesBeforeUpload` will return a promise that resolves with
-         * an array of files to be added to the upload queue. Rejecting the promise will ignore
-         * the files and add nothing to the queue. Resolving with an empty array or something that
-         * is not an array is the same as rejecting.
-         *
-         * @param  {object[]} files Files to be uploaded
-         * @return {Promise}        Promise that resolves with an array of files to be added to the
-         *                          upload queue
-         */
-        handleFilesBeforeUpload: func,
-
-        /**
          * Callbacks
          * =========
          *
@@ -109,17 +90,6 @@ const ReactS3FineUploader = React.createClass({
          *     reference the list below. If you'd like to use another one, feel free to update
          *     this component and submit pull requests.
          */
-
-        /**
-         * Similar to FineUploader's onSubmitted
-         * (http://docs.fineuploader.com/branch/master/api/events.html#submitted), except it's
-         * only called after a file's been added to the uploader's uploading queue. As the given
-         * file here is already in the upload queue, it may be in any stage of the upload states
-         * (ie. from FileStatus.SUBMITTED all the way to FileStatus.UPLOADING).
-         *
-         * @param {object} file File that was added
-         */
-        onAdd: func,
 
         /**
          * Similar to FineUploader's onAllComplete
@@ -262,10 +232,31 @@ const ReactS3FineUploader = React.createClass({
         onStatusChange: func,
 
         /**
+         * Similar to FineUploader's onSubmit
+         * (http://docs.fineuploader.com/branch/master/api/events.html#submit), except that it
+         * gives the entire list of submitted files. Called just before user selected files are
+         * submitted to FineUploader's upload queue.
+         *
+         * You can think of this as a general transform function that enables you to do anything
+         * you want with the files a user has selected for uploading just before they're added to
+         * the upload queue (for example, change all the file names, do client side encoding, etc).
+         *
+         * It is expected that `onSubmitFiles` will return a promise that resolves with an array
+         * of files to be added to the upload queue. Rejecting the promise will ignore the files
+         * and add nothing to the queue. Resolving with an empty array or something that is not
+         * an array is the same as rejecting.
+         *
+         * @param  {object[]} files Files to be uploaded
+         * @return {Promise}        Promise that resolves with an array of files to be added to the
+         *                          upload queue
+         */
+        onSubmitFiles: func,
+
+        /**
          * Similar to FineUploader's onComplete
          * (http://docs.fineuploader.com/branch/master/api/events.html#complete), except that it
          * only gets called when the file was uploaded successfully (rather than also getting
-         * called when an error occurs)
+         * called when an error occurs).
          *
          * @param {object}  file File that was uploaded successfully
          * @param {object}  res  The raw response from the server
@@ -335,10 +326,10 @@ const ReactS3FineUploader = React.createClass({
                 return (name && name.length > 30) ? `${name.slice(0, 15)}...${name.slice(-15)}`
                                                   : name;
             },
-            handleFilesBeforeUpload: (files) => Promise.resolve(files),
             messages: {},
             multiple: false,
             objectProperties: {},
+            onSubmitFiles: (files) => Promise.resolve(files),
             request: {},
             resume: {
                 enabled: true
@@ -446,6 +437,7 @@ const ReactS3FineUploader = React.createClass({
                 onManualRetry: this.onManualRetry,
                 onProgress: this.onProgress,
                 onSessionRequestComplete: this.onSessionRequestComplete,
+                onStatusChange: this.onStatusChange,
                 onUploadChunk: this.onUploadChunk,
                 onUploadChunkSuccess: this.onUploadChunkSuccess
             }
@@ -681,6 +673,55 @@ const ReactS3FineUploader = React.createClass({
         safeInvoke(this.props.onSessionRequestComplete, response, success, xhr);
     },
 
+    onStatusChange(fileId, oldStatus, newStatus) {
+        // Only DELETE_FAILED, REJECTED, and QUEUED are status changes that we can't catch otherwise
+        if (newStatus === FileStatus.DELETE_FAILED ||
+            newStatus === FileStatus.REJECTED ||
+            newStatus === FileStatus.QUEUED) {
+            // setStatusOfFile will propagate the event to this.props.onStatusChange
+            this.setStatusOfFile(fileId, newStatus);
+        }
+    },
+
+    onSubmitted(fileId, name) {
+        const { uploader } = this.state;
+
+        const submittedFile = uploader.getUploads({ id: fileId });
+        const submittedFileObject = uploader.getFile(fileId);
+
+        // Unfortunately, FineUploader does not keep all of a file's properties if we query for
+        // them via .getUploads (it removes the type, key, and some others) so we need to re-add them
+        // manually back to our mirrored instance every time files are submitted.
+        const filesToUpload = update(this.state.filesToUpload, {
+            [fileId]: {
+                $set: {
+                    ...submittedFile,
+                    manualRetryAttempt: 0,
+                    progress: 0,
+                    type: submittedFileObject.type,
+                    url: URL.createObjectURL(submittedFileObject)
+                }
+            }
+        });
+
+        this.setState({ filesToUpload }, () => safeInvoke(this.props.onSubmitted, this.state.filesToUpload[fileId]));
+    },
+
+    onTotalProgress(totalUploadedBytes, totalBytes) {
+        safeInvoke(this.props.onTotalProgress, totalUploadedBytes, totalBytes);
+    },
+
+    onUpload(fileId, name) {
+        if (!this.state.uploadInProgress) {
+            this.setState({
+                uploadInProgress: true
+            });
+        }
+
+        this.setStatusOfFile(fileId, FileStatus.UPLOADING)
+            .then((file) => safeInvoke(this.props.onUpload, file));
+    },
+
     onUploadChunk(fileId, name, chunkData) {
         const chunkKey = `${fileId}-${chunkData.startByte}-${chunkData.endByte}`;
 
@@ -804,7 +845,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleSubmitFile(files) {
-        const { multiple, onValidationFailed, validation: { itemLimit } } = this.props;
+        const { multiple, onSubmitFiles, onValidationFailed, validation: { itemLimit } } = this.props;
         const { filesToUpload, uploader } = this.state;
 
         // If multiple set and user already uploaded its work cancel upload
@@ -839,97 +880,12 @@ const ReactS3FineUploader = React.createClass({
         }
 
         if (files.length) {
-            this.props.handleFilesBeforeUpload(files)
-                .then((files) => {
-                    if (Array.isArray(files) && files.length) {
-                        uploader.addFiles(files);
-
-                        // Once we've added the files to the uploader, sync our state with the
-                        // uploader's internal state
-                        this.synchronizeFileLists(files);
-                        this.setState({
-                            uploadInProgress: true
-                        });
-                    }
-                });
+            onSubmitFiles(files).then((files) => {
+                if (Array.isArray(files) && files.length) {
+                    uploader.addFiles(files);
+                }
+            });
         }
-    },
-
-    // ReactFineUploader is essentially just a react layer around s3 FineUploader.
-    // However, since we'd like to display the status of a file (progress, uploading) as well as
-    // be able to execute actions on a currently uploading file, we need to mirror the internal
-    // state of FineUploader and pass the tracked files down to the UI components.
-    //
-    // Unfortunately, FineUploader does not keep all of a File object's properties after submitting
-    // them via .addFiles (it deletes the type, key, and some others) so we need to re-add them
-    // manually back to our mirrored instance every time files are submitted.
-    synchronizeFileLists(newFiles) {
-        const { filesToUpload: previousFiles, uploader } = this.state;
-        const newTrackedFiles = [];
-        const largestIdInPreviousFiles = previousFiles.reduce((largestId, file) => {
-            return file.id > largestId ? file.id : largestId;
-        }, 0);
-
-        // We use the file list we get from FineUploader as the source of truth for our internal file list
-        // as we want to mirror FineUploader
-        let filesTrackedByFineUploader = uploader.getUploads();
-
-        if (!Array.isArray(filesTrackedByFineUploader)) {
-            filesTrackedByFineUploader = [filesTrackedByFineUploader];
-        }
-
-        filesTrackedByFineUploader.forEach((trackedFile) => {
-            let matchedFile;
-            const findMatchingFile = (filesToTest, fn) => {
-                matchedFile = filesToTest.find(fn);
-
-                return matchedFile;
-            };
-
-            if (trackedFile.size === -1 && !trackedFile.progress && trackedFile.status === FileStatus.UPLOAD_SUCCESSFUL) {
-                // EDGE CASE:
-                //
-                // Files do not necessarily come from the user's hard drive but can also be fetched
-                // from S3. This is handled in onSessionRequestComplete.
-                //
-                // If the user deletes one of those files, then FineUploader will still keep it in
-                // its uploaded array but with the key and progress undefined, and size === -1 but
-                // status === FileStatus.UPLOAD_SUCCESSFUL.
-                // This poses a problem as it's misleading and other components are likely to depend
-                // on the amount of files that have status === FileStatus.UPLOAD_SUCCESSFUL.
-                // Therefore, we need to make sure we set these files' statuses to
-                // FileStatus.DELETED for our internal state when we sync with FineUploader here.
-
-                trackedFile.status = FileStatus.DELETED;
-            } else if (trackedFile.id <= largestIdInPreviousFiles &&
-                       findMatchingFile(previousFiles, (prevFile) => trackedFile.originalName === prevFile.name &&
-                                                                     trackedFile.id === prevFile.id)) {
-                // Add information stripped by FineUploader to the previous files
-                // Check the ids to make sure that the trackedFile is indeed the same as the
-                // prevFile, since the same name might be used for multple files
-                trackedFile.manualRetryAttempt = matchedFile.manualRetryAttempt;
-                trackedFile.key = matchedFile.key;
-                trackedFile.progress = matchedFile.progress;
-                trackedFile.type = matchedFile.type;
-                trackedFile.url = matchedFile.url;
-            } else if (findMatchingFile(newFiles, (newFile) => trackedFile.originalName === newFile.name)) {
-                // Add information stripped by FineUploader to the newly added files
-                // Since the file wasn't found in the previous files, it must be newly added
-                trackedFile.manualRetryAttempt = 0;
-                trackedFile.progress = 0;
-                trackedFile.type = matchedFile.type;
-                trackedFile.url = URL.createObjectURL(matchedFile);
-
-                newTrackedFiles.push(trackedFile);
-            }
-        });
-
-        // Set the new file array by mirroring the updated array from FineUploader
-        this.setState({ filesToUpload: filesTrackedByFineUploader }, () => {
-            // When files have been dropped or selected by a user, we want to propagate that
-            // information to the outside components, so they can act on it
-            safeInvoke(this.props.onAdd, newTrackedFiles);
-        });
     },
 
     render() {
