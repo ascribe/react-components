@@ -159,4 +159,6 @@ TODO
 ====
 * [ ] Unit tests
 * [ ] Add themable extensions, maybe forking [rethemable](https://github.com/andreypopp/rethemeable)
+* [ } Write PostCSS plugin that understands expanded nested :global
+  block declarations
 * [ ] Upgrade FineUploader, and don't use the commonJS hack

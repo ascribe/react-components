@@ -1,22 +1,20 @@
 import React from 'react';
-import CssModules from 'react-css-modules';
 
 import FileInput from '../file_input';
 import FileStatus from '../file_status';
 
+import Button from '../../buttons/button';
 import ButtonContainer from '../../buttons/button_container';
 
 import { successfullyUploadedFilter, uploadingFilter, validProgressFilesFilter } from '../utils/file_filters';
 
 import { safeInvoke, truncateTextAtCharIndex } from '../../utils/general';
 
-import styles from './upload_button.scss';
-
 
 const { array, bool, func, string } = React.PropTypes;
 
 export default function UploadButton({
-            className = '',
+            buttonElement = (<Button />),
             fileLabels = {
                 singular: 'file',
                 plural: 'files'
@@ -43,7 +41,7 @@ export default function UploadButton({
             }
         } = {}) {
 
-    const Component = React.createClass({
+    return React.createClass({
         displayName: 'UploadButton',
 
         propTypes: {
@@ -127,31 +125,30 @@ export default function UploadButton({
 
         render() {
             const { allowedExtensions, filesToUpload, multiple } = this.props;
-            const disabled = this.isDisabled();
             const buttonLabel = this.getButtonLabel();
             const label = getLabel(filesToUpload, this.handleRemoveFiles, multiple);
 
+            const buttonChildren = [buttonLabel, (
+                <FileInput
+                    ref="fileSelector"
+                    accept={allowedExtensions}
+                    multiple={multiple}
+                    onChange={this.onFileSubmit} />
+            )];
+
+            // The button needs to be of `type="button"` as it may be nested in a form that should
+            // not be submitted through this button
+            const button = React.cloneElement(buttonElement, {
+                disabled: this.isDisabled(),
+                onClick: this.handleOnClick,
+                type: 'button'
+            }, ...buttonChildren);
+
             return (
                 <ButtonContainer label={label}>
-                    {/* The button needs to be of `type="button"` as it may be nested in a form that should not
-                        be submitted through this button */}
-                    <button
-                        className={className}
-                        disabled={disabled}
-                        onClick={this.handleOnClick}
-                        styleName={'button'}
-                        type="button">
-                        {buttonLabel}
-                        <FileInput
-                            ref="fileSelector"
-                            accept={allowedExtensions}
-                            multiple={multiple}
-                            onChange={this.onFileSubmit} />
-                   </button>
+                    {button}
                 </ButtonContainer>
             );
         }
     });
-
-    return CssModules(Component, styles);
 }
