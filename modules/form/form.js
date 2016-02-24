@@ -250,12 +250,15 @@ let Form = React.createClass({
     },
 
     renderChildren() {
-        return ReactAddons.Children.map(this.props.children, (child, i) => {
+        const { children, disabled } = this.props;
+
+        return ReactAddons.Children.map(children, (child, i) => {
             if (child) {
                 return React.cloneElement(child, {
-                    handleChange: this.handleChangeChild,
                     ref: (ref) => {
-                        this._refs[child.props.name] = ref;
+                        if (child.props.name) {
+                            this._refs[child.props.name] = ref;
+                        }
 
                         // Since refs will be overwritten by this functions return statement,
                         // we still want to be able to define refs for nested `Form` or `Property`
@@ -265,10 +268,11 @@ let Form = React.createClass({
                             child.ref(ref);
                         }
                     },
-                    key: i,
                     // We need this in order to make editable be overridable when setting it directly
                     // on Property
-                    editable: child.props.overrideForm ? child.props.editable : !this.props.disabled
+                    editable: child.props.overrideForm ? child.props.editable : !disabled,
+                    handleChange: this.handleChangeChild,
+                    key: i
                 });
             }
         });

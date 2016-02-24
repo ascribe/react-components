@@ -263,17 +263,13 @@ const Property = React.createClass({
     },
 
     renderChildren(style) {
+        const { checkboxLabel, children, editable, name } = this.props;
+
         // Input's props should only be cloned and propagated down the tree,
         // if the component is actually being shown (!== 'expanded === false')
-        if((this.state.expanded && this.props.checkboxLabel) || !this.props.checkboxLabel) {
-            return ReactAddons.Children.map(this.props.children, (child) => {
+        if ((this.state.expanded && checkboxLabel) || !checkboxLabel) {
+            return ReactAddons.Children.map(children, (child) => {
                 const childWithProps = React.cloneElement(child, {
-                    style,
-                    onChange: this.handleChange,
-                    onFocus: this.handleFocus,
-                    onBlur: this.handleBlur,
-                    setWarning: this.setWarning,
-                    disabled: !this.props.editable,
                     ref: (ref) => {
                         this._refs.input = ref;
 
@@ -285,8 +281,14 @@ const Property = React.createClass({
                             child.ref(ref);
                         }
                     },
-                    name: this.props.name,
-                    setExpanded: this.setExpanded
+                    name,
+                    style,
+                    disabled: !editable,
+                    onBlur: this.handleBlur,
+                    onChange: this.handleChange,
+                    onFocus: this.handleFocus,
+                    setExpanded: this.setExpanded,
+                    setWarning: this.setWarning
                 });
 
                 return childWithProps;
