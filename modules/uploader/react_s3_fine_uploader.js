@@ -864,16 +864,6 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
-    handleRetryFiles(fileIds) {
-        const { uploader } = this.state;
-
-        if (!Array.isArray(fileIds)) {
-            fileIds = [fileIds];
-        }
-
-        fileIds.forEach(uploader.retry);
-    },
-
     handleSubmitFile(files) {
         const { multiple, onSubmitFiles, onValidationFailed, validation: { itemLimit } } = this.props;
         const { filesToUpload, uploader } = this.state;
@@ -933,7 +923,7 @@ const ReactS3FineUploader = React.createClass({
             handleSubmitFile: this.handleSubmitFile,
             handlePauseFile: this.handlePauseFile,
             handleResumeFile: this.handleResumeFile,
-            handleRetryFiles: this.handleRetryFiles
+            handleRetryFile: this.state.uploader.retry
         };
 
         if (React.isValidElement(FileInputElement)) {
