@@ -253,6 +253,16 @@ const ReactS3FineUploader = React.createClass({
         onSubmitFiles: func,
 
         /**
+         * Similar to FineUploader's onSubmitted
+         * (http://docs.fineuploader.com/branch/master/api/events.html#submitted).
+         * You can use this to check that the successfully submitted files are the same as those
+         * that you resolved in `onSubmitFiles`.
+         *
+         * @param {object} file File that was submitted
+         */
+        onSubmitted: func,
+
+        /**
          * Similar to FineUploader's onComplete
          * (http://docs.fineuploader.com/branch/master/api/events.html#complete), except that it
          * only gets called when the file was uploaded successfully (rather than also getting
@@ -263,6 +273,23 @@ const ReactS3FineUploader = React.createClass({
          * @param {xhr|xdr} xhr  The xhr used to make the request
          */
         onSuccess: func,
+
+        /**
+         * Similar to FineUploader's onTotalProgress
+         * (http://docs.fineuploader.com/branch/master/api/events.html#totalProgress).
+         *
+         * @param {number} totalUploadedBytes Total number of bytes that have been uploaded so far
+         * @param {number} totalBytes         Total number of bytes that comprise this file
+         */
+        onTotalProgress: func,
+
+        /**
+         * Similar to FineUploader's onUpload
+         * (http://docs.fineuploader.com/branch/master/api/events.html#upload).
+         *
+         * @param {object} file File that will start uploading
+         */
+        onUpload: func,
 
         /**
          * Called when validation of the submitted files fails.
@@ -438,6 +465,9 @@ const ReactS3FineUploader = React.createClass({
                 onProgress: this.onProgress,
                 onSessionRequestComplete: this.onSessionRequestComplete,
                 onStatusChange: this.onStatusChange,
+                onSubmitted: this.onSubmitted,
+                onTotalProgress: this.onTotalProgress,
+                onUpload: this.onUpload,
                 onUploadChunk: this.onUploadChunk,
                 onUploadChunkSuccess: this.onUploadChunkSuccess
             }
