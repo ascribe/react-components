@@ -62,6 +62,11 @@ let Form = React.createClass({
         };
     },
 
+    componentWillMount() {
+        // Set up internal storage for callback refs
+        this._refs = {};
+    },
+
     reset() {
         // If onReset prop is defined from outside,
         // notify component that a form reset is happening.
@@ -69,9 +74,9 @@ let Form = React.createClass({
             this.props.onReset();
         }
 
-        for(let ref in this.refs) {
-            if(typeof this.refs[ref].reset === 'function') {
-                this.refs[ref].reset();
+        for(let ref in this._refs) {
+            if(typeof this._refs[ref].reset === 'function') {
+                this._refs[ref].reset();
             }
         }
         this.setState(this.getInitialState());
@@ -124,8 +129,8 @@ let Form = React.createClass({
     getFormData() {
         let data = {};
 
-        for (let refName in this.refs) {
-            const ref = this.refs[refName];
+        for (let refName in this._refs) {
+            const ref = this._refs[refName];
 
             if (ref.state && 'value' in ref.state) {
                 // An input can also provide an `Object` as a value
@@ -154,9 +159,9 @@ let Form = React.createClass({
             this.props.handleSuccess(response);
         }
 
-        for(let ref in this.refs) {
-            if(this.refs[ref] && typeof this.refs[ref].handleSuccess === 'function'){
-                this.refs[ref].handleSuccess(response);
+        for(let ref in this._refs) {
+            if(this._refs[ref] && typeof this._refs[ref].handleSuccess === 'function'){
+                this._refs[ref].handleSuccess(response);
             }
         }
         this.setState({
@@ -168,8 +173,8 @@ let Form = React.createClass({
     handleError(err) {
         if (err.json) {
             for (let input in err.json.errors){
-                if (this.refs && this.refs[input] && this.refs[input].state) {
-                    this.refs[input].setErrors(err.json.errors[input]);
+                if (this._refs && this._refs[input] && this._refs[input].state) {
+                    this._refs[input].setErrors(err.json.errors[input]);
                 } else {
                     this.setState({errors: this.state.errors.concat(err.json.errors[input])});
                 }
@@ -196,9 +201,9 @@ let Form = React.createClass({
     },
 
     clearErrors() {
-        for(let ref in this.refs){
-            if (this.refs[ref] && typeof this.refs[ref].clearErrors === 'function'){
-                this.refs[ref].clearErrors();
+        for(let ref in this._refs){
+            if (this._refs[ref] && typeof this._refs[ref].clearErrors === 'function'){
+                this._refs[ref].clearErrors();
             }
         }
         this.setState({errors: []});
@@ -247,17 +252,19 @@ let Form = React.createClass({
     renderChildren() {
         return ReactAddons.Children.map(this.props.children, (child, i) => {
             if (child) {
-                // Since refs will be overwritten by this functions return statement,
-                // we still want to be able to define refs for nested `Form` or `Property`
-                // children, which is why we're upfront simply invoking the callback-ref-
-                // function before overwriting it.
-                if(typeof child.ref === 'function' && this.refs[child.props.name]) {
-                    child.ref(this.refs[child.props.name]);
-                }
-
                 return React.cloneElement(child, {
                     handleChange: this.handleChangeChild,
-                    ref: child.props.name,
+                    ref: (ref) => {
+                        this._refs[child.props.name] = ref;
+
+                        // Since refs will be overwritten by this functions return statement,
+                        // we still want to be able to define refs for nested `Form` or `Property`
+                        // children, which is why we're upfront simply invoking the callback-ref-
+                        // function before overwriting it.
+                        if (typeof child.ref === 'function') {
+                            child.ref(ref);
+                        }
+                    },
                     key: i,
                     // We need this in order to make editable be overridable when setting it directly
                     // on Property
@@ -338,10 +345,10 @@ let Form = React.createClass({
         const validatedFormInputs = {};
 
         Object
-            .keys(this.refs)
+            .keys(this._refs)
             .forEach((refName) => {
                 let refToValidate = {};
-                const property = this.refs[refName];
+                const property = this._refs[refName];
                 const input = property.refs.input;
                 const value = input.getDOMNode().value || input.state.value;
                 const { max,
