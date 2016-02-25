@@ -1,5 +1,3 @@
-'use strict';
-
 import React from 'react';
 
 import DatePicker from 'react-datepicker/dist/react-datepicker';
