@@ -103,7 +103,7 @@
     &:active:focus,
     &:active:global(.focus),
     &:global(.active):focus,
-    &:global(.active):global(.focus) {
+    &:global(.active.focus) {
         background-color: transparent;
         border-color: transparent;
         color: $ascribe-colors--primary-bg;
