@@ -141,6 +141,7 @@ This project uses a few experimental features not yet in ES2015,
 transpiled by Babel:
   * [Extended-export-from](https://github.com/leebyron/ecmascript-more-export-from): Stage 1
   * [Object-rest-spread](https://github.com/sebmarkbage/ecmascript-rest-spread): Stage 2
+  * [Object-values-entries](https://github.com/tc39/proposal-object-values-entries): Stage 3
 
 
 Developing

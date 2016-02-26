@@ -1,79 +1,98 @@
-'use strict';
-
 import React from 'react';
-import ReactAddons from 'react/addons';
+import classNames from 'classnames';
+import CssModules from 'react-css-modules';
 
-import Panel from 'react-bootstrap/lib/Panel';
+import { validateInput } from 'utils/private/validation_utils';
 
-import AppConstants from '../../constants/application_constants';
+import { noop, safeInvoke } from '../../utils/general_utils';
 
-import { mergeOptions } from '../../utils/general_utils';
+//FIXME: import styles
 
 
-const { bool, element, string, oneOfType, func, object, arrayOf } = React.PropTypes;
+const { bool, func, string } = React.PropTypes;
+
+const PropertyLabel = CssModules(({ error, label }) => (
+    <p>
+        <span className="pull-left">{label}</span>
+        <span className="pull-right">{error}</span>
+    </p>
+), style);
 
 const Property = React.createClass({
     propTypes: {
-        editable: bool,
+        children: node.isRequired,
+        name: string.isRequired,
 
-        // If we want Form to have a different value for disabled as Property has one for
-        // editable, we need to set overrideForm to true, as it will then override Form's
-        // disabled value for individual Properties
+        autoFocus: bool,
+        className: string,
+        disabled: bool,
+
+        // For `expanded` there are actually three use cases:
+        //
+        // 1. Completely control its value from the outside (did not define `showCheckbox` prop)
+        // 2. Let it be controlled from the inside (default value can be set though via `expanded`)
+        // 3. Let it be controlled from a parent / child by using `setExpanded` (`expanded` must
+        //    not be set from the outside as a prop then(!!!))
+        expanded: bool,
+
+        footer: node,
+        ignoreFocus: bool,
+        label: string,
+        onBlur: func,
+        onChange: func,
+        onError: func,
+        onFocus: func,
+
+        // By default Properties will use the Form's `disabled` prop to determine if they should
+        // also be disabled. Use `overrideForm` to override the parent Form's `disabled` value
+        // with this Property's `disabled` prop.
+        // Note that this prop is only used in the Form when it registers Properties, so it is
+        // not used elsewhere in this component.
         overrideForm: bool,
 
-        label: string,
-        value: oneOfType([
-            string,
-            element
-        ]),
-        footer: element,
-        handleChange: func,
-        ignoreFocus: bool,
-        name: string.isRequired,
-        className: string,
-
-        onClick: func,
-        onChange: func,
-        onBlur: func,
-
-        children: oneOfType([
-            arrayOf(element),
-            element
-        ]),
-        style: object,
-        expanded: bool,
-        checkboxLabel: string,
-        autoFocus: bool
+        showCheckbox: string
     },
 
     getDefaultProps() {
         return {
-            editable: true,
             expanded: true,
-            className: ''
+            onError: (error) => {
+                switch (error) {
+                  case 'min' || 'max:
+                    return 'The field you defined is not in the valid range';
+                  case 'pattern':
+                    return 'The value you defined is not matching the valid pattern';
+                  case 'required':
+                    return 'This field is required';
+                  default:
+                    return null;
+                }
+            }
         };
     },
 
     getInitialState() {
-        const { expanded, ignoreFocus, checkboxLabel } = this.props;
+        const { expanded, ignoreFocus, showCheckbox } = this.props;
 
         return {
-            // We're mirroring expanded here as a state
-            // React's docs do NOT consider this an antipattern as long as it's
-            // not a "source of truth"-duplication
+            // Mirror expanded here to set the initial state.
+            // This an antipattern as long as it's not a "source of truth"-duplication
             expanded,
 
-            // When a checkboxLabel is defined in the props, we want to set
-            // `ignoreFocus` to true
-            ignoreFocus: ignoreFocus || checkboxLabel,
-            // Please don't confuse initialValue with react's defaultValue.
-            // initialValue is set by us to ensure that a user can reset a specific
-            // property (after editing) to its initial value
+            // If a showCheckbox is defined in the props, set `ignoreFocus` to true to avoid
+            // showing the focused styling when the property is selected.
+            ignoreFocus: ignoreFocus || showCheckbox,
+
+            // Don't confuse this with defaultValue--this is meant for resetting inputs to their
+            // original values
+            // We have to wait until componentDidMount() to set this value, as it depends on the
+            // child input also being mounted.
             initialValue: null,
-            value: null,
+
+            error: null,
+            hasWarning: false,
             isFocused: false,
-            errors: null,
-            hasWarning: false
+            value: null
         };
     },
 
@@ -83,145 +102,100 @@ const Property = React.createClass({
     },
 
     componentDidMount() {
-        if(this.props.autoFocus) {
-            this.handleFocus();
+        if (this.props.autoFocus) {
+            this.onFocus();
+        }
+
+        const initialValue = this.getValueOfInputElement();
+
+        if (initialValue) {
+            this.setState({
+                initialValue,
+                value: initialValue
+            });
         }
     },
 
     componentWillReceiveProps(nextProps) {
-        let childInput = this._refs.input;
+        const newState = {};
 
-        // For expanded there are actually three use cases:
-        //
-        // 1. Control its value from the outside completely (do not define `checkboxLabel`)
-        // 2. Let it be controlled from the inside (default value can be set though via `expanded`)
-        // 3. Let it be controlled from a child by using `setExpanded` (`expanded` must not be
-        //    set from the outside as a prop then(!!!))
-        //
-        // This handles case 1. and 3.
-        if(nextProps.expanded !== this.props.expanded && nextProps.expanded !== this.state.expanded && !this.props.checkboxLabel) {
-            this.setState({ expanded: nextProps.expanded });
+        // Handle the case where `expanded` is changed from outside and there's no checkbox
+        // controlling the `expanded` state
+        if (nextProps.expanded !== this.state.expanded && !this.props.showCheckbox) {
+            newState.expanded = nextProps.expanded;
         }
 
-        // In order to set this.state.value from another component
-        // the state of value should only be set if its not undefined and
-        // actually references something
-        if(childInput && typeof childInput.getDOMNode().value !== 'undefined') {
-            this.setState({
-                value: childInput.getDOMNode().value
-            });
-
-        // When implementing custom input components, their value isn't exposed like the one
-        // from native HTML elements.
-        // To enable developers to create input elements, they can expose a property called value
-        // in their state that will be picked up by property.js
-        } else if(childInput && childInput.state && typeof childInput.state.value !== 'undefined') {
-            this.setState({
-                value: childInput.state.value
-            });
+        // Handle the case where `ignoreFocus` is changed from outside and we're not ignoring it
+        // for the checkbox
+        if (nextProps.ignoreFocus !== this.state.ignoreFocus && !this.props.showCheckbox) {
+            newState.ignoreFocus = nextProps.ignoreFocus;
         }
 
-        if(!this.state.initialValue && childInput && childInput.props.defaultValue) {
-            this.setState({
-                initialValue: childInput.props.defaultValue
-            });
+        if (Object.keys(newState).length) {
+            this.setState(newState);
         }
     },
 
     reset() {
-        let input = this._refs.input;
+        this.setState({
+            value: this.state.initialValue
+        });
 
-        // maybe do reset by reload instead of front end state?
-        this.setState({value: this.state.initialValue});
-
-        if(input.state && input.state.value) {
-            // resets the value of a custom react component input
-            input.state.value = this.state.initialValue;
+        if (this._refs.input) {
+            // In case the input element needs more than just the value changing to the initial
+            // value to reset it, it can expose a reset method
+            safeInvoke(this._refs.input.reset);
         }
 
-        // For some reason, if we set the value of a non HTML element (but a custom input),
-        // after a reset, the value will be be propagated to this component.
-        //
-        // Therefore we have to make sure only to reset the initial value
-        // of HTML inputs (which we determine by checking if there 'type' attribute matches
-        // the ones included in AppConstants.possibleInputTypes).
-        let inputDOMNode = input.getDOMNode();
-        if(inputDOMNode.type && typeof inputDOMNode.type === 'string' &&
-           AppConstants.possibleInputTypes.indexOf(inputDOMNode.type.toLowerCase()) > -1) {
-            inputDOMNode.value = this.state.initialValue;
-        }
-
-        // For some inputs, reseting state.value is not enough to visually reset the
-        // component.
-        //
-        // So if the input actually needs a visual reset, it needs to implement
-        // a dedicated reset method.
-        if(typeof input.reset === 'function') {
-            input.reset();
-        }
+        return this.state.initialValue;
     },
 
-    handleChange(event) {
-        this.props.handleChange(event);
-        if (typeof this.props.onChange === 'function') {
-            this.props.onChange(event);
-        }
+    onChange(event) {
+        const value = event && event.target && event.target.value;
 
-        this.setState({value: event.target.value});
+        this.setState({ value }, () => safeInvoke(this.props.onChange, value, event));
     },
 
-    handleFocus() {
-        // if ignoreFocus (bool) is defined, then just ignore focusing on
-        // the property and input
-        if(this.state.ignoreFocus) {
+    onFocus(event) {
+        // If ignoreFocus (bool) is defined, then just ignore the attempt to focus
+        if (this.state.ignoreFocus) {
             return;
         }
 
-        // if onClick is defined from the outside,
-        // just call it
-        if(typeof this.props.onClick === 'function') {
-            this.props.onClick();
-        }
-        // skip the focus of non-input elements
-        let nonInputHTMLElements = ['pre', 'div'];
-        if (this._refs.input &&
-            nonInputHTMLElements.indexOf(this._refs.input.getDOMNode().nodeName.toLowerCase()) > -1 ) {
-            return;
-        }
-        this._refs.input.getDOMNode().focus();
-        this.setState({
-            isFocused: true
-        });
-    },
+        const inputElement = this._refs.input;
 
-    handleBlur(event) {
-        this.setState({
-            isFocused: false
-        });
+        if (inputElement) {
+            // Skip the focus of non-input native elements
+            // The nodeName property is only available on the ref if it's a native element
+            const inputNodeName = inputElement.nodeName || '';
+            if (['pre', 'div'].includes(inputNodeName.toLowerCase())) {
+                return;
+            }
 
-        if(typeof this.props.onBlur === 'function') {
-            this.props.onBlur(event);
+            // Safe invoke in case the inputElement is a component without a focus function
+            safeInvoke(inputElement.focus);
+
+            this.setState({ isFocused: true }, () => safeInvoke(this.props.onFocus, event));
         }
     },
 
-    handleSuccess(){
+    onBlur(event) {
+        this.setState({ isFocused: false }, () => safeInvoke(this.props.onBlur, event));
+    },
+
+    handleSuccess() {
         this.setState({
             isFocused: false,
-            errors: null,
 
-            // also update initialValue in case of the user updating and canceling its actions again
-            initialValue: this._refs.input.getDOMNode().value
+            // Also update initialValue in case of the user updating and canceling its actions again
+            initialValue: this.getValueOfInputElement()
         });
     },
 
-    setErrors(errors){
-        this.setState({
-            errors: errors.pop()
-        });
-    },
+    getValueOfInputElement() {
+        const { input: { getValue = noop, value } = {} } = this._refs;
 
-    clearErrors(){
-        this.setState({errors: null});
+        return value || getValue();
     },
 
     setWarning(hasWarning) {
@@ -229,15 +203,18 @@ const Property = React.createClass({
     },
 
     getClassName() {
-        if (!this.state.expanded && !this.props.checkboxLabel) {
+        const { disabled, showCheckbox } = this.props;
+        const { error, expanded, hasWarning, isFocused } = this.state;
+
+        if (!expanded && !showCheckbox) {
             return 'is-hidden';
-        } else if (!this.props.editable) {
+        } else if (disabled) {
             return 'is-fixed';
-        } else if (this.state.errors) {
+        } else if (error) {
             return 'is-error';
-        } else if (this.state.hasWarning) {
+        } else if (hasWarning) {
             return 'is-warning';
-        } else if (this.state.isFocused) {
+        } else if (isFocused) {
             return 'is-focused';
         } else {
             return '';
@@ -249,70 +226,57 @@ const Property = React.createClass({
     },
 
     handleCheckboxToggle() {
-        const expanded = !this.state.expanded;
+        const { expanded: curExpanded, initialValue } = this.state;
+        const newState = {
+            expanded: !curExpanded
+        };
 
-        this.setExpanded(expanded);
-
-        // Reset the value to be the initial value when the checkbox is unticked since the
-        // user doesn't want to specify their own value.
-        if (!expanded) {
-            this.setState({
-                value: this.state.initialValue
-            });
+        // Reset the value to be the initial value when the checkbox is unticked (ie. when
+        // `expanded` is still true) since the user doesn't want to specify their own value.
+        if (curExpanded) {
+            state.value = initialValue;
         }
+
+        this.setState(newState);
     },
 
-    renderChildren(style) {
-        const { checkboxLabel, children, editable, name } = this.props;
+    renderChildren() {
+        const { children, disabled, name, showCheckbox } = this.props;
+        const { expanded, value } = this.state;
 
-        // Input's props should only be cloned and propagated down the tree,
-        // if the component is actually being shown (!== 'expanded === false')
-        if ((this.state.expanded && checkboxLabel) || !checkboxLabel) {
-            return ReactAddons.Children.map(children, (child) => {
-                const childWithProps = React.cloneElement(child, {
+        // We don't need to clone the input with our handlers unless it's actually being shown
+        if (expanded || !showCheckbox) {
+            return React.Children.map(children, (child) => {
+                return React.cloneElement(child, {
                     ref: (ref) => {
                         this._refs.input = ref;
 
-                        // Since refs will be overriden by this functions return statement,
-                        // we still want to be able to define refs for nested `Form` or `Property`
-                        // children, which is why we're upfront simply invoking the callback-ref-
-                        // function before overriding it.
-                        if (typeof child.ref === 'function') {
-                            child.ref(ref);
-                        }
+                        // By attaching refs to the child from this component, we're overwriting any
+                        // already attached refs to the child. As we'd still like to allow parents
+                        // to register refs with the child inputs, we need to invoke their callback
+                        // refs with our refs here.
+                        safeInvoke(child.ref, ref);
                     },
                     name,
-                    style,
-                    disabled: !editable,
-                    onBlur: this.handleBlur,
-                    onChange: this.handleChange,
-                    onFocus: this.handleFocus,
+                    disabled,
+                    value,
+                    onBlur: this.onBlur,
+                    onChange: this.onChange,
+                    onFocus: this.onFocus,
                     setExpanded: this.setExpanded,
-                    setWarning: this.setWarning
+                    setWarning: this.setWarning,
                 });
-
-                return childWithProps;
             });
-        }
-    },
-
-    getLabelAndErrors() {
-        if(this.props.label || this.state.errors) {
-            return (
-                <p>
-                    <span className="pull-left">{this.props.label}</span>
-                    <span className="pull-right">{this.state.errors}</span>
-                </p>
-            );
         } else {
             return null;
         }
     },
 
+    //FIXME
     getCheckbox() {
-        const { checkboxLabel, name } = this.props;
+        const { name, showCheckbox } = this.props;
 
-        if (checkboxLabel) {
+        if (showCheckbox) {
             return (
                 <div
                     className="ascribe-property-collapsible-toggle"
@@ -322,7 +286,7 @@ const Property = React.createClass({
                         checked={this.state.expanded}
                         onChange={this.handleCheckboxToggle}
                         type="checkbox" />
-                    <span className="checkbox">{' ' + checkboxLabel}</span>
+                    <span className="checkbox">{' ' + showCheckbox}</span>
                 </div>
             );
         } else {
@@ -330,30 +294,47 @@ const Property = React.createClass({
         }
     },
 
-    render() {
-        let footer = null;
+    validate() {
+        if (this._ref.input) {
+            const error = validateInput(this._ref.input, this.getValueOfInputElement());
 
-        if(this.props.footer){
-            footer = (
-                <div className="ascribe-property-footer">
-                    {this.props.footer}
-                </div>
-            );
+            if (error) {
+                //FIXME: use safeInvoke
+                if (typeof this.props.onError === 'function') {
+                    this.setState({
+                        error: this.props.onError(error)
+                    });
+
+                    return error;
+                }
+            }
         }
+    },
 
+    render() {
+        const { className, footer, label } = this.props;
+        const { error, expanded } = this.state;
+
+        const labelElement = label || error ? (
+            <PropertyLabel error={error} label={label} />
+        ) : null;
+
+        const footerElement = footer ? (
+            <div className="ascribe-property-footer">{footer}</div>
+        ) : null;
+
+        //FIXME: use our own simple collapsible panel
         return (
             <div
-                className={'ascribe-property-wrapper ' + this.getClassName()}
-                onClick={this.handleFocus}
-                style={this.props.style}>
+                className={classNames('ascribe-property-wrapper', this.getClassName())}
+                onClick={this.onFocus}>
                 {this.getCheckbox()}
                 <Panel
                     collapsible
-                    expanded={this.state.expanded}
-                    className="bs-custom-panel">
-                    <div className={'ascribe-property ' + this.props.className}>
-                        {this.getLabelAndErrors()}
-                        {this.renderChildren(this.props.style)}
+                    expanded={expanded}>
+                    <div className={classNames('ascribe-property', className)}>
+                        {label}
+                        {this.renderChildren()}
                         {footer}
                     </div>
                 </Panel>

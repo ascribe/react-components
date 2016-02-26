@@ -1,64 +1,71 @@
-'use strict';
-
 import React from 'react';
-import ReactAddons from 'react/addons';
+import update from 'react-addon-update';
+import CssModules from 'react-css-modules';
 
-import Button from 'react-bootstrap/lib/Button';
-import AlertDismissable from './alert';
+import Button from '../buttons/button';
 
-import GlobalNotificationModel from '../../models/global_notification_model';
-import GlobalNotificationActions from '../../actions/global_notification_actions';
+import { safeInvoke } from '../utils/general';
 
-import requests from '../../utils/requests';
-
-import { getLangText } from '../../utils/lang_utils';
-import { sanitize } from '../../utils/general_utils';
+import styles from './form.scss';
 
 
-let Form = React.createClass({
+const { arrayOf, func, node, shape, string } = React.PropTypes;
+
+/**
+ * All webkit-based browsers are ignoring the attribute autoComplete="off", as stated here:
+ * http://stackoverflow.com/questions/15738259/disabling-chrome-autofill/15917221#15917221,
+ * so if props.autoComplete is set to "off", we insert fake hidden inputs that mock the given
+ * fields to trick chrome/safari into filling those instead of the actual fields
+ */
+const FakeAutoCompleteInputs = ({ fields }) => fields.map(({ name, type }) => {
+    const fakeName = `fake-${name}`;
+
+    return (
+        <input
+            key={fakeName}
+            name={fakeName}
+            style={{display: 'none'}}
+            type={type} />
+    );
+});
+
+const Form = React.createClass({
     propTypes: {
-        url: React.PropTypes.string,
-        method: React.PropTypes.string,
-        buttonSubmitText: React.PropTypes.string,
-        handleSuccess: React.PropTypes.func,
-        getFormData: React.PropTypes.func,
-        children: React.PropTypes.oneOfType([
-            React.PropTypes.object,
-            React.PropTypes.array
-        ]),
-        className: React.PropTypes.string,
-        spinner: React.PropTypes.element,
-        buttons: React.PropTypes.oneOfType([
-            React.PropTypes.element,
-            React.PropTypes.arrayOf(React.PropTypes.element)
-        ]),
+        children: node.required,
 
-        // Can be used to freeze the whole form
-        disabled: React.PropTypes.bool,
-
-        // You can use the form for inline requests, like the submit click on a button.
-        // For the form to then not display the error on top, you need to enable this option.
-        // It will make use of the GlobalNotification
-        isInline: React.PropTypes.bool,
-
-        autoComplete: React.PropTypes.string,
-
-        onReset: React.PropTypes.func
+        autoComplete: bool,
+        buttons: node,
+        buttonCancelText: string,
+        buttonSubmitText: string,
+        className: string,
+        disabled: bool, // Can be used to freeze the whole form
+        fakeAutoCompleteFields: arrayOf(shape({
+            name: string,
+            type: string
+        })),
+        header: string,
+        onError: func,
+        onSubmit: func
     },
 
     getDefaultProps() {
         return {
-            method: 'post',
+            buttonCancelText: 'CANCEL',
             buttonSubmitText: 'SAVE',
-            autoComplete: 'off'
+            fakeAutoCompleteFields: [{
+                name: 'username',
+                type: 'text'
+            }, {
+                name: 'password',
+                type: 'password'
+            }]
         };
     },
 
     getInitialState() {
         return {
             edited: false,
-            submitted: false,
-            errors: []
+            formData: {}
         };
     },
 
@@ -68,170 +75,78 @@ let Form = React.createClass({
     },
 
     reset() {
-        // If onReset prop is defined from outside,
-        // notify component that a form reset is happening.
-        if(typeof this.props.onReset === 'function') {
-            this.props.onReset();
-        }
+        // Reset child Properties too
+        const initialFormData = Object.entries(this._refs).reduce((formData, [name, propertyRef]) => {
+            formData[name] = propertyRef.reset();
+        }, {});
 
-        for(let ref in this._refs) {
-            if(typeof this._refs[ref].reset === 'function') {
-                this._refs[ref].reset();
-            }
-        }
-        this.setState(this.getInitialState());
-    },
-
-    submit(event){
-        if(event) {
-            event.preventDefault();
-        }
-
-        this.setState({submitted: true});
-        this.clearErrors();
-
-        // selecting http method based on props
-        if(this[this.props.method] && typeof this[this.props.method] === 'function') {
-            window.setTimeout(() => this[this.props.method](), 100);
-        } else {
-            throw new Error('This HTTP method is not supported by form.js (' + this.props.method + ')');
-        }
-    },
-
-    post() {
-        requests
-            .post(this.props.url, { body: this.getFormData() })
-            .then(this.handleSuccess)
-            .catch(this.handleError);
-    },
-
-    put() {
-        requests
-            .put(this.props.url, { body: this.getFormData() })
-            .then(this.handleSuccess)
-            .catch(this.handleError);
-    },
-
-    patch() {
-        requests
-            .patch(this.props.url, { body: this.getFormData() })
-            .then(this.handleSuccess)
-            .catch(this.handleError);
-    },
-
-    delete() {
-        requests
-            .delete(this.props.url, this.getFormData())
-            .then(this.handleSuccess)
-            .catch(this.handleError);
-    },
-
-    getFormData() {
-        let data = {};
-
-        for (let refName in this._refs) {
-            const ref = this._refs[refName];
-
-            if (ref.state && 'value' in ref.state) {
-                // An input can also provide an `Object` as a value
-                // which we're going to merge with `data` (overwrites)
-                if(ref.state.value && ref.state.value.constructor === Object) {
-                    Object.assign(data, ref.state.value);
-                } else {
-                    data[ref.props.name] = ref.state.value;
-                }
-            }
-        }
-
-        if (typeof this.props.getFormData === 'function') {
-            data = Object.assign(data, this.props.getFormData());
-        }
-
-        return data;
-    },
-
-    handleChangeChild(){
-        this.setState({ edited: true });
-    },
-
-    handleSuccess(response){
-        if(typeof this.props.handleSuccess === 'function') {
-            this.props.handleSuccess(response);
-        }
-
-        for(let ref in this._refs) {
-            if(this._refs[ref] && typeof this._refs[ref].handleSuccess === 'function'){
-                this._refs[ref].handleSuccess(response);
-            }
-        }
         this.setState({
             edited: false,
-            submitted: false
+            formData: initialFormData
         });
     },
 
-    handleError(err) {
-        if (err.json) {
-            for (let input in err.json.errors){
-                if (this._refs && this._refs[input] && this._refs[input].state) {
-                    this._refs[input].setErrors(err.json.errors[input]);
-                } else {
-                    this.setState({errors: this.state.errors.concat(err.json.errors[input])});
-                }
-            }
+    onSubmit(event) {
+        const { onError, onSubmit } = this.props;
+        const errors = this.validate();
+
+        event.preventDefault();
+
+        if (Object.keys(errors).length) {
+            safeInvoke(onError, errors);
         } else {
-            let formData = this.getFormData();
-
-            // sentry shouldn't post the user's password
-            if (formData.password) {
-                delete formData.password;
-            }
-
-            console.logGlobal(err, formData);
-
-            if (this.props.isInline) {
-                let notification = new GlobalNotificationModel(getLangText('Something went wrong, please try again later'), 'danger');
-                GlobalNotificationActions.appendGlobalNotification(notification);
-            } else {
-                this.setState({errors: [getLangText('Something went wrong, please try again later')]});
-            }
+            //FIXME: this could be .then(handleSuccess) if we use the object notation for safeInvoke
+            safeInvoke(onSubmit, this.getFormData(), handleSuccess);
         }
-
-        this.setState({submitted: false});
     },
 
-    clearErrors() {
-        for(let ref in this._refs){
-            if (this._refs[ref] && typeof this._refs[ref].clearErrors === 'function'){
-                this._refs[ref].clearErrors();
+    getFormData() {
+        return this.state.formData;
+    },
+
+    onPropertyChange(name) {
+        return (value) => {
+            const formData = update(this.state.formData, {
+                [name]: { $set: value }
+            });
+
+            const newState = { formData };
+            if (!this.state.edited) {
+                newState.edited = true
             }
+
+            this.setState(newState);
         }
-        this.setState({errors: []});
+    },
+
+    handleSuccess(response) {
+        // Let each Property know that a form submission was successful, so they should update
+        // their initial values
+        Object.values(this._refs).forEach((propertyRef) => propertyRef.handleSuccess(response));
     },
 
     getButtons() {
-        if (this.state.submitted) {
-            return this.props.spinner;
-        }
-        if (this.props.buttons !== undefined) {
-            return this.props.buttons;
+        const { buttons, buttonSubmitText, buttonCancelText, disabled } = this.props;
+
+        if (buttons !== undefined) {
+            return buttons;
         }
 
-        if (this.state.edited && !this.props.disabled) {
+        //FIXME: probably need a ButtonGroup component or something that will add spacing between the buttons
+        if (this.state.edited && !disabled) {
             return (
-                <div className="row" style={{margin: 0}}>
-                    <p className="pull-right">
-                        <Button
-                            className="btn btn-default btn-sm ascribe-margin-1px"
-                            type="submit">
-                            {this.props.buttonSubmitText}
+                <div styleName='button-row'>
+                    <div className="pull-right">
+                        <Button type="submit">
+                            {buttonSubmitText}
                         </Button>
                         <Button
-                            className="btn btn-danger btn-delete btn-sm ascribe-margin-1px"
-                            type="reset">
-                            {getLangText('CANCEL')}
+                            classType="tertiary"
+                            onClick={this.reset}
+                            type="button">
+                            {buttonCancelText}
                         </Button>
-                    </p>
+                    </div>
                 </div>
             );
         } else {
@@ -239,157 +154,63 @@ let Form = React.createClass({
         }
     },
 
-    getErrors() {
-        let errors = null;
-        if (this.state.errors.length > 0){
-            errors = this.state.errors.map((error) => {
-                return <AlertDismissable error={error} key={error}/>;
-            });
-        }
-        return errors;
-    },
-
     renderChildren() {
         const { children, disabled } = this.props;
 
-        return ReactAddons.Children.map(children, (child, i) => {
-            if (child) {
-                return React.cloneElement(child, {
-                    ref: (ref) => {
-                        if (child.props.name) {
-                            this._refs[child.props.name] = ref;
-                        }
+        return React.Children.map(children, (child) => {
+            // Only register child Properties with this form
+            if (child && child.type === Property) {
+                const { props: { disabled: childDisabled, name, overrideForm } } = child;
 
-                        // Since refs will be overwritten by this functions return statement,
-                        // we still want to be able to define refs for nested `Form` or `Property`
-                        // children, which is why we're upfront simply invoking the callback-ref-
-                        // function before overwriting it.
-                        if (typeof child.ref === 'function') {
-                            child.ref(ref);
-                        }
+                return React.cloneElement(child, {
+                    key: name,
+                    ref: (ref) => {
+                        this._refs[name] = ref;
+
+                        // By attaching refs to the child from this component, we're overwriting any
+                        // already attached refs to the child from parent components. Since we'd still
+                        // like parents to be able to attach refs to nested `Form` or `Property`s,
+                        // we need to invoke their callback refs with our refs here.
+                        safeInvoke(child.ref, ref);
                     },
-                    // We need this in order to make editable be overridable when setting it directly
-                    // on Property
-                    editable: child.props.overrideForm ? child.props.editable : !disabled,
-                    handleChange: this.handleChangeChild,
-                    key: i
+                    // Allow the child to override the default disabled status of the form
+                    disabled: overrideForm ? childDisabled: disabled,
+                    onChange: this.onPropertyChange(name)
                 });
             }
         });
     },
 
-    /**
-     * All webkit-based browsers are ignoring the attribute autoComplete="off",
-     * as stated here: http://stackoverflow.com/questions/15738259/disabling-chrome-autofill/15917221#15917221
-     * So what we actually have to do is depended on whether or not this.props.autoComplete is set to "on" or "off"
-     * insert two fake hidden inputs that mock password and username so that chrome/safari is filling those
-     */
-    getFakeAutocompletableInputs() {
-        if(this.props.autoComplete === 'off') {
-            return (
-                <span>
-                    <input style={{display: 'none'}} type="text" name="fakeusernameremembered"/>
-                    <input style={{display: 'none'}} type="password" name="fakepasswordremembered"/>
-                </span>
-            );
-        } else {
-            return null;
-        }
-    },
-
-    /**
-     * Validates a single ref and returns a human-readable error message
-     * @param  {object} refToValidate A customly constructed object to check
-     * @return {oneOfType([arrayOf(string), bool])} Either an error message or false, saying that
-     * everything is valid
-     */
-    _hasRefErrors(refToValidate) {
-        let errors = Object
-            .keys(refToValidate)
-            .reduce((a, constraintKey) => {
-                const contraintValue = refToValidate[constraintKey];
-
-                if(!contraintValue) {
-                    switch(constraintKey) {
-                        case 'min' || 'max':
-                            a.push(getLangText('The field you defined is not in the valid range'));
-                            break;
-                        case 'pattern':
-                            a.push(getLangText('The value you defined is not matching the valid pattern'));
-                            break;
-                        case 'required':
-                            a.push(getLangText('This field is required'));
-                            break;
-                    }
-                }
-
-                return a;
-            }, []);
-
-        return errors.length ? errors : false;
-    },
-
-    /**
-     * This method validates all child inputs of the form.
-     *
-     * As of now, it only considers
-     * - `max`
-     * - `min`
-     * - `pattern`
-     * - `required`
-     *
-     * The idea is to enhance this method everytime we need more thorough validation.
-     * So feel free to add props that additionally should be checked, if they're present
-     * in the input's props.
-     *
-     * @return {[type]} [description]
-     */
+    // Validate all child Properties we're keeping track of
     validate() {
-        this.clearErrors();
-        const validatedFormInputs = {};
+        return Object.entries(this._refs).reduce((errors, [name, propertyRef]) => {
+            const error = propertyRef.validate();
 
-        Object
-            .keys(this._refs)
-            .forEach((refName) => {
-                let refToValidate = {};
-                const property = this._refs[refName];
-                const input = property.refs.input;
-                const value = input.getDOMNode().value || input.state.value;
-                const { max,
-                        min,
-                        pattern,
-                        required,
-                        type } = input.props;
+            if (error) {
+                errors[name] = error;
+            }
 
-                refToValidate.required = required ? value : true;
-                refToValidate.pattern = pattern && typeof value === 'string' ? value.match(pattern) : true;
-                refToValidate.max = type === 'number' ? parseInt(value, 10) <= max : true;
-                refToValidate.min = type === 'number' ? parseInt(value, 10) >= min : true;
-
-                const validatedRef = this._hasRefErrors(refToValidate);
-                validatedFormInputs[refName] = validatedRef;
-            });
-        const errorMessagesForRefs = sanitize(validatedFormInputs, (val) => !val);
-        this.handleError({ json: { errors: errorMessagesForRefs } });
-        return !Object.keys(errorMessagesForRefs).length;
+            return errors;
+        }, {});
     },
 
     render() {
-        let className = 'ascribe-form';
+        const { autoComplete, className, fakeAutoCompleteFields, header } = this.props;
 
-        if(this.props.className) {
-            className += ' ' + this.props.className;
-        }
+        const fakeAutoCompleteInputs = autoComplete ? (
+            <FakeAutoCompleteInputs fields={fakeAutoCompleteFields} />
+        ) : null;
+
+        const headerElement = header ? (<h3 styleName="header">{header}</h3>) : null;
 
         return (
             <form
-                role="form"
+                autoComplete={autoComplete ? 'on' : 'off'}
                 className={className}
-                onSubmit={this.submit}
-                onReset={this.reset}
-                autoComplete={this.props.autoComplete}>
-                {this.getFakeAutocompletableInputs()}
-                {this.getErrors()}
+                onSubmit={this.onSubmit}
+                role="form">
+                {headerElement}
+                {fakeAutoCompleteInputs}
                 {this.renderChildren()}
                 {this.getButtons()}
             </form>
@@ -397,4 +218,4 @@ let Form = React.createClass({
     }
 });
 
-export default Form;
+export default CssModules(Form, styles);
