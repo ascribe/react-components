@@ -10,7 +10,16 @@ styleLoaders:
 preBootstrapCustomizations: ./modules/styles/bootstrap_defaults.scss
 
 styles:
-    buttons: true
+    # Always needs to be included
     mixins: true
+
+    # Normalize
+    normalize: true
+
+    # Selected stylesheets
+    buttons: true
+    forms: true
+    grid: true
+    panels: true
 
 scripts: false
