@@ -581,12 +581,14 @@ const ReactS3FineUploader = React.createClass({
      *                               to be this component's tracked files.
      */
     transformUploaderFiles(transformFn) {
-        if (typeof transformFn !== 'function') {
-            throw new Error('Argument given as the transform function to transformUploaderFiles was not a function');
-        }
-
         // Give a new array to transformFn so users don't have to worry about not mutating our internal state
-        const transformedFiles = transformFn(Array.from(this.state.filesToUpload));
+        const copiedFilesList = Array.from(this.state.filesToUpload);
+
+        const { result: transformedFiles } = safeInvoke({
+            fn: transformFn,
+            params: [copiedFilesList],
+            error: new Error('Argument given as the transform function to transformUploaderFiles was not a function')
+        });
 
         if (!Array.isArray(transformedFiles)) {
             throw new Error('Returned transformation of uploaded files is not an array.');
@@ -606,12 +608,13 @@ const ReactS3FineUploader = React.createClass({
             });
         }
 
-        if (typeof this.props.onAllComplete === 'function') {
-            const succeededFiles = succeeded.map((succeededId) => filesToUpload[succeededId]);
-            const failedFiles = failed.map((failedId) => filesToUpload[failedId]);
-
-            this.props.onAllComplete(succeededFiles, failedFiles);
-        }
+        safeInvoke({
+            fn: this.props.onAllComplete,
+            params: () => [
+                succeeded.map((succeededId) => filesToUpload[succeededId]),
+                failed.map((failedId) => filesToUpload[failedId])
+            ]
+        });
     },
 
     onAutoRetry(fileId, name, attemptNumber) {
@@ -822,15 +825,14 @@ const ReactS3FineUploader = React.createClass({
             // FineUploader's deleteFile does not return a callback or promise
             uploader.deleteFile(fileId);
         } else {
-            if (handleDeleteOnlineFile === 'function') {
-                handleDeleteOnlineFile(fileToDelete)
-                    .then(() => this.onDeleteComplete(fileId, null, false))
-                    .catch(() => this.onDeleteComplete(fileId, null, true));
-            } else {
-                throw new Error(`ReactS3FineUploader cannot delete file (${fileToDelete.name}) ` +
-                                'originating from a previous session because ' +
-                                'handleDeleteOnlineFile() was not was specified as a prop.');
-            }
+            safeInvoke({
+                fn: handleDeleteOnlineFile,
+                params: [fileToDelete],
+                error: new Error(`ReactS3FineUploader cannot delete file (${fileToDelete.name}) ` +
+                                 'originating from a previous session because ' +
+                                 'handleDeleteOnlineFile() was not was specified as a prop.')
+            }).result.then(() => this.onDeleteComplete(fileId, null, false))
+                     .catch(() => this.onDeleteComplete(fileId, null, true));
         }
 
         // We set the files state to 'deleted' immediately, so that the user is not confused with
