@@ -79,7 +79,8 @@ const Form = React.createClass({
     getInitialState() {
         return {
             edited: false,
-            formData: {}
+            formData: {},
+            submitting: false
         };
     },
 
@@ -96,7 +97,8 @@ const Form = React.createClass({
 
         this.setState({
             edited: false,
-            formData: initialFormData
+            formData: initialFormData,
+            submitting: false
         });
     },
 
@@ -109,8 +111,14 @@ const Form = React.createClass({
         if (Object.keys(errors).length) {
             safeInvoke(onError, errors);
         } else {
-            //FIXME: this could be .then(handleSuccess) if we use the object notation for safeInvoke
-            safeInvoke(onSubmit, this.getFormData(), handleSuccess);
+            const { invoked, result } = safeInvoke(onSubmit, this.getFormData());
+
+            if (invoked) {
+                result.then(handleSubmitComplete((propertyRef) => propertyRef.handleSubmitSuccess()))
+                      .catch(handleSubmitComplete((propertyRef) => propertyRef.handleSubmitFailure()));
+            }
+
+            this.setState({ submitting: true });
         }
     },
 

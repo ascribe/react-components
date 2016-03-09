@@ -9,27 +9,32 @@ import { noop, safeInvoke } from '../../utils/general_utils';
 //FIXME: import styles
 
 
-const { bool, func, string } = React.PropTypes;
+const { bool, element, func, node, shape, string } = React.PropTypes;
 
-const PropertyLabel = CssModules(({ error, label }) => (
+const PropertyLabel = ({ error, label }) => (
     <p>
         <span className="pull-left">{label}</span>
         <span className="pull-right">{error}</span>
     </p>
-), style);
+);
 
 const Property = React.createClass({
     propTypes: {
-        children: node.isRequired,
+        children: element.isRequired,
         name: string.isRequired,
 
         autoFocus: bool,
+        checkbox: shape({
+            label: string,
+            show: bool
+        }),
         className: string,
+        createErrorMessage: func,
         disabled: bool,
 
         // For `expanded` there are actually three use cases:
         //
-        // 1. Completely control its value from the outside (did not define `showCheckbox` prop)
+        // 1. Completely control its value from the outside (did not define `checkbox.show` prop)
         // 2. Let it be controlled from the inside (default value can be set though via `expanded`)
         // 3. Let it be controlled from a parent / child by using `setExpanded` (`expanded` must
         //    not be set from the outside as a prop then(!!!))
@@ -40,7 +45,6 @@ const Property = React.createClass({
         label: string,
         onBlur: func,
         onChange: func,
-        onError: func,
         onFocus: func,
 
         // By default Properties will use the Form's `disabled` prop to determine if they should
@@ -48,17 +52,15 @@ const Property = React.createClass({
         // with this Property's `disabled` prop.
         // Note that this prop is only used in the Form when it registers Properties, so it is
         // not used elsewhere in this component.
-        overrideForm: bool,
-
-        showCheckbox: string
+        overrideForm: bool
     },
 
     getDefaultProps() {
         return {
-            expanded: true,
-            onError: (error) => {
-                switch (error) {
-                  case 'min' || 'max:
+            checkbox: {},
+            createErrorMessage: (errorProp) => {
+                switch (errorProp) {
+                  case 'min' || 'max':
                     return 'The field you defined is not in the valid range';
                   case 'pattern':
                     return 'The value you defined is not matching the valid pattern';
@@ -67,16 +69,17 @@ const Property = React.createClass({
                   default:
                     return null;
                 }
-            }
+            },
+            expanded: true
         };
     },
 
     getInitialState() {
-        const { expanded, ignoreFocus, showCheckbox } = this.props;
+        const { checkbox: { show: showCheckbox }, expanded, ignoreFocus } = this.props;
 
         return {
             // Mirror expanded here to set the initial state.
-            // This an antipattern as long as it's not a "source of truth"-duplication
+            // This isn't an antipattern as long as it's not a "source of truth"-duplication
             expanded,
 
             // If a showCheckbox is defined in the props, set `ignoreFocus` to true to avoid
@@ -89,7 +92,7 @@ const Property = React.createClass({
             // child input also being mounted.
             initialValue: null,
 
-            error: null,
+            errorMessage: null,
             hasWarning: false,
             isFocused: false,
             value: null
@@ -109,6 +112,8 @@ const Property = React.createClass({
         const initialValue = this.getValueOfInputElement();
 
         if (initialValue) {
+            // We need to wait until componentDidMount to set this state as we have to wait for
+            // the input element to render
             this.setState({
                 initialValue,
                 value: initialValue
@@ -117,17 +122,18 @@ const Property = React.createClass({
     },
 
     componentWillReceiveProps(nextProps) {
+        const { checkbox: { show: showCheckbox } } = this.props;
         const newState = {};
 
         // Handle the case where `expanded` is changed from outside and there's no checkbox
         // controlling the `expanded` state
-        if (nextProps.expanded !== this.state.expanded && !this.props.showCheckbox) {
+        if (nextProps.expanded !== this.state.expanded && !showCheckbox) {
             newState.expanded = nextProps.expanded;
         }
 
         // Handle the case where `ignoreFocus` is changed from outside and we're not ignoring it
         // for the checkbox
-        if (nextProps.ignoreFocus !== this.state.ignoreFocus && !this.props.showCheckbox) {
+        if (nextProps.ignoreFocus !== this.state.ignoreFocus && !showCheckbox) {
             newState.ignoreFocus = nextProps.ignoreFocus;
         }
 
@@ -183,7 +189,14 @@ const Property = React.createClass({
         this.setState({ isFocused: false }, () => safeInvoke(this.props.onBlur, event));
     },
 
-    handleSuccess() {
+    handleSubmitFailure() {
+        // If submission failed, just unfocus any properties in the form
+        this.setState({
+            isFocused: false
+        });
+    },
+
+    handleSubmitSuccess() {
         this.setState({
             isFocused: false,
 
@@ -195,6 +208,8 @@ const Property = React.createClass({
     getValueOfInputElement() {
         const { input: { getValue = noop, value } = {} } = this._refs;
 
+        // If it's not a native input element, we expect the input element to have a `getValue()`
+        // method that will let us get its value.
         return value || getValue();
     },
 
@@ -203,14 +218,14 @@ const Property = React.createClass({
     },
 
     getClassName() {
-        const { disabled, showCheckbox } = this.props;
-        const { error, expanded, hasWarning, isFocused } = this.state;
+        const { checkbox: { show: showCheckbox }, disabled } = this.props;
+        const { errorMessage, expanded, hasWarning, isFocused } = this.state;
 
         if (!expanded && !showCheckbox) {
             return 'is-hidden';
         } else if (disabled) {
             return 'is-fixed';
-        } else if (error) {
+        } else if (errorMessage) {
             return 'is-error';
         } else if (hasWarning) {
             return 'is-warning';
@@ -241,7 +256,7 @@ const Property = React.createClass({
     },
 
     renderChildren() {
-        const { children, disabled, name, showCheckbox } = this.props;
+        const { checkbox: { show: showCheckbox }, children, disabled, name } = this.props;
         const { expanded, value } = this.state;
 
         // We don't need to clone the input with our handlers unless it's actually being shown
@@ -272,9 +287,8 @@ const Property = React.createClass({
         }
     },
 
-    //FIXME
     getCheckbox() {
-        const { name, showCheckbox } = this.props;
+        const { checkbox: { label: checkboxLabel, show: showCheckbox }, name } = this.props;
 
         if (showCheckbox) {
             return (
@@ -282,11 +296,11 @@ const Property = React.createClass({
                     className="ascribe-property-collapsible-toggle"
                     onClick={this.handleCheckboxToggle}>
                     <input
-                        name={`${name}-checkbox`}
                         checked={this.state.expanded}
+                        name={`${name}-checkbox`}
                         onChange={this.handleCheckboxToggle}
                         type="checkbox" />
-                    <span className="checkbox">{' ' + showCheckbox}</span>
+                    <span className="checkbox">&nbsp;{checkboxLabel}</span>
                 </div>
             );
         } else {
@@ -296,27 +310,26 @@ const Property = React.createClass({
 
     validate() {
         if (this._ref.input) {
-            const error = validateInput(this._ref.input, this.getValueOfInputElement());
+            const errorProp = validateInput(this._ref.input, this.getValueOfInputElement());
 
-            if (error) {
-                //FIXME: use safeInvoke
-                if (typeof this.props.onError === 'function') {
-                    this.setState({
-                        error: this.props.onError(error)
-                    });
+            if (errorProp) {
+                const { invoked, result: errorMessage } = safeInvoke(this.props.createErrorMessage, errorProp);
 
-                    return error;
+                if (invoked && errorMessage) {
+                    this.setState({ errorMessage });
                 }
+
+                return errorProp;
             }
         }
     },
 
     render() {
         const { className, footer, label } = this.props;
-        const { error, expanded } = this.state;
+        const { errorMessage, expanded } = this.state;
 
-        const labelElement = label || error ? (
-            <PropertyLabel error={error} label={label} />
+        const labelElement = label || errorMessage ? (
+            <PropertyLabel error={errorMessage} label={label} />
         ) : null;
 
         const footerElement = footer ? (
