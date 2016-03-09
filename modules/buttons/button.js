@@ -1,16 +1,14 @@
 import React from 'react';
 import CssModules from 'react-css-modules';
 
-import { childrenType } from '../utils/prop_types';
-
 import styles from './button.scss';
 
 
-const { bool, oneOf, string } = React.PropTypes;
+const { bool, node, oneOf, string } = React.PropTypes;
 
 const Button = React.createClass({
     propTypes: {
-        children: childrenType,
+        children: node,
         className: string,
         classType: oneOf(['primary', 'secondary', 'tertiary']),
         size: oneOf(['xs', 'sm', 'md', 'lg']),

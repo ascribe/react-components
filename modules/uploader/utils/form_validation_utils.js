@@ -1,3 +1,5 @@
+import { processingFilter, successfullyUploadedFilter } from './file_filters';
+
 import FileStatus from '../file_status';
 
 /**
@@ -7,13 +9,7 @@ import FileStatus from '../file_status';
  * @return {boolean}
  */
 export function atLeastOneUploadedFile(files) {
-    files = files.filter((file) => {
-        return file.status !== FileStatus.DELETED &&
-               file.status !== FileStatus.CANCELED &&
-               file.status !== FileStatus.UPLOADED_FAILED
-    });
-
-    return files.length && files[0].status === FileStatus.UPLOAD_SUCCESSFUL;
+    return files.filter(successfullyUploadedFilter).length > 0;
 }
 
 /**
@@ -23,7 +19,5 @@ export function atLeastOneUploadedFile(files) {
  * @return {boolean}       [description]
  */
 export function fileOptional(files) {
-    const uploadingFiles = files.filter((file) => file.status === FileStatus.SUBMITTING);
-
-    return uploadingFiles.length === 0;
+    return files.filter(processingFilter).length === 0;
 }

@@ -28,15 +28,11 @@ const FileInput = React.createClass({
         }
 
         evt.stopPropagation();
-        this.getInputElement().dispatchEvent(evt);
-    },
-
-    getInputElement() {
-        return this.refs.inputElement;
+        this.refs.inputElement.dispatchEvent(evt);
     },
 
     reset() {
-        this.getInputElement().value = '';
+        this.refs.inputElement.value = '';
     },
 
     render() {

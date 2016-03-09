@@ -1,14 +1,34 @@
 import FileStatus from '../file_status';
 
 /**
+ * Filter function for filtering out currently processing files
+ * (ie. still uploading, deleting, in queue, or paused)
+ * @param  {object}  file  A file from filesToUpload, that has a status as a prop.
+ * @return {boolean}       True if file is still getting processed
+ */
+export function processingFilter(file) {
+    return file.status === FileStatus.DELETING ||
+           file.status === FileStatus.PAUSED ||
+           file.status === FileStatus.QUEUED ||
+           file.status === FileStatus.SUBMITTING ||
+           file.status === FileStatus.SUBMITTED ||
+           file.status === FileStatus.UPLOADING ||
+           file.status === FileStatus.UPLOAD_RETRYING;
+}
+/**
  * Filter function for filtering out successfully uploaded files
- * @param  {object} file  A file from filesToUpload, that has a status as a prop.
- * @return {boolean}      True if file was uploaded successfully
+ * @param  {object}  file  A file from filesToUpload, that has a status as a prop.
+ * @return {boolean}       True if file was uploaded successfully
  */
 export function successfullyUploadedFilter(file) {
     return file.status === FileStatus.UPLOAD_SUCCESSFUL;
 }
 
+/**
+ * Filter function for filtering out currently uploaded files
+ * @param  {object}  file  A file from filesToUpload, that has a status as a prop.
+ * @return {boolean}       True if file is still uploading
+ */
 export function uploadingFilter(file) {
     return file.status === FileStatus.UPLOADING ||
            file.status === FileStatus.UPLOAD_RETRYING;
