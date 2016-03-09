@@ -1,0 +1,130 @@
+@import '../styles/colors.scss';
+@import '../styles/mixins/buttons.scss';
+
+.base {
+    composes: btn btn-default from global;
+    border-radius: 0;
+}
+
+.xs {
+    composes: btn-xs from global;
+}
+
+.sm {
+    composes: btn-sm from global;
+}
+
+.lg {
+    composes: btn-lg from global;
+}
+
+.wide {
+    font-size: 1.2em;
+    padding: 0.5em;
+    text-align: center;
+    width: 100%;
+
+    &[disabled],
+    &:global(.disabled) {
+        opacity: 0.3;
+    }
+}
+
+/**
+ * Overridden button style classes.
+ * Other sizes are available as {classType}-{size}, {classType}-wide, and {classType}-{size}-wide,
+ * where
+ *   size: one of xs, sm, lg
+ */
+.primary {
+    composes: base;
+
+    $bg-color: $ascribe-colors--primary-bg;
+    $bg-activated-color: lighten($bg-color, 20%);
+    $bg-disabled-color: darken($bg-color, 20%);
+    $fg-color: $ascribe-colors--primary-fg;
+
+    background-color: $bg-color;
+    border-color: $bg-color;
+    color: $fg-color;
+
+    // Activated states
+    @include ascribe-button--activated {
+        background-color: $bg-activated-color;
+        border-color: $bg-activated-color;
+        color: $fg-color;
+    }
+
+    // Disabled states
+    @include ascribe-button--disabled {
+        background-color: $bg-disabled-color;
+        border-color: $bg-disabled-color;
+        color: $fg-color;
+    }
+
+    // Sizes
+    @include ascribe-button--size-exploder(primary, xs, sm, lg);
+}
+
+.secondary {
+    composes: base;
+
+    background-color: $ascribe-colors--primary-fg;
+    border-color: $ascribe-colors--primary-bg;
+    color: $ascribe-colors--primary-bg;
+
+    // Activated states
+    @include ascribe-button--activated {
+        background-color: $ascribe-colors--primary-bg;
+        border-color: $ascribe-colors--primary-fg;
+        color: $ascribe-colors--primary-fg;
+    }
+
+    // Disabled states
+    @include ascribe-button--disabled {
+        background-color: darken($ascribe-colors--primary-fg, 20%);
+        border-color: darken($ascribe-colors--primary-bg, 20%);
+        color: darken($ascribe-colors--primary-bg, 20%);
+    }
+
+    // Sizes
+    @include ascribe-button--size-exploder(secondary, xs, sm, lg);
+}
+
+.tertiary {
+    composes: base;
+
+    background-color: transparent;
+    border-color: transparent;
+    color: $ascribe-colors--primary-bg;
+
+    // Activated states
+    &:focus,
+    &:active:focus,
+    &:active:global(.focus),
+    &:global(.active):focus,
+    &:global(.active.focus) {
+        background-color: transparent;
+        border-color: transparent;
+        color: $ascribe-colors--primary-bg;
+    }
+
+    &:hover,
+    &:active,
+    &:active:hover,
+    &:global(.active):hover {
+        background-color: $ascribe-colors--pink;
+        border-color: $ascribe-colors--pink;
+        color: $ascribe-colors--white;
+    }
+
+    // Disabled states
+    @include ascribe-button--disabled {
+        background-color: darken($ascribe-colors--primary-fg, 20%);
+        border-color: darken($ascribe-colors--primary-bg, 20%);
+        color: darken($ascribe-colors--primary-bg, 20%);
+    }
+
+    // Sizes
+    @include ascribe-button--size-exploder(tertiary, xs, sm, lg);
+}

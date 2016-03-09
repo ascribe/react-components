@@ -1,0 +1,16 @@
+---
+bootstrapVersion: 3
+
+styleLoaders:
+    - style
+    - css?sourceMap
+    - postcss
+    - sass?sourceMap&output=expanded&precision=8
+
+preBootstrapCustomizations: ./modules/styles/bootstrap_defaults.scss
+
+styles:
+    buttons: true
+    mixins: true
+
+scripts: false

@@ -17,6 +17,8 @@ Usage Dependencies
 * React-addon-update >= 0.14 (should be same version as React)
 * [Babel-polyfill](https://babeljs.io/docs/usage/polyfill/) (cause babel can't statically transform 'em all)
 * CSS Modules, with [React CSS Modules](https://github.com/gajus/react-css-modules)
+* [Bootstrap 3](http://getbootstrap.com/) -- see [.bootstraprc](./.bootstraprc)
+  and [Bootstrap-loader](https://github.com/shakacode/bootstrap-loader)
 
 Because of the dependency on CSS Modules, you should be using a module
 bundler that can support CSS Modules (see [webpack](https://github.com/webpack/webpack),
@@ -26,6 +28,20 @@ then configure the tools to include this library.
 
 If you're stuck with a bundler that doesn't support CSS Modules or don't
 care to set it up, you can use the bundled `dist/` files instead.
+
+### Bootstrap
+
+In an optimal version of this world, where everything would just
+work, it'd be sweet if we could load our global CSS dependecies without
+their names being mangled by CSS Modules by just declaring them in the
+same CSS Modules file we composed / needed them from. However, as this
+obviously isn't the case, we're left with using
+[Bootstrap-loader](https://github.com/shakacode/bootstrap-loader) to
+load this external CSS without CSS Modulifying it first.
+
+In the future, it'd be nice to write a PostCSS plugin that could detect
+if you meant to import a file as a global dependency, not a local one.
+
 
 Usage
 -----
@@ -141,4 +157,8 @@ npm start
 
 TODO
 ====
+* [ ] Unit tests
+* [ ] Add themable extensions, maybe forking [rethemable](https://github.com/andreypopp/rethemeable)
+* [ } Write PostCSS plugin that understands expanded nested :global
+  block declarations
 * [ ] Upgrade FineUploader, and don't use the commonJS hack

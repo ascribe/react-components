@@ -11,7 +11,7 @@ const HOST_NAME = process.env.DEMO_HOST_NAME || 'localhost';
 const PORT = process.env.DEMO_PORT || 3000;
 
 // Manipulate config for demo server
-// Add demo app to entry
+// Only use demo app for entry
 config.entry = [path.resolve(__dirname, 'demo/app')];
 
 // Enable hot reloading if on demo mode
