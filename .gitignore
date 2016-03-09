@@ -11,10 +11,11 @@
 *.sublime-workspace
 *.sublime-workspace
 
-pids
-logs
-results
+.env
 
 build/*
+dist/*
+es6/*
+lib/*
 
 node_modules/*

@@ -1,5 +1,25 @@
 {
     'presets': ['react'],
-    'plugins': ['transform-runtime', 'transform-react-display-name'],
-    'sourceMaps': true
+    'plugins': [
+        'transform-runtime',
+        'transform-react-display-name',
+        'transform-export-extensions',
+        'transform-object-assign',
+        'transform-object-rest-spread',
+    ],
+    'sourceMaps': true,
+
+    'env': {
+        'demo': {
+            'plugins': [
+                [ 'react-transform', {
+                    'transforms': [{
+                        'transform': 'react-transform-hmr',
+                        'imports': ['react'],
+                        'locals': ['module']
+                    }]
+                } ]
+            ]
+        }
+    }
 }
