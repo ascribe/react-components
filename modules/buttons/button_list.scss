@@ -1,0 +1,29 @@
+.base {
+    composes: row from global;
+    margin: 0;
+}
+
+.button-list {
+    composes: base;
+
+    button {
+        margin-right: 1px;
+    }
+}
+
+.button-list-vertical {
+    composes: base;
+
+    button {
+        display: block;
+        margin-bottom: 1px;
+    }
+
+    /* Since we can't correctly target nested buttons with :not(:last-of-type),
+     * we'll have to make do with hacking the bottom margin of the parent div
+     * to accomodate for it.
+     */
+    > div {
+        margin-bottom: -1px;
+    }
+}

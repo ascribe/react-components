@@ -4,7 +4,7 @@ import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { Button, ButtonContainer } from '../modules/buttons';
+import { Button, ButtonContainer, ButtonList } from '../modules/buttons';
 
 import { FileDragAndDropInput, ReactS3FineUploader, UploadButton } from '../modules/uploader';
 
@@ -81,19 +81,52 @@ const App = () => {
             <h3>Button Container</h3>
             <div>
                 <ButtonContainer>
-                    <button>A button</button>
+                    <Button>A button</Button>
                 </ButtonContainer>
             </div>
             <div>
                 <ButtonContainer label="Container label">
-                    <button>A button with label</button>
+                    <Button>A button with label</Button>
                 </ButtonContainer>
+            </div>
+            <h3>Button List</h3>
+            <div>
+                <ButtonList>
+                    <Button>Button 1</Button>
+                    <Button classType="secondary">Button 2</Button>
+                    <Button classType="tertiary">Button 3</Button>
+                </ButtonList>
+            </div>
+            <h4>Pulled right</h4>
+            <div>
+                <ButtonList pull="right">
+                    <Button>Button 1</Button>
+                    <Button classType="secondary">Button 2</Button>
+                    <Button classType="tertiary">Button 3</Button>
+                </ButtonList>
+            </div>
+            <h4>Vertical</h4>
+            <div>
+                <ButtonList vertical>
+                    <Button>Button 1</Button>
+                    <Button classType="secondary">Button 2</Button>
+                    <Button classType="tertiary">Button 3</Button>
+                </ButtonList>
+            </div>
+            <h4>Vertical pulled right</h4>
+            <div>
+                <ButtonList pull="right" vertical>
+                    <Button>Button 1</Button>
+                    <Button classType="secondary">Button 2</Button>
+                    <Button classType="tertiary">Button 3</Button>
+                </ButtonList>
             </div>
             <h2>Uploader</h2>
             <h3>Upload button</h3>
             <div>
                 <ReactS3FineUploader {...dummyUploaderProps} />
             </div>
+            <h4>Custom upload button</h4>
             <div>
                 <ReactS3FineUploader
                     {...dummyUploaderProps}

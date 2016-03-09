@@ -3,6 +3,7 @@ import update from 'react-addon-update';
 import CssModules from 'react-css-modules';
 
 import Button from '../buttons/button';
+import ButtonList from '../buttons/button_list';
 
 import { safeInvoke } from '../utils/general';
 
@@ -10,6 +11,20 @@ import styles from './form.scss';
 
 
 const { arrayOf, func, node, shape, string } = React.PropTypes;
+
+const DefaultButtonEdited = ({ onCancel }) => (
+    <ButtonList className="pull-right">
+        <Button type="submit">
+            SAVE
+        </Button>
+        <Button
+            classType="tertiary"
+            onClick={onCancel}
+            type="button">
+            CANCEL
+        </Button>
+    </ButtonList>
+);
 
 /**
  * All webkit-based browsers are ignoring the attribute autoComplete="off", as stated here:
@@ -34,9 +49,9 @@ const Form = React.createClass({
         children: node.required,
 
         autoComplete: bool,
-        buttons: node,
-        buttonCancelText: string,
-        buttonSubmitText: string,
+        buttonDefault: node,
+        buttonEdited: node,
+        buttonSubmitting: node,
         className: string,
         disabled: bool, // Can be used to freeze the whole form
         fakeAutoCompleteFields: arrayOf(shape({
@@ -50,8 +65,7 @@ const Form = React.createClass({
 
     getDefaultProps() {
         return {
-            buttonCancelText: 'CANCEL',
-            buttonSubmitText: 'SAVE',
+            buttonEdited: (<DefaultButtonEdited onCancel={this.reset} />),
             fakeAutoCompleteFields: [{
                 name: 'username',
                 type: 'text'
@@ -119,38 +133,24 @@ const Form = React.createClass({
         }
     },
 
-    handleSuccess(response) {
-        // Let each Property know that a form submission was successful, so they should update
-        // their initial values
-        Object.values(this._refs).forEach((propertyRef) => propertyRef.handleSuccess(response));
+    handleSubmitComplete(propertyFn) {
+        return () => {
+            Object.values(this._refs).forEach(propertyFn);
+
+            this.setState({ submitting: false });
+        }
     },
 
     getButtons() {
-        const { buttons, buttonSubmitText, buttonCancelText, disabled } = this.props;
+        const { buttonDefault, buttonEdited, buttonSubmitting, disabled } = this.props;
+        const { edited, submitting } = this.state;
 
-        if (buttons !== undefined) {
-            return buttons;
-        }
-
-        //FIXME: probably need a ButtonGroup component or something that will add spacing between the buttons
-        if (this.state.edited && !disabled) {
-            return (
-                <div styleName='button-row'>
-                    <div className="pull-right">
-                        <Button type="submit">
-                            {buttonSubmitText}
-                        </Button>
-                        <Button
-                            classType="tertiary"
-                            onClick={this.reset}
-                            type="button">
-                            {buttonCancelText}
-                        </Button>
-                    </div>
-                </div>
-            );
+        if (submitting && buttonSubmitting) {
+            return buttonSubmitting;
+        } else if (edited && !disabled && !submitting && buttonEdited) {
+            return buttonEdited;
         } else {
-            return null;
+            return buttonDefault || null;
         }
     },
 
