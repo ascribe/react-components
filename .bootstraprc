@@ -15,6 +15,10 @@ styles:
 
     # Normalize
     normalize: true
+    scaffolding: true
+
+    # Utilities
+    utilities: true
 
     # Selected stylesheets
     buttons: true
