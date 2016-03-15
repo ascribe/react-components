@@ -1,19 +1,32 @@
 /**
  * Add button size permutations to each given size: -wide, -$size, -$size-wide
  * @param $base  Base name of button
+ * @param $from  File to compose sizes from (use null if from same file)
  * @param $sizes Sizes of button
  */
-@mixin ascribe-button--size-exploder($base, $sizes...) {
-    &-wide {
-        composes: $base wide;
+@mixin ascribe-button--size-exploder($base, $from, $sizes...) {
+    .#{$base}-wide {
+        @if $from == null {
+            composes: $base wide;
+        } @else {
+            composes: $base wide from $from;
+        }
     }
 
     @each $size in $sizes {
-        &-#{$size} {
-            composes: $base $size;
+        .#{$base}-#{$size} {
+            @if $from == null {
+                composes: $base $size;
+            } @else {
+                composes: $base $size from $from;
+            }
 
             &-wide {
-                composes: #{$base}-#{$size} wide;
+                @if $from == null {
+                    composes: #{$base}-#{$size} wide;
+                } @else {
+                    composes: #{$base}-#{$size} wide from $from;
+                }
             }
         }
     }

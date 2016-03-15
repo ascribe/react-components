@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import CssModules from 'react-css-modules';
 
 import styles from './button_list.scss';
@@ -17,7 +18,7 @@ const propTypes = {
 const ButtonList = ({ children, className, pull, vertical }) => {
     return (
         <div styleName={vertical ? 'button-list-vertical' : 'button-list'}>
-            <div className={pull ? `pull-${pull}` : null}>
+            <div className={classNames(className, pull ? `pull-${pull}` : null)}>
                 {children}
             </div>
         </div>

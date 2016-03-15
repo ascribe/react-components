@@ -61,9 +61,6 @@
         border-color: $bg-disabled-color;
         color: $fg-color;
     }
-
-    // Sizes
-    @include ascribe-button--size-exploder(primary, xs, sm, lg);
 }
 
 .secondary {
@@ -86,9 +83,6 @@
         border-color: darken($ascribe-colors--primary-fg, 20%);
         color: darken($ascribe-colors--primary-fg, 20%);
     }
-
-    // Sizes
-    @include ascribe-button--size-exploder(secondary, xs, sm, lg);
 }
 
 .tertiary {
@@ -124,7 +118,9 @@
         border-color: darken($ascribe-colors--primary-fg, 20%);
         color: darken($ascribe-colors--primary-fg, 20%);
     }
-
-    // Sizes
-    @include ascribe-button--size-exploder(tertiary, xs, sm, lg);
 }
+
+// Sizes
+@include ascribe-button--size-exploder(primary, null, xs, sm, lg);
+@include ascribe-button--size-exploder(secondary, null, xs, sm, lg);
+@include ascribe-button--size-exploder(tertiary, null, xs, sm, lg);
