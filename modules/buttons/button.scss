@@ -39,10 +39,10 @@
 .primary {
     composes: base;
 
-    $bg-color: $ascribe-colors--primary-bg;
+    $bg-color: $ascribe-colors--primary-fg;
     $bg-activated-color: lighten($bg-color, 20%);
     $bg-disabled-color: darken($bg-color, 20%);
-    $fg-color: $ascribe-colors--primary-fg;
+    $fg-color: $ascribe-colors--primary-bg;
 
     background-color: $bg-color;
     border-color: $bg-color;
@@ -69,22 +69,22 @@
 .secondary {
     composes: base;
 
-    background-color: $ascribe-colors--primary-fg;
-    border-color: $ascribe-colors--primary-bg;
-    color: $ascribe-colors--primary-bg;
+    background-color: $ascribe-colors--primary-bg;
+    border-color: $ascribe-colors--primary-fg;
+    color: $ascribe-colors--primary-fg;
 
     // Activated states
     @include ascribe-button--activated {
-        background-color: $ascribe-colors--primary-bg;
-        border-color: $ascribe-colors--primary-fg;
-        color: $ascribe-colors--primary-fg;
+        background-color: $ascribe-colors--primary-fg;
+        border-color: $ascribe-colors--primary-bg;
+        color: $ascribe-colors--primary-bg;
     }
 
     // Disabled states
     @include ascribe-button--disabled {
-        background-color: darken($ascribe-colors--primary-fg, 20%);
-        border-color: darken($ascribe-colors--primary-bg, 20%);
-        color: darken($ascribe-colors--primary-bg, 20%);
+        background-color: darken($ascribe-colors--primary-bg, 20%);
+        border-color: darken($ascribe-colors--primary-fg, 20%);
+        color: darken($ascribe-colors--primary-fg, 20%);
     }
 
     // Sizes
@@ -96,7 +96,7 @@
 
     background-color: transparent;
     border-color: transparent;
-    color: $ascribe-colors--primary-bg;
+    color: $ascribe-colors--primary-fg;
 
     // Activated states
     &:focus,
@@ -106,7 +106,7 @@
     &:global(.active.focus) {
         background-color: transparent;
         border-color: transparent;
-        color: $ascribe-colors--primary-bg;
+        color: $ascribe-colors--primary-fg;
     }
 
     &:hover,
@@ -120,9 +120,9 @@
 
     // Disabled states
     @include ascribe-button--disabled {
-        background-color: darken($ascribe-colors--primary-fg, 20%);
-        border-color: darken($ascribe-colors--primary-bg, 20%);
-        color: darken($ascribe-colors--primary-bg, 20%);
+        background-color: darken($ascribe-colors--primary-bg, 20%);
+        border-color: darken($ascribe-colors--primary-fg, 20%);
+        color: darken($ascribe-colors--primary-fg, 20%);
     }
 
     // Sizes
