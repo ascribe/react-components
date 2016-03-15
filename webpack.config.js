@@ -71,7 +71,7 @@ const CSS_LOADER = combineLoaders([
         loader: 'css',
         query: {
             modules: true,
-            importLoaders: 1,
+            importLoaders: 2,
             localIdentName: '[path]__[name]__[local]_[hash:base64:5]',
             sourceMap: true
         }
