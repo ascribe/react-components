@@ -17,6 +17,9 @@ const ButtonContainerLabel = CssModules(({ content }) => {
     return content ? (<span styleName="label">{content}</span>) : null;
 }, styles);
 
+ButtonContainerLabel.displayName = 'ButtonContainerLabel';
+
+
 const ButtonContainer = ({ children, className, label }) => (
     <div
         className={className}

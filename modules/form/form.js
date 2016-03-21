@@ -50,6 +50,10 @@ const FakeAutoCompleteInputs = ({ fields }) => (
 
 const FormHeader = CssModules(({ header }) => (<h3 styleName="header">{header}</h3>), styles);
 
+EditedButtonList.displayName = 'EditedButtonList';
+FakeAutoCompleteInputs.displayName = 'FakeAutoCompleteInputs';
+FormHeader.displayName = 'FormHeader';
+
 const Form = React.createClass({
     propTypes: {
         children: node.isRequired,

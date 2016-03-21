@@ -32,6 +32,10 @@ const PropertyLayout = CssModules(({ children, handleFocus, status }) => (
     </div>
 ), styles, { allowMultiple: true });
 
+PropertyFooter.displayName = 'PropertyFooter';
+PropertyLabel.displayName = 'PropertyLabel';
+PropertyLayout.displayName = 'PropertyLayout';
+
 const Property = React.createClass({
     propTypes: {
         children: element.isRequired,
