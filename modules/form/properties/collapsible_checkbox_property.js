@@ -6,7 +6,7 @@ import PropertyExtender from '../utils/property_extender';
 
 import Checkbox from '../../ui/checkbox';
 
-import { omitFromObject, safeInvoke } from '../../utils/general';
+import { safeInvoke } from '../../utils/general';
 import { PropStuffer } from '../../utils/react';
 
 import styles from './collapsible_checkbox_property.scss';
@@ -41,7 +41,18 @@ const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
         // Any props used by the base Property are also passed down
     },
 
-    onExpandToggle(expanding) {
+    componentWillMount() {
+        this.registerHeaderLayout();
+    },
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.disabled !== this.props.disabled ||
+            nextProps.name !== this.props.name) {
+            this.registerHeaderLayout(nextProps);
+        }
+    },
+
+    handleExpandToggle(expanding) {
         // Reset the property to its initial value when the checkbox is unticked (ie. when
         // `expanding` is false) since the user doesn't want to specify their own value for this
         // property.
@@ -52,9 +63,21 @@ const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
         safeInvoke(this.props.onExpandToggle, expanding);
     },
 
+    // Create a cached header type that uses our given props to avoid recreating
+    // CollapsibleProperty's collapsed / expanded layouts on each render
+    registerHeaderLayout(props = this.props) {
+        const { disabled, name } = props;
+
+        this.headerLayout = PropStuffer(PropertyCheckboxHeading, { disabled, name });
+    },
+
     render () {
-        const { checkboxLabel, checked, disabled, name, } = this.props;
-        const propertyProps = omitFromObject(this.props, ['checkboxLabel', 'checked', 'onExpandToggle']);
+        const {
+            checkboxLabel,
+            checked,
+            onExpandToggle: _, // ignore
+            ...propertyProps
+        } = this.props;
 
         return (
             <CollapsibleProperty
@@ -62,8 +85,8 @@ const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
                 {...propertyProps}
                 expanded={!!checked}
                 headerLabel={checkboxLabel}
-                headerType={PropStuffer(PropertyCheckboxHeading, { disabled, name })}
-                onExpandToggle={this.onExpandToggle} />
+                headerType={this.headerLayout}
+                onExpandToggle={this.handleExpandToggle} />
         );
     }
 }));

@@ -97,11 +97,21 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
         }
     },
 
+    componentWillMount() {
+        this.registerLayouts();
+    },
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.expanded !== this.state.expanded) {
             this.setState({
                 expanded: nextProps.expanded
             });
+
+        // If any of the layouts have changed, recreate our collapsed / expanded layout types
+        if (nextProps.headerLabel !== this.props.headerLabel ||
+            nextProps.headerType !== this.props.headerType ||
+            nextProps.layoutType !== this.props.layoutType) {
+            this.registerLayouts(nextProps);
         }
     },
 
@@ -120,6 +130,30 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
                 }
             });
         }
+    },
+
+    // Create a cached collapsed and expanded layout type that composes the types we've been given.
+    // We can't do this on the fly on each render as focus on a child element gets lost whenever
+    // an old / new type is unmounted / mounted in the render.
+    registerLayouts(props = this.props) {
+        const { headerLabel, headerType, layoutType: propertyLayoutType } = props;
+        const additionalProps = {
+            headerLabel,
+            headerType,
+            propertyLayoutType,
+            handleExpandToggle: this.handleExpandToggle
+        };
+
+        // Cache these layouts on the component to avoid recreating a new type on each render
+        // as it removes focus from any child input elements.
+        this.collapsedLayout = PropStuffer(CollapsibleLayout,
+                                           additionalProps,
+                                           'CollapsedPropertyLayout');
+
+        this.expandedLayout = PropStuffer(CollapsibleLayout, {
+            ...additionalProps,
+            expanded: true,
+        }, 'ExpandedPropertyLayout');
     },
 
     renderChildren() {
@@ -144,19 +178,11 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
         } = this.props;
         const { expanded } = this.state;
 
-        const layoutType = PropStuffer(CollapsibleLayout, {
-            expanded,
-            headerLabel,
-            headerType,
-            propertyLayoutType,
-            handleExpandToggle: this.handleExpandToggle
-        }, `${expanded ? 'Expanded' : 'Collapsed'}PropertyLayout`);
-
         return (
             <Property
                 ref="property"
                 {...propertyProps}
-                layoutType={layoutType}>
+                layoutType={expanded ? this.expandedLayout : this.collapsedLayout}
                 style={propertyStyle}>
                 {this.renderChildren()}
             </Property>
