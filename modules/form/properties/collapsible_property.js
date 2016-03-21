@@ -67,8 +67,7 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
         layoutType: func,
 
         /**
-         * Called when the expanded state of this component is changed internally (ie. through
-         * user interaction) rather than by the outside props.
+         * Called when the expanded state of this component is changed.
          *
          * @param {bool} expanding If the property will be expanded or not
          */
@@ -93,7 +92,9 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
             // Mirror the `expanded` prop to set the initial state of `expanded`.
             // This is not an antipattern as it's not a "source-of-truth" duplication
             // (we hereafter always use the `expanded` state rather than the props)
-            expanded: this.props.expanded
+            expanded: this.props.expanded,
+
+            initialExpanded: this.props.expanded
         }
     },
 
@@ -102,10 +103,13 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
     },
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.expanded !== this.state.expanded) {
+        if (nextProps.expanded !== this.props.expanded &&
+            nextProps.expanded !== this.state.expanded) {
             this.setState({
-                expanded: nextProps.expanded
-            });
+                expanded: nextProps.expanded,
+                initialExpanded: nextProps.expanded
+            }, () => { safeInvoke(nextProps.onExpandToggle, nextProps.expanded); });
+        }
 
         // If any of the layouts have changed, recreate our collapsed / expanded layout types
         if (nextProps.headerLabel !== this.props.headerLabel ||
@@ -125,11 +129,33 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
             safeInvoke(onExpandToggle, expanding);
             this.setState({ expanded: expanding }, () => {
                 // If the Property's now expanded, try to focus on it
-                if (expanding && this.refs.property) {
+                if (expanding) {
                     this.refs.property.handleFocus();
                 }
             });
         }
+    },
+
+    handleSubmitSuccess() {
+        const { expanded, initialExpanded } = this.state;
+
+        this.setState({
+            initialExpanded: expanded
+        });
+
+        this.refs.property.handleSubmitSuccess();
+    },
+
+    reset() {
+        const { expanded, initialExpanded } = this.state;
+
+        if (expanded !== initialExpanded) {
+            this.setState({
+                expanded: initialExpanded
+            });
+        }
+
+        this.refs.property.reset();
     },
 
     // Create a cached collapsed and expanded layout type that composes the types we've been given.
