@@ -4,7 +4,7 @@ import moment from 'moment';
 
 import DatePicker from 'react-datepicker';
 
-import { omitFromObject, safeInvoke } from '../../utils/general';
+import { safeInvoke } from '../../utils/general';
 
 import styles from './input_date.scss';
 
@@ -17,17 +17,21 @@ const { bool, func, object, oneOfType, string } = React.PropTypes;
  */
 const InputDate = React.createClass({
     propTypes: {
-        // We'll convert any dates that are given from parents into moment dates when using them
+        /**
+         * Before using any dates given as props (ie. defaultValue and value), we'll convert them
+         * into moment dates by using this format string.
+         * This will also specify the DatePicker's dateFormat.
+         */
+        dateFormat: string,
+
         defaultValue: oneOfType([object, string]),
         onChange: func,
+        value: string,
 
         // Only used to signal for validation in Property
-        required: bool,
+        required: bool
 
-        // Provided by Property
-        value: string.isRequired
-
-        // All the other props are passed to the backing DatePicker component.
+        // Any other props are passed through to the backing DatePicker component.
         // See the available props for DatePicker:
         // https://github.com/Hacker0x01/react-datepicker/blob/master/docs/datepicker.md
     },
@@ -46,17 +50,21 @@ const InputDate = React.createClass({
 
     // Required Property API
     getValue() {
+        const momentValue = this.getValueMoment();
+
         // To make it easier to compose a JSON structure for form data, return a formatted string
         // of the currently selected date to the Property managing this input.
-        return this.getValueMoment().format(this.props.dateFormat);
+        return momentValue ? momentValue.format(this.props.dateFormat) : '';
     },
 
     getValueMoment() {
-        const { defaultValue, value } = this.props;
+        const { dateFormat, defaultValue, value } = this.props;
 
         // If this input's been user edited, we should use the value passed from Property as
         // Property is the one that manages an input component's values.
-        return moment(this.state.edited ? value : defaultValue);
+        const curValue = this.state.edited ? value : defaultValue;
+
+        return curValue ? moment(curValue, dateFormat, true) : null;
     },
 
     // Required Property API
@@ -80,7 +88,13 @@ const InputDate = React.createClass({
     },
 
     render() {
-        const datePickerProps = omitFromObject(this.props, ['defaultValue', 'onChange', 'value']);
+        // Ignore some of the props meant only for this component before passing it on to DatePicker
+        const {
+            defaultValue,
+            onChange,
+            value,
+            ...datePickerProps
+        } = this.props;
 
         return (
             <DatePicker
