@@ -268,18 +268,22 @@ const Property = React.createClass({
     },
 
     validate() {
-        if (this._ref.input) {
-            const errorProp = validateInput(this._ref.input, this.getValueOfInputElement());
+        const { input: inputElement } = this._refs;
+
+        if (inputElement) {
+            const errorProp = validateInput(inputElement, this.getValueOfInputElement());
+            const newState = { errorMessage: null };
 
             if (errorProp) {
                 const { invoked, result: errorMessage } = safeInvoke(this.props.createErrorMessage, errorProp);
 
                 if (invoked && errorMessage) {
-                    this.setState({ errorMessage });
+                    newState.errorMessage = errorMessage;
                 }
-
-                return errorProp;
             }
+
+            this.setState(newState);
+            return errorProp;
         }
     },
 

@@ -16,3 +16,19 @@ export function PropStuffer(Component, stuffedProps, displayName = 'PropStuffer'
 
     return StuffedComponent;
 }
+
+/**
+ * Checks if a object is a React component and not a native HTML element
+ *
+ * Not entirely optimal, but this is similar to what babel-plugin-react-transform does so we'll take it.
+ * See https://github.com/gaearon/babel-plugin-react-transform/blob/master/src/index.js
+ *
+ * @param  {object}  component Object to check
+ * @return {boolean}           True if given component is a React component
+ */
+export function isReactElement(element) {
+    // Check if the element has a render method, and if possible, check to see that it's not an
+    // instance of HTMLElement.
+    return element && element.render &&
+           !(typeof window.HTMLElement === 'function' && element instanceof window.HTMLElement);
+}

@@ -1,9 +1,9 @@
 function validateRequired(val, required) {
-    return !!val && required;
+    return !required || !!val;
 }
 
 function validatePattern(val, pattern) {
-    return typeof val === 'string' && !!val.match(pattern);
+    return !pattern || (typeof val === 'string' && !!val.match(pattern));
 }
 
 function validateVal(val, checkAgainst, type, maxOrMin) {
@@ -13,13 +13,12 @@ function validateVal(val, checkAgainst, type, maxOrMin) {
     //   = 0 => equal
     let checkResult;
 
-    if (type === 'number') {
+    if (type === 'number' && checkAgainst) {
         checkResult = parseInt(val, 10) - checkAgainst;
+        return maxOrMin === 'min' ? checkResult <= 0 : checkResult >= 0;
     } else {
-        checkResult = 1;
+        return true;
     }
-
-    return maxOrMin === 'min' ? checkResult <= 0 : checkResult >= 0;
 }
 
 export default {
