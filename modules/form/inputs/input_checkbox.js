@@ -43,8 +43,7 @@ const InputCheckbox = React.createClass({
     componentWillMount() {
         // Developers are used to define defaultValues for inputs via defaultValue, but since this is a
         // input of type checkbox we warn the dev not to do that.
-        // FIXME: use env variables to remove this when in production
-        if (this.props.hasOwnProperty('defaultChecked')) { //eslint-disable-line react/prop-types
+        if (process.env.NODE_ENV !== 'production' && this.props.hasOwnProperty('defaultChecked')) {
             console.warn('Although InputCheckbox is of type checkbox, its default value is represented by defaultValue. defaultChecked will do nothing!');
         }
     },
