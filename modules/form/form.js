@@ -12,14 +12,14 @@ import styles from './form.scss';
 
 const { arrayOf, bool, func, node, shape, string } = React.PropTypes;
 
-const DefaultButtonEdited = ({ onCancel }) => (
-    <ButtonList className="pull-right">
+const EditedButtonList = ({ handleCancel }) => (
+    <ButtonList pull="right">
         <Button type="submit">
             SAVE
         </Button>
         <Button
             classType="tertiary"
-            onClick={onCancel}
+            onClick={handleCancel}
             type="button">
             CANCEL
         </Button>
@@ -66,7 +66,7 @@ const Form = React.createClass({
 
     getDefaultProps() {
         return {
-            buttonEdited: (<DefaultButtonEdited onCancel={this.reset} />),
+            buttonEdited: (<EditedButtonList />),
             fakeAutoCompleteFields: [{
                 name: 'username',
                 type: 'text'
@@ -151,13 +151,17 @@ const Form = React.createClass({
         const { buttonDefault, buttonEdited, buttonSubmitting, disabled } = this.props;
         const { edited, submitting } = this.state;
 
+        let buttons = buttonDefault;
         if (submitting && buttonSubmitting) {
-            return buttonSubmitting;
+            buttons = buttonSubmitting;
         } else if (edited && !disabled && !submitting && buttonEdited) {
-            return buttonEdited;
-        } else {
-            return buttonDefault || null;
+            buttons = buttonEdited;
         }
+
+        return buttons ? React.cloneElement(buttons, {
+            handleCancel: this.reset,
+            handleSubmit: this.onSubmit
+        }) : null;
     },
 
     renderChildren() {
