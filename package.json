@@ -67,7 +67,7 @@
     "bootstrap-sass": "^3.3.6",
     "classnames": "^2.2.3",
     "moment": "^2.12.0",
-    "react-css-modules": "^3.7.4",
+    "react-css-modules": "^3.7.6",
     "react-datepicker": "^0.24.0",
     "react-textarea-autosize": "^3.3.0",
     "shallow-equals": "0.0.0"

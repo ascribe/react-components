@@ -100,8 +100,7 @@ const config = {
         filename: PRODUCTION ? 'bundle.min.js' : 'bundle.js',
         library: 'ascribe-react-components',
         libraryTarget: 'umd',
-        path: PRODUCTION ? PATHS.dist : PATHS.build,
-        publicPath: PRODUCTION ? null :'/assets/'
+        path: PRODUCTION ? PATHS.dist : PATHS.build
     },
 
     externals: PRODUCTION ? externals : null,

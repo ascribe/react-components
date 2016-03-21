@@ -22,6 +22,9 @@ if (process.env.NODE_ENV === 'demo') {
     config.plugins.push(new webpack.HotModuleReplacementPlugin());
 }
 
+// Specify output location for bundled files
+config.output.publicPath = '/assets/';
+
 // Configure server
 const compiler = webpack(config);
 
