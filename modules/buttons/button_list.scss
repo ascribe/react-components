@@ -1,5 +1,6 @@
 .base {
-    composes: row from global;
+    composes: clearfix from global;
+
     margin: 0;
 }
 
