@@ -137,6 +137,9 @@ const config = {
         ]
     },
 
+    sassLoader: {
+        includePaths: [PATHS.nodeModules]
+    },
     postcss: [autoPrefixer({ browsers: COMPATIBILITY })]
 };
 

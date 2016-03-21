@@ -1,5 +1,9 @@
-@import 'react-datepicker/dist/react-datepicker.css';
 @import '../../styles/mixins/properties.scss';
+
+/* Import react-datepicker's stylesheet into global css. */
+:global {
+    @import 'react-datepicker/dist/react-datepicker';
+}
 
 :global .datepicker__input {
     @include ascribe-property--input-base;
