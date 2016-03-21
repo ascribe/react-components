@@ -5,8 +5,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { Button, ButtonContainer, ButtonList } from '../modules/buttons';
-
+import { CollapsibleCheckboxProperty, CollapsibleProperty, Form, InputCheckbox, InputDate, InputTextarea, Property } from '../modules/form';
+import { Checkbox } from '../modules/ui';
 import { FileDragAndDropInput, ReactS3FineUploader, UploadButton } from '../modules/uploader';
+
+import './app.scss';
 
 
 //TODO: turn this into a nicely formatted styleguide
@@ -120,6 +123,225 @@ const App = () => {
                     <Button classType="secondary">Button 2</Button>
                     <Button classType="tertiary">Button 3</Button>
                 </ButtonList>
+            </div>
+            <h2>Forms</h2>
+            <h3>Basic Form</h3>
+            <div>
+                <Form
+                    header="Basic form"
+                    onSubmit={(data) => {
+                        console.log(data);
+                        return Promise.resolve();
+                    }}>
+                    <div>Should be ignored in ref</div>
+                    <Property
+                        label="Prop 1 label"
+                        name="prop1">
+                        <input placeholder="prop 1 placeholder" type="text" />
+                    </Property>
+                    <Property
+                        label="Default label"
+                        name="default">
+                        <input placeholder="default placeholder" type="text" defaultValue="default" />
+                    </Property>
+                    <Property
+                        label="Required prop label"
+                        name="required prop">
+                        <input placeholder="required prop placeholder" required type="text" />
+                    </Property>
+                    <Property
+                        footer="footer"
+                        label="Footer prop label"
+                        name="footer prop">
+                        <input placeholder="footer prop placeholder" type="text" />
+                    </Property>
+                    <Property
+                        label="Select prop label"
+                        name="select">
+                        <select>
+                            <option value="value1">Value 1</option>
+                            <option value="value2">Value 2</option>
+                            <option value="value3">Value 3</option>
+                        </select>
+                    </Property>
+                    <Property
+                        highlight
+                        label="Highlighted label"
+                        name="highlighted">
+                        <input placeholder="highlighted placeholder" type="text" defaultValue="higlighted" />
+                    </Property>
+                    <Property
+                        disabled
+                        label="Disabled prop label"
+                        name="disabled">
+                        <input placeholder="disabled prop placeholder" type="text" defaultValue="disabled" />
+                    </Property>
+                    <Property
+                        hidden
+                        label="Hidden prop label"
+                        name="hidden">
+                        <input placeholder="hidden prop placeholder" type="text" defaultValue="hidden" />
+                    </Property>
+                </Form>
+            </div>
+            <h3>Autocomplete form</h3>
+            <div>
+                <Form
+                    autoComplete
+                    header="Autocomplete form"
+                    onSubmit={(data) => {
+                        console.log(data);
+                        return Promise.resolve();
+                    }}>
+                    <Property
+                        label="Prop 1 label"
+                        name="prop1">
+                        <input placeholder="autocomplete placeholder" type="text" />
+                    </Property>
+                </Form>
+            </div>
+            <h3>Custom header form</h3>
+            <div>
+                <Form
+                    header="Custom header form"
+                    headerType={({ header }) => (<h5>{header}</h5>)}
+                    onSubmit={(data) => {
+                        console.log(data);
+                        return Promise.resolve();
+                    }}>
+                    <Property
+                        label="Prop 1 label"
+                        name="prop1">
+                        <input placeholder="custom header placeholder" type="text" />
+                    </Property>
+                </Form>
+            </div>
+            <h3>Custom buttons form</h3>
+            <div>
+                <Form
+                    buttonDefault={<Button>Custom default button</Button>}
+                    buttonEdited={<Button>Custom edited button</Button>}
+                    buttonSubmitting={<Button>Custom submitting button</Button>}
+                    header="Custom buttons form"
+                    onSubmit={(data) => {
+                        console.log(data);
+                        console.log('Wait 10s for submission to end...');
+                        return new Promise((resolve) => {
+                            setTimeout(resolve, 10000);
+                        });;
+                    }}>
+                    <Property
+                        label="Prop 1 label"
+                        name="prop1">
+                        <input placeholder="custom buttons placeholder" type="text" />
+                    </Property>
+                </Form>
+            </div>
+            <h3>Collapsible Properties</h3>
+            <div>
+                <Form
+                    header="Collapsible properties"
+                    onSubmit={(data) => {
+                        console.log(data);
+                        return Promise.resolve();
+                    }}>
+                    <CollapsibleProperty
+                        headerLabel="expanded prop"
+                        label="Expanded label"
+                        name="expanded">
+                        <input placeholder="expanded placeholder" type="text" />
+                    </CollapsibleProperty>
+                    <CollapsibleProperty
+                        expanded={false}
+                        headerLabel="collapsed prop"
+                        label="Collapsed label"
+                        name="collapsed">
+                        <input placeholder="collapsed placeholder" type="text" />
+                    </CollapsibleProperty>
+                    <CollapsibleCheckboxProperty
+                        checked
+                        checkboxLabel="checked prop"
+                        label="Checked prop label"
+                        name="checked">
+                        <input placeholder="checked placeholder" type="text" />
+                    </CollapsibleCheckboxProperty>
+                    <CollapsibleCheckboxProperty
+                        checkboxLabel="unchecked prop"
+                        label="Unchecked prop label"
+                        name="unchecked">
+                        <input placeholder="unchecked placeholder" type="text" />
+                    </CollapsibleCheckboxProperty>
+                    <CollapsibleCheckboxProperty
+                        checkboxLabel="disabled prop"
+                        checked
+                        disabled
+                        label="disabled prop label"
+                        name="disabled">
+                        <input placeholder="disabled placeholder" type="text" defaultValue="disabled" />
+                    </CollapsibleCheckboxProperty>
+                </Form>
+            </div>
+            <h3>Custom Inputs</h3>
+            <div>
+                <Form
+                    header="Custom inputs"
+                    onSubmit={(data) => {
+                        console.log(data);
+                        return Promise.resolve();
+                    }}>
+                    <CollapsibleCheckboxProperty
+                        checkboxLabel="checkbox"
+                        label="checkbox label"
+                        name="checkbox">
+                        <InputCheckbox label="checkbox" />
+                    </CollapsibleCheckboxProperty>
+                    <CollapsibleCheckboxProperty
+                        checkboxLabel="required checkbox"
+                        label="required checkbox label"
+                        name="requiredCheckbox">
+                        <InputCheckbox label="required checkbox" required />
+                    </CollapsibleCheckboxProperty>
+                    <CollapsibleCheckboxProperty
+                        checkboxLabel="date"
+                        label="date label"
+                        name="date">
+                        <InputDate />
+                    </CollapsibleCheckboxProperty>
+                    <CollapsibleCheckboxProperty
+                        checkboxLabel="default date"
+                        label="default date label"
+                        name="default Date">
+                        <InputDate defaultValue="2010-01-01" />
+                    </CollapsibleCheckboxProperty>
+                    <CollapsibleCheckboxProperty
+                        checkboxLabel="textarea"
+                        label="textarea label"
+                        name="textarea">
+                        <InputTextarea placeholder="textarea" rows={2} />
+                    </CollapsibleCheckboxProperty>
+                    <CollapsibleCheckboxProperty
+                        checkboxLabel="default textarea"
+                        label="default textarea label"
+                        name="defaulttextarea">
+                        <InputTextarea defaultValue="default" rows={2} />
+                    </CollapsibleCheckboxProperty>
+                    <Property
+                        checkboxLabel="disabled textarea"
+                        disabled
+                        label="disabled textarea label"
+                        name="disabledtextarea">
+                        <InputTextarea defaultValue="disabled" rows={2} />
+                    </Property>
+                </Form>
+            </div>
+            <h2>UI Elements</h2>
+            <h3>Checkbox</h3>
+            <div>
+                <Checkbox label="checkbox" />
+            </div>
+            <h3>Disabled checkbox</h3>
+            <div>
+                <Checkbox disabled label="disabled checkbox" />
             </div>
             <h2>Uploader</h2>
             <h3>Upload button</h3>
