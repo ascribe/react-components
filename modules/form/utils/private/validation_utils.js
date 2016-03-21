@@ -1,4 +1,4 @@
-import InputValidator from './inputValidator';
+import InputValidator from './input_validator';
 
 const VALIDATION_ORDER = ['required', 'pattern', 'min', 'max'];
 
