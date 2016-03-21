@@ -1,5 +1,4 @@
 import React from 'react';
-import update from 'react-addons-update';
 import CssModules from 'react-css-modules';
 
 import CollapsibleCheckboxProperty from './properties/collapsible_checkbox_property';
@@ -95,7 +94,6 @@ const Form = React.createClass({
     getInitialState() {
         return {
             edited: false,
-            formData: {},
             submitting: false
         };
     },
@@ -107,15 +105,18 @@ const Form = React.createClass({
 
     reset() {
         // Reset child Properties too
-        const initialFormData = Object.entries(this._refs).reduce((formData, [name, propertyRef]) => {
-            formData[name] = propertyRef.reset();
-        }, {});
+        Object.values(this._refs).forEach((propertyRef) => propertyRef.reset());
 
         this.setState({
             edited: false,
-            formData: initialFormData,
             submitting: false
         });
+    },
+
+    onPropertyChange() {
+        if (!this.state.edited) {
+            this.setState({ edited: true });
+        }
     },
 
     onSubmit(event) {
@@ -139,18 +140,10 @@ const Form = React.createClass({
     },
 
     getFormData() {
-        return this.state.formData;
-    },
-
-    onPropertyChange(name) {
-        return (value) => {
-            const formData = update(this.state.formData, {
-                [name]: { $set: value }
-            });
-
-            this.setState(this.state.edited ? { formData }
-                                            : { formData, edited: true });
-        }
+        return Object.entries(this._refs).reduce((formData, [name, propertyRef]) => {
+            formData[name] = propertyRef.getValue();
+            return formData;
+        }, {});
     },
 
     handleSubmitComplete(propertyFn) {
@@ -189,7 +182,7 @@ const Form = React.createClass({
         return React.Children.map(children, (child) => {
             // Only register child Properties that are of a type known to this Form
             if (trackedPropertyTypes.includes(child.type)) {
-                const { props: { disabled: childDisabled, name, overrideFormDefaults } } = child;
+                const { props: { disabled: childDisabled, name, onChange, overrideFormDefaults } } = child;
 
                 return React.cloneElement(child, {
                     key: name,
@@ -210,7 +203,10 @@ const Form = React.createClass({
                     // If the entire form is disabled, a child can still be activated if it uses
                     // the `overrideFormDefaults` prop to control its disabled status itself.
                     disabled: overrideFormDefaults ? childDisabled : disabled || childDisabled,
-                    onChange: this.onPropertyChange(name)
+                    onChange: (...args) => {
+                        safeInvoke(onChange, ...args);
+                        this.onPropertyChange();
+                    }
                 });
             }
         });
