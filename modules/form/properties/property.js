@@ -11,12 +11,18 @@ import { noop, safeInvoke } from '../../utils/general';
 
 const { bool, element, func, node, shape, string } = React.PropTypes;
 
-const PropertyLabel = ({ error, label }) => (
-    <p>
+// Default layouts
+const PropertyFooter = CssModules(({ footer }) => (
+    <div styleName="footer">{footer}</div>
+), styles);
+
+const PropertyLabel = CssModules(({ error, htmlFor, label }) => (
+    <label htmlFor={htmlFor} styleName="label">
         <span className="pull-left">{label}</span>
-        <span className="pull-right">{error}</span>
-    </p>
-);
+        <span className="pull-right" styleName="error-label">{error}</span>
+    </label>
+), styles);
+
 // The default layout component acts as both the Property container and its body
 const PropertyLayout = CssModules(({ children, handleFocus, status }) => (
     <div
@@ -36,8 +42,11 @@ const Property = React.createClass({
         createErrorMessage: func,
         disabled: bool,
         footer: node,
+        footerType: func,
+        hidden: bool,
         ignoreFocus: bool,
-        label: string,
+        label: node,
+        labelType: func,
         layoutType: func,
         onBlur: func,
         onChange: func,
@@ -72,7 +81,8 @@ const Property = React.createClass({
                     return null;
                 }
             },
-            expanded: true
+            footerType: PropertyFooter,
+            labelType: PropertyLabel,
             layoutType: PropertyLayout
         };
     },
@@ -128,7 +138,7 @@ const Property = React.createClass({
         return this.state.initialValue;
     },
 
-    onChange(event) {
+    onInputChange(event) {
         const value = event && event.target && event.target.value;
 
         this.setState({ value }, () => safeInvoke(this.props.onChange, value, event));
@@ -190,9 +200,9 @@ const Property = React.createClass({
         this.setState({ hasWarning });
     },
 
-    getClassName() {
         const { checkbox: { show: showCheckbox }, disabled } = this.props;
         const { errorMessage, expanded, hasWarning, isFocused } = this.state;
+    getStatus() {
 
         if (!expanded && !showCheckbox) {
             return 'is-hidden';
@@ -209,28 +219,18 @@ const Property = React.createClass({
         }
     },
 
-
-
-
     renderChildren() {
-        const { checkbox: { show: showCheckbox }, children, disabled, name } = this.props;
-        const { expanded, value } = this.state;
+        const { children, disabled, name } = this.props;
+        const { value } = this.state;
 
-        // We don't need to clone the input with our handlers unless it's actually being shown
-        if (expanded || !showCheckbox) {
-            return React.Children.map(children, (child) => {
-                return React.cloneElement(child, {
-                    ref: (ref) => {
-                        this._refs.input = ref;
+        // Ensure that only one child is used per property; if there is more than one child,
+        // React.Children.only() will throw
+        const child = React.Children.only(children);
 
-                    },
-                    name,
-                    disabled,
-                    value,
-                    onBlur: this.onBlur,
-                    onChange: this.onChange,
-                    onFocus: this.onFocus,
-                    setWarning: this.setWarning,
+        return React.cloneElement(child, {
+            ref: (ref) => {
+                this._refs.input = ref;
+
                 // By attaching refs to the child from this component, we're overwriting any
                 // already attached refs to the child. As we'd still like to allow parents
                 // to register refs with the child inputs, we need to invoke their callback
@@ -240,6 +240,24 @@ const Property = React.createClass({
                     context: child,
                     params: [ref]
                 });
+            },
+            name,
+            disabled,
+            value,
+            onBlur: (...args) => {
+                safeInvoke(child.props.onBlur, ...args);
+                this.onBlur(...args);
+            },
+            onChange: (...args) => {
+                safeInvoke(child.props.onChange, ...args);
+                this.onInputChange(...args);
+            },
+            onFocus: (...args) => {
+                safeInvoke(child.props.onFocus, ...args);
+                this.handleFocus();
+            },
+            setWarning: this.setWarning
+        });
     },
 
     validate() {
@@ -259,33 +277,24 @@ const Property = React.createClass({
     },
 
     render() {
-        const { className, footer, label } = this.props;
-        const { errorMessage, expanded } = this.state;
+        const {
+            className,
+            footer,
+            label,
+            name,
+            footerType: FooterType,
+            labelType: LabelType,
+            layoutType: LayoutType
+        } = this.props;
+        const { errorMessage } = this.state;
 
         const labelElement = label || errorMessage ? (
-            <PropertyLabel error={errorMessage} label={label} />
+            <LabelType error={errorMessage} htmlFor={name} label={label} />
         ) : null;
 
-        const footerElement = footer ? (
-            <div className="ascribe-property-footer">{footer}</div>
-        ) : null;
+        const footerElement = footer ? (<FooterType footer={footer} />) : null;
 
-        //FIXME: use our own simple collapsible panel
         return (
-            <div
-                className={classNames('ascribe-property-wrapper', this.getClassName())}
-                onClick={this.onFocus}>
-                {this.getCheckbox()}
-                <Panel
-                    collapsible
-                    expanded={expanded}>
-                    <div className={classNames('ascribe-property', className)}>
-                        {label}
-                        {this.renderChildren()}
-                        {footer}
-                    </div>
-                </Panel>
-            </div>
             <LayoutType className={className} handleFocus={this.handleFocus} status={this.getStatus()}>
                 {labelElement}
                 {this.renderChildren()}
