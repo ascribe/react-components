@@ -90,11 +90,13 @@ const Property = React.createClass({
 
     getInitialState() {
         return {
-            // Don't confuse this with defaultValue--this is meant for resetting inputs to their
-            // original values
-            // We have to wait until componentDidMount() to set this value, as it depends on the
-            // child input also being mounted.
-            initialValue: null,
+            /**
+             * initialValue is used to reset the child input to its initial state. We initially use
+             * the child's defaultValue as this value, but this can change later on as the form gets
+             * submitted and further changes are made (if the form has already been submitted,
+             * resetting the form afterwards should restore it to its last submission state).
+            */
+            initialValue: this.getChild().props.defaultValue,
 
             errorMessage: null,
             isFocused: false,
@@ -112,15 +114,12 @@ const Property = React.createClass({
             this.handleFocus();
         }
 
-        const initialValue = this.getValueOfInputElement();
+        const inputValue = this.getValueOfInputElement();
 
-        if (initialValue) {
+        if (inputValue != null) {
             // We need to wait until componentDidMount to set this state as we have to wait for
-            // the input element to render
-            this.setState({
-                initialValue,
-                value: initialValue
-            });
+            // the input element to render before we can get its value
+            this.setState({ value: inputValue });
         }
     },
 
@@ -188,16 +187,22 @@ const Property = React.createClass({
         });
     },
 
+    getChild() {
+        // Ensure that only one child is used per property; if there is more than one child,
+        // React.Children.only() will throw
+        return React.Children.only(this.props.children);
+    },
+
+    getValue() {
+        return this.state.value;
+    },
+
     getValueOfInputElement() {
         const { input: { getValue = noop, value } = {} } = this._refs;
 
-        // If it's not a native input element, we expect the input element to have a `getValue()`
-        // method that will let us get its value.
-        return value || getValue();
-    },
-
-    setWarning(hasWarning) {
-        this.setState({ hasWarning });
+        // If our child input is not a native input element, we expect it to have a `getValue()`
+        // method that give us its value.
+        return value != null ? value : getValue();
     },
 
     getStatus() {
@@ -219,12 +224,9 @@ const Property = React.createClass({
 
     renderChildren() {
         const { children, disabled, name } = this.props;
-        const { value } = this.state;
+        const { initialValue, value } = this.state;
 
-        // Ensure that only one child is used per property; if there is more than one child,
-        // React.Children.only() will throw
-        const child = React.Children.only(children);
-
+        const child = this.getChild();
         return React.cloneElement(child, {
             ref: (ref) => {
                 this._refs.input = ref;
@@ -239,8 +241,16 @@ const Property = React.createClass({
                     params: [ref]
                 });
             },
-            name,
+
+            // Similar to how the child input's value is controlled using this Property's `value`
+            // state, the input's defaultValue is also controlled with the `initialValue` state.
+            // This allows a reset to return the input's value to its last submitted value rather
+            // than the initial value it had upon its initial render (although if no changes have
+            // been made, these two will be the same).
+            defaultValue: initialValue,
+
             disabled,
+            name,
             value,
             onBlur: (...args) => {
                 safeInvoke(child.props.onBlur, ...args);
@@ -292,7 +302,10 @@ const Property = React.createClass({
         const footerElement = footer ? (<FooterType footer={footer} />) : null;
 
         return (
-            <LayoutType className={className} handleFocus={this.handleFocus} status={this.getStatus()}>
+            <LayoutType
+                className={className}
+                handleFocus={this.handleFocus}
+                status={this.getStatus()}>
                 {labelElement}
                 {this.renderChildren()}
                 {footerElement}
