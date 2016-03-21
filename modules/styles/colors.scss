@@ -1,6 +1,8 @@
 $ascribe-colors--black: #1E1E1E;
 $ascribe-colors--gray: #7F7F7F; /* Roughly equivalent to rgba(0, 0, 0, 0.5) */
 $ascribe-colors--grey: #7F7F7F;
+$ascribe-colors--strong-gray: #616161;
+$ascribe-colors--strong-grey: #616161;
 $ascribe-colors--off-white: #CCC;
 $ascribe-colors--white: #F8F8F8;
 $ascribe-colors--blue: #65CFE9;
@@ -13,3 +15,6 @@ $ascribe-colors--primary-bg: white;
 $ascribe-colors--primary-fg: $ascribe-colors--dark-blue;
 
 $ascribe-colors--error: $ascribe-colors--red;
+$ascribe-colors--text-base: $ascribe-colors--off-black;
+$ascribe-colors--text-primary: $ascribe-colors--dark-blue;
+$ascribe-colors--text-secondary: $ascribe-colors--strong-gray;

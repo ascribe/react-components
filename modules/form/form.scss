@@ -1,12 +1,8 @@
+@import '../styles/colors.scss';
+
 .header {
-    background-color: white;
-    color: #616161;
+    color: $ascribe-colors--text-secondary;
     margin-bottom: 0;
     margin-top: 0;
-    padding: .75em 0 .75em 1em;
-}
-
-.button-row {
-    composes: row from global;
-    margin: 0;
+    padding: 0.75em 0 0.75em 1em;
 }
