@@ -1,5 +1,5 @@
 import React from 'react';
-import update from 'react-addon-update';
+import update from 'react-addons-update';
 import CssModules from 'react-css-modules';
 
 import Button from '../buttons/button';
@@ -10,7 +10,7 @@ import { safeInvoke } from '../utils/general';
 import styles from './form.scss';
 
 
-const { arrayOf, func, node, shape, string } = React.PropTypes;
+const { arrayOf, bool, func, node, shape, string } = React.PropTypes;
 
 const DefaultButtonEdited = ({ onCancel }) => (
     <ButtonList className="pull-right">
@@ -32,21 +32,21 @@ const DefaultButtonEdited = ({ onCancel }) => (
  * so if props.autoComplete is set to "off", we insert fake hidden inputs that mock the given
  * fields to trick chrome/safari into filling those instead of the actual fields
  */
-const FakeAutoCompleteInputs = ({ fields }) => fields.map(({ name, type }) => {
-    const fakeName = `fake-${name}`;
+const FakeAutoCompleteInputs = ({ fields }) => (
+    <div style={{display: 'none'}}>
+        {fields.map(({ name, type }) => {
+            const fakeName = `fake-${name}`;
 
-    return (
-        <input
-            key={fakeName}
-            name={fakeName}
-            style={{display: 'none'}}
-            type={type} />
-    );
-});
+            return (<input key={fakeName} name={fakeName} type={type} />);
+        })}
+    </div>
+);
+
+const FormHeader = CssModules(({ header }) => (<h3 styleName="header">{header}</h3>), styles);
 
 const Form = React.createClass({
     propTypes: {
-        children: node.required,
+        children: node.isRequired,
 
         autoComplete: bool,
         buttonDefault: node,
@@ -59,6 +59,7 @@ const Form = React.createClass({
             type: string
         })),
         header: string,
+        headerType: func,
         onError: func,
         onSubmit: func
     },
@@ -72,7 +73,8 @@ const Form = React.createClass({
             }, {
                 name: 'password',
                 type: 'password'
-            }]
+            }],
+            headerType: FormHeader
         };
     },
 
@@ -104,18 +106,18 @@ const Form = React.createClass({
 
     onSubmit(event) {
         const { onError, onSubmit } = this.props;
-        const errors = this.validate();
 
         event.preventDefault();
 
+        const errors = this.validate();
         if (Object.keys(errors).length) {
             safeInvoke(onError, errors);
         } else {
             const { invoked, result } = safeInvoke(onSubmit, this.getFormData());
 
             if (invoked) {
-                result.then(handleSubmitComplete((propertyRef) => propertyRef.handleSubmitSuccess()))
-                      .catch(handleSubmitComplete((propertyRef) => propertyRef.handleSubmitFailure()));
+                result.then(this.handleSubmitComplete((propertyRef) => propertyRef.handleSubmitSuccess()))
+                      .catch(this.handleSubmitComplete((propertyRef) => propertyRef.handleSubmitFailure()));
             }
 
             this.setState({ submitting: true });
@@ -132,12 +134,8 @@ const Form = React.createClass({
                 [name]: { $set: value }
             });
 
-            const newState = { formData };
-            if (!this.state.edited) {
-                newState.edited = true
-            }
-
-            this.setState(newState);
+            this.setState(this.state.edited ? { formData }
+                                            : { formData, edited: true });
         }
     },
 
@@ -145,7 +143,7 @@ const Form = React.createClass({
         return () => {
             Object.values(this._refs).forEach(propertyFn);
 
-            this.setState({ submitting: false });
+            this.setState({ edited: false, submitting: false });
         }
     },
 
@@ -164,6 +162,9 @@ const Form = React.createClass({
 
     renderChildren() {
         const { children, disabled } = this.props;
+        // Reset and reregister our tracked Properties to ensure we're not tracking any Properties
+        // that were removed
+        this._refs = {};
 
         return React.Children.map(children, (child) => {
             // Only register child Properties with this form
@@ -203,13 +204,19 @@ const Form = React.createClass({
     },
 
     render() {
-        const { autoComplete, className, fakeAutoCompleteFields, header } = this.props;
+        const {
+            autoComplete,
+            className,
+            fakeAutoCompleteFields,
+            header,
+            headerType: HeaderType
+        } = this.props;
 
-        const fakeAutoCompleteInputs = autoComplete ? (
+        const fakeAutoCompleteInputs = !autoComplete ? (
             <FakeAutoCompleteInputs fields={fakeAutoCompleteFields} />
         ) : null;
 
-        const headerElement = header ? (<h3 styleName="header">{header}</h3>) : null;
+        const headerElement = header ? (<HeaderType header={header} />) : null;
 
         return (
             <form
