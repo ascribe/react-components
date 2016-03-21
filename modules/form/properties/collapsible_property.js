@@ -10,7 +10,7 @@ import { PropStuffer } from '../../utils/react';
 import styles from './collapsible_property.scss';
 
 
-const { bool, element, func, string } = React.PropTypes;
+const { bool, element, func, object, string } = React.PropTypes;
 
 // Default layouts
 const CollapsibleHeader = CssModules(({ handleExpandToggle, label }) => (
@@ -74,6 +74,9 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
          */
         onExpandToggle: func,
 
+        // Style overrides for the base Property. See form/properties/property for class names to implement.
+        propertyStyle: object,
+
         // Any props used by the base Property are also passed down
     },
 
@@ -129,12 +132,14 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
     },
 
     render() {
+        // Ignore some of this component's props before passing them down to the base Property
         const {
             headerLabel,
             headerType,
-            layoutType: propertyLayoutType,
-            expanded: _, // ignore
-            onExpandToggle: __, // ignore
+            layoutType,
+            onExpandToggle,
+            expanded: _, // rename to avoid clash
+            propertyStyle,
             ...propertyProps
         } = this.props;
         const { expanded } = this.state;
@@ -152,6 +157,7 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
                 ref="property"
                 {...propertyProps}
                 layoutType={layoutType}>
+                style={propertyStyle}>
                 {this.renderChildren()}
             </Property>
         );
