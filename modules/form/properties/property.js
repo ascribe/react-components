@@ -274,11 +274,6 @@ const Property = React.createClass({
                     ref: (ref) => {
                         this._refs.input = ref;
 
-                        // By attaching refs to the child from this component, we're overwriting any
-                        // already attached refs to the child. As we'd still like to allow parents
-                        // to register refs with the child inputs, we need to invoke their callback
-                        // refs with our refs here.
-                        safeInvoke(child.ref, ref);
                     },
                     name,
                     disabled,
@@ -288,6 +283,14 @@ const Property = React.createClass({
                     onFocus: this.onFocus,
                     setExpanded: this.setExpanded,
                     setWarning: this.setWarning,
+                // By attaching refs to the child from this component, we're overwriting any
+                // already attached refs to the child. As we'd still like to allow parents
+                // to register refs with the child inputs, we need to invoke their callback
+                // refs with our refs here.
+                safeInvoke({
+                    fn: child.ref,
+                    context: child,
+                    params: [ref]
                 });
             });
         } else {

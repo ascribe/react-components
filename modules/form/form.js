@@ -184,7 +184,11 @@ const Form = React.createClass({
                         // already attached refs to the child from parent components. Since we'd still
                         // like parents to be able to attach refs to nested `Form` or `Property`s,
                         // we need to invoke their callback refs with our refs here.
-                        safeInvoke(child.ref, ref);
+                        safeInvoke({
+                            fn: child.ref,
+                            context: child,
+                            params: [ref]
+                        });
                     },
                     // By default, the child is disabled if it or the entire form is disabled.
                     // If the entire form is disabled, a child can still be activated if it uses
