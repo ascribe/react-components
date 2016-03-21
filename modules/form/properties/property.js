@@ -17,6 +17,14 @@ const PropertyLabel = ({ error, label }) => (
         <span className="pull-right">{error}</span>
     </p>
 );
+// The default layout component acts as both the Property container and its body
+const PropertyLayout = CssModules(({ children, handleFocus, status }) => (
+    <div
+        onClick={handleFocus}
+        styleName={classNames('body', status ? `property-${status}` : 'property')}>
+        {children}
+    </div>
+), styles, { allowMultiple: true });
 
 const Property = React.createClass({
     propTypes: {
@@ -24,25 +32,13 @@ const Property = React.createClass({
         name: string.isRequired,
 
         autoFocus: bool,
-        checkbox: shape({
-            label: string,
-            show: bool
-        }),
         className: string,
         createErrorMessage: func,
         disabled: bool,
-
-        // For `expanded` there are actually three use cases:
-        //
-        // 1. Completely control its value from the outside (did not define `checkbox.show` prop)
-        // 2. Let it be controlled from the inside (default value can be set though via `expanded`)
-        // 3. Let it be controlled from a parent / child by using `setExpanded` (`expanded` must
-        //    not be set from the outside as a prop then(!!!))
-        expanded: bool,
-
         footer: node,
         ignoreFocus: bool,
         label: string,
+        layoutType: func,
         onBlur: func,
         onChange: func,
         onFocus: func,
@@ -64,7 +60,6 @@ const Property = React.createClass({
 
     getDefaultProps() {
         return {
-            checkbox: {},
             createErrorMessage: (errorProp) => {
                 switch (errorProp) {
                   case 'min' || 'max':
@@ -78,21 +73,12 @@ const Property = React.createClass({
                 }
             },
             expanded: true
+            layoutType: PropertyLayout
         };
     },
 
     getInitialState() {
-        const { checkbox: { show: showCheckbox }, expanded, ignoreFocus } = this.props;
-
         return {
-            // Mirror expanded here to set the initial state.
-            // This isn't an antipattern as long as it's not a "source of truth"-duplication
-            expanded,
-
-            // If a showCheckbox is defined in the props, set `ignoreFocus` to true to avoid
-            // showing the focused styling when the property is selected.
-            ignoreFocus: ignoreFocus || showCheckbox,
-
             // Don't confuse this with defaultValue--this is meant for resetting inputs to their
             // original values
             // We have to wait until componentDidMount() to set this value, as it depends on the
@@ -125,27 +111,6 @@ const Property = React.createClass({
                 initialValue,
                 value: initialValue
             });
-        }
-    },
-
-    componentWillReceiveProps(nextProps) {
-        const { checkbox: { show: showCheckbox } } = this.props;
-        const newState = {};
-
-        // Handle the case where `expanded` is changed from outside and there's no checkbox
-        // controlling the `expanded` state
-        if (nextProps.expanded !== this.state.expanded && !showCheckbox) {
-            newState.expanded = nextProps.expanded;
-        }
-
-        // Handle the case where `ignoreFocus` is changed from outside and we're not ignoring it
-        // for the checkbox
-        if (nextProps.ignoreFocus !== this.state.ignoreFocus && !showCheckbox) {
-            newState.ignoreFocus = nextProps.ignoreFocus;
-        }
-
-        if (Object.keys(newState).length) {
-            this.setState(newState);
         }
     },
 
@@ -244,24 +209,8 @@ const Property = React.createClass({
         }
     },
 
-    setExpanded(expanded) {
-        this.setState({ expanded });
-    },
 
-    handleCheckboxToggle() {
-        const { expanded: curExpanded, initialValue } = this.state;
-        const newState = {
-            expanded: !curExpanded
-        };
 
-        // Reset the value to be the initial value when the checkbox is unticked (ie. when
-        // `expanded` is still true) since the user doesn't want to specify their own value.
-        if (curExpanded) {
-            state.value = initialValue;
-        }
-
-        this.setState(newState);
-    },
 
     renderChildren() {
         const { checkbox: { show: showCheckbox }, children, disabled, name } = this.props;
@@ -281,7 +230,6 @@ const Property = React.createClass({
                     onBlur: this.onBlur,
                     onChange: this.onChange,
                     onFocus: this.onFocus,
-                    setExpanded: this.setExpanded,
                     setWarning: this.setWarning,
                 // By attaching refs to the child from this component, we're overwriting any
                 // already attached refs to the child. As we'd still like to allow parents
@@ -292,31 +240,6 @@ const Property = React.createClass({
                     context: child,
                     params: [ref]
                 });
-            });
-        } else {
-            return null;
-        }
-    },
-
-    getCheckbox() {
-        const { checkbox: { label: checkboxLabel, show: showCheckbox }, name } = this.props;
-
-        if (showCheckbox) {
-            return (
-                <div
-                    className="ascribe-property-collapsible-toggle"
-                    onClick={this.handleCheckboxToggle}>
-                    <input
-                        checked={this.state.expanded}
-                        name={`${name}-checkbox`}
-                        onChange={this.handleCheckboxToggle}
-                        type="checkbox" />
-                    <span className="checkbox">&nbsp;{checkboxLabel}</span>
-                </div>
-            );
-        } else {
-            return null;
-        }
     },
 
     validate() {
@@ -363,6 +286,11 @@ const Property = React.createClass({
                     </div>
                 </Panel>
             </div>
+            <LayoutType className={className} handleFocus={this.handleFocus} status={this.getStatus()}>
+                {labelElement}
+                {this.renderChildren()}
+                {footerElement}
+            </LayoutType>
         );
     }
 });
