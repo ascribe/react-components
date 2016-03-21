@@ -52,10 +52,10 @@ class PropertyExtenderBuilder {
 
 const PropertyExtender = (PropertyComponent, propertyRefName) => {
     const builder = new PropertyExtenderBuilder(PropertyComponent, propertyRefName);
+    builder.extendForFn('focus');
     builder.extendForFn('getValue');
-    builder.extendForFn('handleFocus');
-    builder.extendForFn('handleSubmitFailure');
-    builder.extendForFn('handleSubmitSuccess');
+    builder.extendForFn('onSubmitFailure');
+    builder.extendForFn('onSubmitSuccess');
     builder.extendForFn('reset');
     builder.extendForFn('validate');
 

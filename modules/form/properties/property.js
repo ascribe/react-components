@@ -115,7 +115,7 @@ const Property = React.createClass({
 
     componentDidMount() {
         if (this.props.autoFocus) {
-            this.handleFocus();
+            this.focus();
         }
 
         const inputValue = this.getValueOfInputElement();
@@ -146,51 +146,44 @@ const Property = React.createClass({
         return this.state.initialValue;
     },
 
+    focus() {
+        if (this.props.ignoreFocus) {
+            return;
+        }
+
+        const { input: inputElement } = this._refs;
+        if (inputElement) {
+            // Safe invoke in case the inputElement is a component without a focus function
+            safeInvoke({
+                fn: inputElement.focus,
+                context: inputElement
+            });
+        }
+    },
+
     onInputChange(event) {
+        const { name, onChange } = this.props;
         const value = event && event.target && event.target.value;
 
-        this.setState({ value }, () => safeInvoke(this.props.onChange, value, event));
+        this.setState({ value }, () => safeInvoke(onChange, name, value));
     },
 
     onBlur(event) {
         this.setState({ isFocused: false }, () => safeInvoke(this.props.onBlur, event));
     },
 
-    handleFocus() {
-        const { ignoreFocus, onFocus } = this.props;
-
-        if (ignoreFocus) {
-            return;
-        }
-
-        const { input: inputElement } = this._refs;
-
-        if (inputElement) {
-            // Skip the focus of non-input native elements
-            // The nodeName property is only available on the ref if it's a native element
-            const inputNodeName = inputElement.nodeName || '';
-            if (['pre', 'div'].includes(inputNodeName.toLowerCase())) {
-                return;
-            }
-
-            // Safe invoke in case the inputElement is a component without a focus function
-            safeInvoke({
-                fn: inputElement.focus,
-                context: inputElement
-            });
-
-            this.setState({ isFocused: true }, () => safeInvoke(onFocus, event));
-        }
+    onFocus(event) {
+        this.setState({ isFocused: true }, () => safeInvoke(this.props.onFocus, event));
     },
 
-    handleSubmitFailure() {
+    onSubmitFailure() {
         // If submission failed, just unfocus any properties in the form
         this.setState({
             isFocused: false
         });
     },
 
-    handleSubmitSuccess() {
+    onSubmitSuccess() {
         this.setState({
             isFocused: false,
 
@@ -274,7 +267,7 @@ const Property = React.createClass({
             },
             onFocus: (...args) => {
                 safeInvoke(child.props.onFocus, ...args);
-                this.handleFocus();
+                this.onFocus();
             }
         });
     },
@@ -320,7 +313,7 @@ const Property = React.createClass({
         return (
             <LayoutType
                 className={className}
-                handleFocus={this.handleFocus}
+                handleFocus={this.focus}
                 status={this.getStatus()}>
                 {labelElement}
                 {this.renderChildren()}

@@ -59,9 +59,9 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
 
         disabled: bool,
         expanded: bool,
-        headerLabel: string,
 
-        // Header type that will always be shown and is used to expand / collapse the Property
+        // Header type and label that will always be shown and is used to expand / collapse the Property
+        headerLabel: string,
         headerType: func,
 
         layoutType: func,
@@ -130,20 +130,20 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
             this.setState({ expanded: expanding }, () => {
                 // If the Property's now expanded, try to focus on it
                 if (expanding) {
-                    this.refs.property.handleFocus();
+                    this.refs.property.focus();
                 }
             });
         }
     },
 
-    handleSubmitSuccess() {
+    onSubmitSuccess() {
         const { expanded, initialExpanded } = this.state;
 
         this.setState({
             initialExpanded: expanded
         });
 
-        this.refs.property.handleSubmitSuccess();
+        this.refs.property.onSubmitSuccess();
     },
 
     reset() {

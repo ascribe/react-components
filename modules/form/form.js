@@ -135,8 +135,8 @@ const Form = React.createClass({
             const { invoked, result } = safeInvoke(onSubmit, this.getFormData());
 
             if (invoked) {
-                result.then(this.handleSubmitComplete((propertyRef) => propertyRef.handleSubmitSuccess()))
-                      .catch(this.handleSubmitComplete((propertyRef) => propertyRef.handleSubmitFailure()));
+                result.then(this.onSubmitComplete((propertyRef) => propertyRef.onSubmitSuccess()))
+                      .catch(this.onSubmitComplete((propertyRef) => propertyRef.onSubmitFailure()));
             }
 
             this.setState({ submitting: true });
@@ -150,7 +150,7 @@ const Form = React.createClass({
         }, {});
     },
 
-    handleSubmitComplete(propertyFn) {
+    onSubmitComplete(propertyFn) {
         return () => {
             Object.values(this._refs).forEach(propertyFn);
 
@@ -238,7 +238,7 @@ const Form = React.createClass({
             headerType: HeaderType
         } = this.props;
 
-        const fakeAutoCompleteInputs = !autoComplete ? (
+        const fakeAutoCompleteInputs = autoComplete ? (
             <FakeAutoCompleteInputs fields={fakeAutoCompleteFields} />
         ) : null;
 

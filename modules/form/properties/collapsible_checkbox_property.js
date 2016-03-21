@@ -36,6 +36,7 @@ const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
         checkboxLabel: string,
         checked: bool,
         disabled: bool,
+        onChange: func,
         onExpandToggle: func
 
         // Any props used by the base Property are also passed down
@@ -52,7 +53,9 @@ const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
         }
     },
 
-    handleExpandToggle(expanding) {
+    onExpandToggle(expanding) {
+        const { onChange, onExpandToggle } = this.props;
+
         // Reset the property to its initial value when the checkbox is unticked (ie. when
         // `expanding` is false) since the user doesn't want to specify their own value for this
         // property.
@@ -60,7 +63,8 @@ const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
             this.refs.property.reset(); // Supplied by PropertyExtender and delegates to base Property
         }
 
-        safeInvoke(this.props.onExpandToggle, expanding);
+        safeInvoke(onExpandToggle, expanding);
+        safeInvoke(onChange, `${name}-checkbox`, expanding);
     },
 
     // Create a cached header type that uses our given props to avoid recreating
@@ -86,7 +90,8 @@ const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
                 expanded={!!checked}
                 headerLabel={checkboxLabel}
                 headerType={this.headerLayout}
-                onExpandToggle={this.handleExpandToggle} />
+                ignoreValueWhenCollapsed
+                onExpandToggle={this.onExpandToggle} />
         );
     }
 }));
