@@ -17,27 +17,26 @@ const { bool, func, number, string } = React.PropTypes;
 
 const InputTextarea = React.createClass({
     propTypes: {
-        rows: number.isRequired,
-
         autoFocus: bool,
-        className: string,
         convertLinks: bool,
         defaultValue: string,
         disabled: bool,
         maxRows: number,
         onChange: func,
         placeholder: string,
+        rows: number,
+        value: string,
 
         // Only used to signal for validation in Property
-        required: bool,
+        required: bool
 
-        // Provided by Property
-        value: string.isRequired
+        // All other props are passed to the backing TextareaAutosize or pre element
     },
 
     getDefaultProps() {
         return {
-            maxRows: 10
+            maxRows: 10,
+            rows: 1
         };
     },
 
@@ -78,7 +77,7 @@ const InputTextarea = React.createClass({
     },
 
     render() {
-        const { className, convertLinks, disabled, maxRows, placeholder, rows } = this.props;
+        const { convertLinks, disabled, maxRows, placeholder, rows, ...textareaProps } = this.props;
         const value = this.getValue();
 
         // TextareaAutosize doesn't implement a disabled property, so switch to using a <pre>
@@ -87,7 +86,7 @@ const InputTextarea = React.createClass({
             return (
                 <TextareaAutosize
                     ref='textarea'
-                    className={className}
+                    {...textareaProps}
                     maxRows={maxRows}
                     onChange={this.onTextChange}
                     placeholder={placeholder}
@@ -98,7 +97,7 @@ const InputTextarea = React.createClass({
         } else {
             // Can only convert links when not editable, as textarea does not support anchors
             return (
-                <pre className={className} styleName="disabled">
+                <pre {...textareaProps} styleName="disabled">
                     {convertLinks ? anchorize(value) : value}
                 </pre>
             );
