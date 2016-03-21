@@ -16,4 +16,4 @@
 }
 
 // Statuses
-@include ascribe-property--status-exploder(collapsible-property, './property.scss', error, fixed, focused, hidden, warning);
+@include ascribe-property--status-exploder(collapsible-property, './property.scss', error, fixed, focused, hidden, highlighted);

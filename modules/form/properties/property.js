@@ -44,6 +44,7 @@ const Property = React.createClass({
         footer: node,
         footerType: func,
         hidden: bool,
+        highlight: bool,
         ignoreFocus: bool,
         label: node,
         labelType: func,
@@ -96,7 +97,6 @@ const Property = React.createClass({
             initialValue: null,
 
             errorMessage: null,
-            hasWarning: false,
             isFocused: false,
             value: null
         };
@@ -201,8 +201,8 @@ const Property = React.createClass({
     },
 
     getStatus() {
-        const { disabled, hidden } = this.props;
-        const { errorMessage, hasWarning, isFocused } = this.state;
+        const { disabled, highlight, hidden } = this.props;
+        const { errorMessage, isFocused } = this.state;
 
         if (hidden) {
             return 'hidden';
@@ -212,8 +212,8 @@ const Property = React.createClass({
             return 'error';
         } else if (isFocused) {
             return 'focused';
-        } else if (hasWarning) {
-            return 'warning';
+        } else if (highlight) {
+            return 'highlighted';
         }
     },
 
@@ -253,8 +253,7 @@ const Property = React.createClass({
             onFocus: (...args) => {
                 safeInvoke(child.props.onFocus, ...args);
                 this.handleFocus();
-            },
-            setWarning: this.setWarning
+            }
         });
     },
 

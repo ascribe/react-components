@@ -62,12 +62,12 @@
     composes: hide from global;
 }
 
-.warning {
+.highlighted {
     border-left-color: $ascribe-colors--pink;
 }
 
 // Statuses
-@include ascribe-property--status-exploder(property, null, error, fixed, focused, hidden, warning);
+@include ascribe-property--status-exploder(property, null, error, fixed, focused, hidden, highlighted);
 
 // Helper components
 .body {
