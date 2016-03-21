@@ -24,27 +24,35 @@ class PropertyExtenderBuilder {
 
         // Use traditional binding so `this` evaluates to the rendered component
         this.spec[fnName] = function (...args) {
-            const propertyRef = this.refs.property.refs[propertyRefName];
+            const component = this.refs.property;
 
-            if (!propertyRef) {
-                throw new Error(`Could not find Property ref (using ${propertyRefName}) for ` +
-                                `extended component (display name: ${PropertyComponent.displayName}) ` +
-                                `when invoking extended function (${fnName}) from Property`);
+            if (typeof component[fnName] !== 'function') {
+                const propertyRef = component.refs[propertyRefName];
+
+                if (!propertyRef) {
+                    throw new Error(`Could not find Property ref (using ${propertyRefName}) for ` +
+                                    `extended component (display name: ${PropertyComponent.displayName}) ` +
+                                    `when invoking extended function (${fnName}) from Property`);
+                }
+
+                if (typeof propertyRef[fnName] !== 'function') {
+                    throw new Error(`Could not find invoked function: ${fnName} in extended Property ` +
+                                    `component (display name: ${PropertyComponent.displayName}) ` +
+                                    `using Property ref: ${propertyRefName}`);
+                }
+
+                return propertyRef[fnName](...args);
+            } else {
+                // If the component being extended already has this function, just invoke it
+                return this.refs.property[fnName](...args);
             }
-
-            if (typeof propertyRef[fnName] !== 'function') {
-                throw new Error(`Could not find invoked function: ${fnName} in extended Property ` +
-                                `component (display name: ${PropertyComponent.displayName}) ` +
-                                `using Property ref: ${propertyRefName}`);
-            }
-
-             return propertyRef[fnName](...args);
         }
     }
 }
 
 const PropertyExtender = (PropertyComponent, propertyRefName) => {
     const builder = new PropertyExtenderBuilder(PropertyComponent, propertyRefName);
+    builder.extendForFn('getValue');
     builder.extendForFn('handleFocus');
     builder.extendForFn('handleSubmitFailure');
     builder.extendForFn('handleSubmitSuccess');
