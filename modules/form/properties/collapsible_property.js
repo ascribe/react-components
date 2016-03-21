@@ -64,6 +64,7 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
         headerLabel: string,
         headerType: func,
 
+        ignoreValueWhenCollapsed: bool,
         layoutType: func,
 
         /**
@@ -117,6 +118,11 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
             nextProps.layoutType !== this.props.layoutType) {
             this.registerLayouts(nextProps);
         }
+    },
+
+    getValue() {
+        return (this.props.ignoreValueWhenCollapsed && !this.state.expanded) ? null
+                                                                             : this.refs.property.getValue();
     },
 
     handleExpandToggle() {
