@@ -128,10 +128,15 @@ const Property = React.createClass({
             value: this.state.initialValue
         });
 
-        if (this._refs.input) {
+        const inputElement = this._refs.input;
+
+        if (inputElement) {
             // In case the input element needs more than just the value changing to the initial
             // value to reset it, it can expose a reset method
-            safeInvoke(this._refs.input.reset);
+            safeInvoke({
+                fn: inputElement.reset,
+                context: inputElement
+            });
         }
 
         return this.state.initialValue;
@@ -165,7 +170,10 @@ const Property = React.createClass({
             }
 
             // Safe invoke in case the inputElement is a component without a focus function
-            safeInvoke(inputElement.focus);
+            safeInvoke({
+                fn: inputElement.focus,
+                context: inputElement
+            });
 
             this.setState({ isFocused: true }, () => safeInvoke(onFocus, event));
         }

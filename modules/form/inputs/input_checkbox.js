@@ -49,13 +49,27 @@ const InputCheckbox = React.createClass({
         }
     },
 
+    focus() {
+        this.refs.checkbox.focus();
+    },
+
+    // Required Property API
     getValue() {
         const { defaultValue, value } = this.props;
 
         return this.state.edited ? value : !!defaultValue;
     },
 
+    // Required Property API
+    reset() {
+        this.setState({ edited: false });
+    },
+
     onCheckboxChange(checked) {
+        if (!this.state.edited) {
+            this.setState({ edited: true });
+        }
+
         // Mock an event's payload as Checkbox's onChange just sends back the checked state.
         safeInvoke(this.props.onChange, {
             target: {

@@ -48,6 +48,17 @@ const InputDate = React.createClass({
         }
     },
 
+    focus() {
+        // React datepicker doesn't expose a focus method for its input, so we're forced to
+        // reach inside it
+        if (this.refs.datepicker.refs.input) {
+            safeInvoke({
+                fn: this.refs.datepicker.refs.input.focus,
+                context: this.refs.datepicker.refs.input
+            });
+        }
+    },
+
     // Required Property API
     getValue() {
         const momentValue = this.getValueMoment();
@@ -98,6 +109,7 @@ const InputDate = React.createClass({
 
         return (
             <DatePicker
+                ref="datepicker"
                 {...datePickerProps}
                 onChange={this.onDateChange}
                 selected={this.getValueMoment()} />

@@ -56,7 +56,7 @@ const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
         // Reset the property to its initial value when the checkbox is unticked (ie. when
         // `expanding` is false) since the user doesn't want to specify their own value for this
         // property.
-        if (!expanding && this.refs.property) {
+        if (!expanding) {
             this.refs.property.reset(); // Supplied by PropertyExtender and delegates to base Property
         }
 

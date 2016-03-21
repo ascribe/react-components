@@ -49,8 +49,17 @@ const InputTextarea = React.createClass({
     componentDidMount() {
         const { autoFocus, disabled } = this.props;
 
-        if (autoFocus && !disabled && this.refs.textarea) {
-            this.refs.textarea.focus();
+        if (autoFocus && !disabled) {
+            this.focus();
+        }
+    },
+
+    focus() {
+        if (this.refs.textarea) {
+            safeInvoke({
+                fn: this.refs.textarea.focus,
+                context: this.refs.textarea
+            });
         }
     },
 
