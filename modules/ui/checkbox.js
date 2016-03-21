@@ -13,8 +13,9 @@ const Checkbox = React.createClass({
         className: string,
         disabled: bool,
         label: node,
-        name: string,
         onChange: func
+
+        // All other props are passed down to the backing input element
     },
 
     getInitialState() {
@@ -28,11 +29,15 @@ const Checkbox = React.createClass({
         }
     },
 
+    focus() {
+        this.refs.input.focus();
+    },
+
     getChecked() {
         return this.props.hasOwnProperty('checked') ? this.props.checked : this.state.checked;
     },
 
-    onCheckboxChange() {
+    onCheckboxChange(event) {
         let checked;
 
         if (this.props.hasOwnProperty('checked')) {
@@ -46,7 +51,14 @@ const Checkbox = React.createClass({
     },
 
     render() {
-        const { className, disabled, label, name } = this.props;
+        const {
+            className,
+            disabled,
+            label,
+            checked: _, // ignore and rename to avoid name clash
+            onChange, // ignore
+            ...inputCheckboxProps
+        } = this.props;
         const checked = this.getChecked();
 
         let styleName = checked ? 'checked' : 'base';
@@ -58,13 +70,25 @@ const Checkbox = React.createClass({
         // Instead, we style another element as the UI but still keep a hidden <input> in case a
         // parent <form> relies on this component to have a native input for sending data
         // (eg. a <form method="post">).
+        //
+        // Inputs cannot be focused when they are hidden with display: none and visibility: hidden,
+        // so we have to use opacity and positioning instead
         return (
-            <label className={className} styleName={styleName} onClick={this.onCheckboxChange}>
+            <label className={className} styleName={styleName}>
                 <input
+                    ref="input"
+                    {...inputCheckboxProps}
                     checked={checked}
-                    name={name}
-                    onChange={/* Avoid react error for no onChange */noop}
-                    style={{ display: 'none' }}
+                    disabled={disabled}
+                    required={false}
+                    onChange={this.onCheckboxChange}
+                    style={{
+                        height: 0,
+                        opacity: 0,
+                        position: 'absolute',
+                        top: 0,
+                        width: 0
+                    }}
                     type="checkbox" />
                 <span>{label}</span>
             </label>
