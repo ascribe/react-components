@@ -2,6 +2,10 @@ import React from 'react';
 import update from 'react-addons-update';
 import CssModules from 'react-css-modules';
 
+import CollapsibleCheckboxProperty from './properties/collapsible_checkbox_property';
+import CollapsibleProperty from './properties/collapsible_property';
+import Property from './properties/property';
+
 import Button from '../buttons/button';
 import ButtonList from '../buttons/button_list';
 
@@ -11,6 +15,9 @@ import styles from './form.scss';
 
 
 const { arrayOf, bool, func, node, shape, string } = React.PropTypes;
+
+// Property types that Form will always recognize and track
+const TRACKED_PROPERTY_TYPES = [CollapsibleCheckboxProperty, CollapsibleProperty, Property];
 
 const EditedButtonList = ({ handleCancel }) => (
     <ButtonList pull="right">
@@ -53,6 +60,12 @@ const Form = React.createClass({
         buttonEdited: node,
         buttonSubmitting: node,
         className: string,
+
+        // Any additional custom property types that the form should track.
+        // Regardless of custom types given here, Form will always recognize the property types
+        // in TRACKED_PROPERTY_TYPES
+        customPropertyTypes: arrayOf(func),
+
         disabled: bool, // Can be used to freeze the whole form
         fakeAutoCompleteFields: arrayOf(shape({
             name: string,
@@ -67,6 +80,7 @@ const Form = React.createClass({
     getDefaultProps() {
         return {
             buttonEdited: (<EditedButtonList />),
+            customPropertyTypes: [],
             fakeAutoCompleteFields: [{
                 name: 'username',
                 type: 'text'
@@ -165,15 +179,17 @@ const Form = React.createClass({
     },
 
     renderChildren() {
-        const { children, disabled } = this.props;
+        const { children, customPropertyTypes, disabled } = this.props;
+        const trackedPropertyTypes = TRACKED_PROPERTY_TYPES.concat(customPropertyTypes);
+
         // Reset and reregister our tracked Properties to ensure we're not tracking any Properties
         // that were removed
         this._refs = {};
 
         return React.Children.map(children, (child) => {
-            // Only register child Properties with this form
-            if (child && child.type === Property) {
-                const { props: { disabled: childDisabled, name, overrideForm } } = child;
+            // Only register child Properties that are of a type known to this Form
+            if (trackedPropertyTypes.includes(child.type)) {
+                const { props: { disabled: childDisabled, name, overrideFormDefaults } } = child;
 
                 return React.cloneElement(child, {
                     key: name,
