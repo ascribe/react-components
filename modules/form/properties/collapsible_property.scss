@@ -1,0 +1,19 @@
+@import '../../styles/mixins/properties.scss';
+
+.collapsible-property {
+    composes: property from './property.scss';
+}
+
+.header {
+    padding: 1.5em;
+}
+
+.collapsible-body {
+    composes: body from './property.scss';
+
+    // Collapsible property bodies always have a divider between them and their header
+    border-top: 1px solid rgba(0, 0, 0, .05); /* Use alpha to make the border look thinner */
+}
+
+// Statuses
+@include ascribe-property--status-exploder(collapsible-property, './property.scss', error, fixed, focused, hidden, warning);

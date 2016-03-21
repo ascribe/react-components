@@ -7,6 +7,8 @@ import PropertyExtender from '../utils/property_extender';
 import { safeInvoke } from '../../utils/general';
 import { PropStuffer } from '../../utils/react';
 
+import styles from './collapsible_property.scss';
+
 
 const { bool, element, func, string } = React.PropTypes;
 

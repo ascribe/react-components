@@ -1,0 +1,97 @@
+@import '../../styles/colors.scss';
+@import '../../styles/mixins/properties.scss';
+
+.property {
+    background-color: white;
+    border-left: 3px solid transparent;
+    color: $ascribe-colors--text-primary;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover {
+        border-left-color: rgba($ascribe-colors--blue, 0.5);
+    }
+
+    /* Sibling Properties have a small divider between them */
+    & + .property {
+        border-top: 1px solid rgba(0, 0, 0, .05); /* Use alpha to make the border look thinner */
+    }
+
+    :global(.form-control) {
+        color: $ascribe-colors--text-primary;
+
+        &:focus {
+            box-shadow: none;
+        }
+    }
+
+    input,
+    select {
+        @include ascribe-property--input-base;
+    }
+
+    input::placeholder {
+        color: rgba($ascribe-colors--text-primary, 0.5);
+        font-style: normal;
+    }
+}
+
+.error {
+    background-color: rgba($ascribe-colors--red, 0.03);
+    border-left-color: $ascribe-colors--red;
+
+    &:hover {
+        border-left-color: rgba($ascribe-colors--red, 0.5);
+    }
+}
+
+.fixed {
+    cursor: default;
+}
+
+.focused {
+    background-color: rgba($ascribe-colors--primary-fg, 0.05);
+    border-left-color: $ascribe-colors--primary-fg;
+
+    &:hover {
+        border-left-color: $ascribe-colors--primary-fg;
+    }
+}
+
+.hidden {
+    composes: hide from global;
+}
+
+.warning {
+    border-left-color: $ascribe-colors--pink;
+}
+
+// Statuses
+@include ascribe-property--status-exploder(property, null, error, fixed, focused, hidden, warning);
+
+// Helper components
+.body {
+    padding: 1em 1.5em;
+}
+
+.label {
+    composes: clearfix from global;
+
+    cursor: pointer;
+    display: block;
+    font-size: 0.9em;
+    font-weight: inherit;
+    margin-bottom: 0.6em;
+    margin-top: 0;
+
+    .error-label {
+        color: $ascribe-colors--text-danger;
+    }
+}
+
+.footer {
+    composes: clearfix from global;
+
+    font-size: 0.8em;
+    margin-top: 10px;
+}

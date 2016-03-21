@@ -1,0 +1,44 @@
+/**
+ * Add base styling for inputs managed by a Property.
+ * Can't be converted into a normal class and used through CSS Module's `compose` syntax as
+ * `compose` can only work in a single :local class name (`compose` works with class names;
+ * trying to find and apply composition onto multiply nested or global classes is impossible
+ * at compile time).
+ */
+@mixin ascribe-property--input-base {
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+    font-size: 1.1em;
+    padding-left: 0;
+    width: 100%;
+
+    &:focus {
+        outline: 0;
+    }
+
+    &::selection {
+        background-color: black;
+        color: white;
+    }
+}
+
+/**
+ * Add Property status permutations to the base class name for the Property.
+ * @param $base     Base class name for the Property
+ * @param from      File to compose statuses from (use null if from same file)
+ * @param $statuses Statuses of property
+ */
+@mixin ascribe-property--status-exploder($base, $from, $statuses...) {
+    @each $status in $statuses {
+        .#{$base}-#{$status} {
+            composes: $base;
+
+            @if $from == null {
+                composes: $status;
+            } @else {
+                composes: $status from $from;
+            }
+        }
+    }
+}

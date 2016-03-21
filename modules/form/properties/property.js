@@ -6,7 +6,7 @@ import { validateInput } from '../utils/private/validation_utils';
 
 import { noop, safeInvoke } from '../../utils/general';
 
-//FIXME: import styles
+import styles from './property.scss';
 
 
 const { bool, element, func, node, shape, string } = React.PropTypes;
@@ -200,22 +200,20 @@ const Property = React.createClass({
         this.setState({ hasWarning });
     },
 
-        const { checkbox: { show: showCheckbox }, disabled } = this.props;
-        const { errorMessage, expanded, hasWarning, isFocused } = this.state;
     getStatus() {
+        const { disabled, hidden } = this.props;
+        const { errorMessage, hasWarning, isFocused } = this.state;
 
-        if (!expanded && !showCheckbox) {
-            return 'is-hidden';
+        if (hidden) {
+            return 'hidden';
         } else if (disabled) {
-            return 'is-fixed';
+            return 'fixed';
         } else if (errorMessage) {
-            return 'is-error';
-        } else if (hasWarning) {
-            return 'is-warning';
+            return 'error';
         } else if (isFocused) {
-            return 'is-focused';
-        } else {
-            return '';
+            return 'focused';
+        } else if (hasWarning) {
+            return 'warning';
         }
     },
 
@@ -304,4 +302,4 @@ const Property = React.createClass({
     }
 });
 
-export default Property;
+export default CssModules(Property, styles);

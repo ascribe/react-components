@@ -9,6 +9,8 @@ import Checkbox from '../../ui/checkbox';
 import { omitFromObject, safeInvoke } from '../../utils/general';
 import { PropStuffer } from '../../utils/react';
 
+import styles from './collapsible_checkbox_property.scss';
+
 
 const { bool, element, func, string } = React.PropTypes;
 
