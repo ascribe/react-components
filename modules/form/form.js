@@ -186,8 +186,10 @@ const Form = React.createClass({
                         // we need to invoke their callback refs with our refs here.
                         safeInvoke(child.ref, ref);
                     },
-                    // Allow the child to override the default disabled status of the form
-                    disabled: overrideForm ? childDisabled: disabled,
+                    // By default, the child is disabled if it or the entire form is disabled.
+                    // If the entire form is disabled, a child can still be activated if it uses
+                    // the `overrideFormDefaults` prop to control its disabled status itself.
+                    disabled: overrideFormDefaults ? childDisabled : disabled || childDisabled,
                     onChange: this.onPropertyChange(name)
                 });
             }

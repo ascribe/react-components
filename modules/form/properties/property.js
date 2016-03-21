@@ -2,9 +2,9 @@ import React from 'react';
 import classNames from 'classnames';
 import CssModules from 'react-css-modules';
 
-import { validateInput } from 'utils/private/validation_utils';
+import { validateInput } from '../utils/private/validation_utils';
 
-import { noop, safeInvoke } from '../../utils/general_utils';
+import { noop, safeInvoke } from '../../utils/general';
 
 //FIXME: import styles
 
@@ -47,12 +47,19 @@ const Property = React.createClass({
         onChange: func,
         onFocus: func,
 
-        // By default Properties will use the Form's `disabled` prop to determine if they should
-        // also be disabled. Use `overrideForm` to override the parent Form's `disabled` value
-        // with this Property's `disabled` prop.
-        // Note that this prop is only used in the Form when it registers Properties, so it is
-        // not used elsewhere in this component.
-        overrideForm: bool
+        /**
+         * By default, Properties will inherit some props from the parent Form for form-wide
+         * attributes. Use `overrideFormDefaults` to signal to the parent Form that this
+         * Property should avoid inheriting attributes and only use its own props.
+         *
+         * Note that this prop is only used by the Form when it registers Properties, so it is
+         * not used elsewhere in this component.
+         *
+         * Currently inherited properties:
+         *   - disabled: Disable this property
+         *
+         */
+        overrideFormDefaults: bool
     },
 
     getDefaultProps() {
@@ -106,7 +113,7 @@ const Property = React.createClass({
 
     componentDidMount() {
         if (this.props.autoFocus) {
-            this.onFocus();
+            this.handleFocus();
         }
 
         const initialValue = this.getValueOfInputElement();
@@ -162,13 +169,18 @@ const Property = React.createClass({
         this.setState({ value }, () => safeInvoke(this.props.onChange, value, event));
     },
 
-    onFocus(event) {
-        // If ignoreFocus (bool) is defined, then just ignore the attempt to focus
-        if (this.state.ignoreFocus) {
+    onBlur(event) {
+        this.setState({ isFocused: false }, () => safeInvoke(this.props.onBlur, event));
+    },
+
+    handleFocus() {
+        const { ignoreFocus, onFocus } = this.props;
+
+        if (ignoreFocus) {
             return;
         }
 
-        const inputElement = this._refs.input;
+        const { input: inputElement } = this._refs;
 
         if (inputElement) {
             // Skip the focus of non-input native elements
@@ -181,12 +193,8 @@ const Property = React.createClass({
             // Safe invoke in case the inputElement is a component without a focus function
             safeInvoke(inputElement.focus);
 
-            this.setState({ isFocused: true }, () => safeInvoke(this.props.onFocus, event));
+            this.setState({ isFocused: true }, () => safeInvoke(onFocus, event));
         }
-    },
-
-    onBlur(event) {
-        this.setState({ isFocused: false }, () => safeInvoke(this.props.onBlur, event));
     },
 
     handleSubmitFailure() {
@@ -200,7 +208,7 @@ const Property = React.createClass({
         this.setState({
             isFocused: false,
 
-            // Also update initialValue in case of the user updating and canceling its actions again
+            // Also update initialValue in case of the user updating and canceling their actions again
             initialValue: this.getValueOfInputElement()
         });
     },
