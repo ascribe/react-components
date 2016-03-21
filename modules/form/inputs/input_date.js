@@ -1,72 +1,94 @@
 import React from 'react';
+import CssModules from 'react-css-modules';
+import moment from 'moment';
 
-import DatePicker from 'react-datepicker/dist/react-datepicker';
+import DatePicker from 'react-datepicker';
 
-let InputDate = React.createClass({
+import { omitFromObject, safeInvoke } from '../../utils/general';
+
+import styles from './input_date.scss';
+
+
+const { bool, func, object, oneOfType, string } = React.PropTypes;
+
+/**
+ * Shim component to make DatePicker (https://github.com/Hacker0x01/react-datepicker) compatible
+ * with Form Properties
+ */
+const InputDate = React.createClass({
     propTypes: {
-        submitted: React.PropTypes.bool,
-        placeholderText: React.PropTypes.string,
-        onChange: React.PropTypes.func,
-        defaultValue: React.PropTypes.object,
+        // We'll convert any dates that are given from parents into moment dates when using them
+        defaultValue: oneOfType([object, string]),
+        onChange: func,
 
-        // DatePicker implements the disabled attribute
-        // https://github.com/Hacker0x01/react-datepicker/blob/master/src/datepicker.jsx#L30
-        disabled: React.PropTypes.bool
+        // Only used to signal for validation in Property
+        required: bool,
+
+        // Provided by Property
+        value: string.isRequired
+
+        // All the other props are passed to the backing DatePicker component.
+        // See the available props for DatePicker:
+        // https://github.com/Hacker0x01/react-datepicker/blob/master/docs/datepicker.md
+    },
+
+    getDefaultProps() {
+        return {
+            dateFormat: 'YYYY-MM-DD'
+        };
     },
 
     getInitialState() {
-        return this.getStateFromMoment(this.props.defaultValue);
-    },
-
-    // InputDate needs to support setting a defaultValue from outside.
-    // If this is the case, we need to call handleChange to propagate this
-    // to the outer Property
-    componentWillReceiveProps(nextProps) {
-        if(!this.state.value && !this.state.value_moment && nextProps.defaultValue) {
-            this.handleChange(nextProps.defaultValue);
+        return {
+            edited: false
         }
     },
 
-    getStateFromMoment(date) {
-        const state = {};
-
-        if (date) {
-            state.value = date.format('YYYY-MM-DD');
-            state.value_moment = date;
-        }
-
-        return state;
+    // Required Property API
+    getValue() {
+        // To make it easier to compose a JSON structure for form data, return a formatted string
+        // of the currently selected date to the Property managing this input.
+        return this.getValueMoment().format(this.props.dateFormat);
     },
 
-    handleChange(date) {
-        const newState = this.getStateFromMoment(date);
+    getValueMoment() {
+        const { defaultValue, value } = this.props;
 
-        this.setState(newState);
+        // If this input's been user edited, we should use the value passed from Property as
+        // Property is the one that manages an input component's values.
+        return moment(this.state.edited ? value : defaultValue);
+    },
 
-        // Propagate change up by faking event
-        this.props.onChange({
+    // Required Property API
+    reset() {
+        this.setState({ edited: false });
+    },
+
+    onDateChange(date) {
+        const { dateFormat, onChange } = this.props;
+
+        if (!this.state.edited) {
+            this.setState({ edited: true });
+        }
+
+        // Propagate change up by faking an event's payload
+        safeInvoke(onChange, {
             target: {
-                value: newState.value
+                value: date.format(dateFormat)
             }
         });
     },
 
-    reset() {
-        this.setState(this.getInitialState());
-    },
-
     render() {
+        const datePickerProps = omitFromObject(this.props, ['defaultValue', 'onChange', 'value']);
+
         return (
-            <div>
-                <DatePicker
-                    disabled={this.props.disabled}
-                    dateFormat="YYYY-MM-DD"
-                    selected={this.state.value_moment}
-                    onChange={this.handleChange}
-                    placeholderText={this.props.placeholderText}/>
-            </div>
+            <DatePicker
+                {...datePickerProps}
+                onChange={this.onDateChange}
+                selected={this.getValueMoment()} />
         );
     }
 });
 
-export default InputDate;
+export default CssModules(InputDate, styles);

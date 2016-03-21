@@ -1,0 +1,29 @@
+@import '../../styles/colors.scss';
+@import '../../styles/mixins/properties.scss';
+
+.base {
+    @include ascribe-property--input-base;
+
+    padding: 0;
+}
+
+.textarea {
+    composes: form-control from global;
+    composes: base;
+
+    margin-bottom: 1em;
+}
+
+textarea.textarea::placeholder {
+    color: rgba($ascribe-colors--dark-blue, 0.5);
+    font-style: normal;
+}
+
+.disabled {
+    composes: base;
+
+    margin: 0;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    word-wrap: break-word; /* For IE and Firefox, who don't support overflow-wrap */
+}

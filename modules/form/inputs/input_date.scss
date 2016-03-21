@@ -1,0 +1,8 @@
+@import 'react-datepicker/dist/react-datepicker.css';
+@import '../../styles/mixins/properties.scss';
+
+:global .datepicker__input {
+    @include ascribe-property--input-base;
+
+    padding: 0;
+}

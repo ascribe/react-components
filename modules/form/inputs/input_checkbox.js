@@ -1,121 +1,85 @@
 import React from 'react';
 
+import Checkbox from '../../ui/checkbox';
+
+import { safeInvoke } from '../../utils/general';
+
+const { bool, func, object, string } = React.PropTypes;
+
 /**
- * This component can be used as a custom input element for form properties.
- * It exposes its state via state.value and can be considered as a reference implementation
- * for custom input components that live inside of properties.
+ * This component can be used as a custom input element for Form Properties.
+ * It exposes its state via a `getValue()` and can be considered as a reference implementation
+ * for custom input components that live inside of a Property.
  */
-let InputCheckbox = React.createClass({
+const InputCheckbox = React.createClass({
     propTypes: {
-        required: React.PropTypes.bool,
+        // Style overrides for the default checkbox. See ui/checkbox for class names to implement.
+        checkboxStyle: object,
+
+        className: string,
 
         // As can be read here: https://facebook.github.io/react/docs/forms.html
         // inputs of type="checkbox" define their state via checked.
         // Their default state is defined via defaultChecked.
         //
         // Since this component even has checkbox in its name, it felt wrong to expose defaultValue
-        // as the default-setting prop to other developers, which is why we choose defaultChecked.
-        defaultChecked: React.PropTypes.bool,
-        children: React.PropTypes.oneOfType([
-            React.PropTypes.arrayOf(React.PropTypes.element),
-            React.PropTypes.element
-        ]),
-        name: React.PropTypes.string,
+        // as the default-setting prop to other developers, which is why we chose defaultChecked.
+        defaultChecked: bool,
+
+        disabled: bool,
+        label: string,
+        onChange: func,
+
+        // Only used to signal for validation in Property
+        required: bool,
 
         // provided by Property
-        disabled: React.PropTypes.bool,
-        onChange: React.PropTypes.func,
-
-        // can be used to style the component from the outside
-        style: React.PropTypes.object
+        name: string.isRequired,
+        value: bool.isRequired
     },
 
-    // As HTML inputs, we're setting the default value for an input to checked === false
-    getDefaultProps() {
-        return {
-            defaultChecked: false
-        };
-    },
-
-    // Setting value to null in initialState is essentially since we're deriving a certain state from
-    // value === null as can be seen in componentWillReceiveProps.
     getInitialState() {
         return {
-            value: null
+            edited: false
         };
     },
 
-    componentWillReceiveProps(nextProps) {
-
-        // Developer's are used to define defaultValues for inputs via defaultValue, but since this is a
-        // input of type checkbox we warn the dev to not do that.
-        if(this.props.defaultValue) { //eslint-disable-line react/prop-types
-            console.warn('InputCheckbox is of type checkbox. Therefore its value is represented by checked and defaultChecked. defaultValue will do nothing!');
-        }
-
-        // The first time InputCheckbox is rendered, we want to set its value to the value of defaultChecked.
-        // This needs to be done in order to expose it for the Property component.
-        // We can determine the first render by checking if value still has it's initialState(from getInitialState)
-        if(this.state.value === null) {
-            this.setState({value: nextProps.defaultChecked });
+    componentWillMount() {
+        // Developers are used to define defaultValues for inputs via defaultValue, but since this is a
+        // input of type checkbox we warn the dev not to do that.
+        // FIXME: use env variables to remove this when in production
+        if (this.props.hasOwnProperty('defaultValue')) { //eslint-disable-line react/prop-types
+            console.warn('InputCheckbox is of type checkbox. Therefore its default value is represented by defaultChecked. defaultValue will do nothing!');
         }
     },
 
-    onChange() {
-        // if this.props.disabled is true, we're just going to ignore every click,
-        // as the value should then not be changable by the user
-        if(this.props.disabled) {
-            return;
-        }
+    getValue() {
+        const { defaultChecked, value } = this.props;
 
-        // On every change, we're inversing the input's value
-        let inverseValue = !this.refs.checkbox.getDOMNode().checked;
+        return this.state.edited ? value : defaultChecked;
+    },
 
-        // pass it to the state
-        this.setState({value: inverseValue});
-
-        // and also call Property's onChange method
-        // (in this case we're mocking event.target.value, since we can not use the event
-        // coming from onChange. Its coming from the span (user is clicking on the span) and not the input)
-        this.props.onChange({
+    onCheckboxChange(checked) {
+        // Mock an event's payload as Checkbox's onChange just sends back the checked state.
+        safeInvoke(this.props.onChange, {
             target: {
-                value: inverseValue
+                value: checked
             }
         });
-
     },
 
     render() {
-
-        let style = {};
-
-        // Some conditional styling if the component is disabled
-        if(!this.props.disabled) {
-            style.cursor = 'pointer';
-            style.color = 'rgba(0, 0, 0, 0.5)';
-        } else {
-            style.cursor = 'not-allowed';
-            style.color = 'rgba(0, 0, 0, 0.35)';
-        }
+        const { checkboxStyle, className, disabled, name } = this.props;
 
         return (
-            <span
-                style={this.props.style}
-                onClick={this.onChange}
-                name={this.props.name}>
-                <input
-                    name={this.props.name}
-                    type="checkbox"
-                    ref="checkbox"
-                    onChange={this.onChange}
-                    checked={this.state.value}
-                    defaultChecked={this.props.defaultChecked}/>
-                <span
-                    className="checkbox"
-                    style={style}>
-                    {this.props.children}
-                </span>
-            </span>
+            <Checkbox
+                checked={this.getValue()}
+                className={className}
+                disabled={disabled}
+                label={label}
+                name={name}
+                onChange={this.onCheckboxChange}
+                styles={checkboxStyle} />
         );
     }
 });
