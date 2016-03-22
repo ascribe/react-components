@@ -22,7 +22,7 @@ Usage Dependencies
 
 Because of the dependency on CSS Modules, you should be using a module
 bundler that can support CSS Modules (see [webpack](https://github.com/webpack/webpack),
-[jspm](http://jspm.io/), [cssify](https://github.com/davidguttman/cssify) +
+[jspm](http://jspm.io/), or [cssify](https://github.com/davidguttman/cssify) +
 [css-modulesify](https://github.com/css-modules/css-modulesify)) and
 then configure the tools to include this library.
 
@@ -39,9 +39,10 @@ obviously isn't the case, we're left with using
 [Bootstrap-loader](https://github.com/shakacode/bootstrap-loader) to
 load this external CSS without CSS Modulifying it first.
 
-In the future, it'd be nice to write a PostCSS plugin that could detect
-if you meant to import a file as a global dependency, not a local one.
-
+SASS can be configured to load a .css stylesheet into a `:global` block
+(see what we do with react-datepicker's stylesheet in form/inputs/input_date.scss),
+but unfortunately this doesn't work in all the cases because of the
+pesky nested `&` selector.
 
 Usage
 -----
@@ -71,36 +72,32 @@ node_module. **Note that this repo is exported as
 To import components, you can either import the entire library, for example:
 
 ```javascript
-// Whole library
+// Whole library using the bundled files (so you don't have to worry
+about CSS Modules or building anything)
 import { Uploader } from 'ascribe-react-components';
 
 // Use component
 ...
 <Uploader.ReactS3FineUploader ... />
 
-
-// Import whole library using the bundled files (so you don't have to
-worry about CSS Modules)
-import { Uploader } from 'ascribe-react-components/dist';
-
 // And include ascribe-react-components/dist/styles.css in your html
 ```
 
-Or, if you're not yet treeshaking and only want a particular component
-or module, you can also import directly from `ascribe-react-components/lib/...`
-(for module bundlers that don't understand ES6 imports) or
-`ascribe-react-components/es6/...` (for those that do):
+Or, if you're using a bundler that can handle CSS Modules, style imports, SASS,
+and ES6 import syntax, you can also import particular components directly from
+`ascribe-react-components/modules/...`. Using this will also enable your bundler
+to treeshake if it has that capability.
 
 ```javascript
 // Single component:
-import ReactS3FineUploader from 'ascribe-react-components/lib/uploader/react_s3_fine_uploader';
+import ReactS3FineUploader from 'ascribe-react-components/modules/uploader/react_s3_fine_uploader';
 
 
 // Whole module (each module exposes a index.js):
-import Uploader from 'ascribe-react-components/lib/uploader';
+import Uploader from 'ascribe-react-components/modules/uploader';
 
 // or
-import { ReactS3FineUploader } from 'ascribe-react-components/lib/uploader';
+import { ReactS3FineUploader } from 'ascribe-react-components/modules/uploader';
 ```
 
 Versioning
@@ -114,7 +111,7 @@ for more info).
 {
     ...
     "dependencies": {
-        "react-components": "git@github.com:ascribe/react-components.git#v0.0.1"
+        "ascribe-react-components": "git@github.com:ascribe/react-components.git#v0.0.1"
     }
     ...
 }
@@ -152,7 +149,7 @@ that's served with webpack-dev-server. To run it:
 
 ```bash
 npm install
-npm start
+npm run start
 ```
 
 
@@ -160,6 +157,4 @@ TODO
 ====
 * [ ] Unit tests
 * [ ] Add themable extensions, maybe forking [rethemable](https://github.com/andreypopp/rethemeable)
-* [ } Write PostCSS plugin that understands expanded nested :global
-  block declarations
 * [ ] Upgrade FineUploader, and don't use the commonJS hack

@@ -13,12 +13,10 @@
   "scripts": {
     "lint": "eslint ./",
     "postinstall": "npm run build",
-    "build": "npm run build:main && npm run build:es6 && npm run build:dist",
-    "build:main": "rimraf ./lib && babel ./modules -d ./lib --presets es2015",
-    "build:es6": "rimraf ./es6 && babel ./modules -d ./es6 --presets es2015-no-commonjs",
+    "build": "npm run build:dist",
     "build:dist": "rimraf ./dist && NODE_ENV=production webpack -p",
     "build:extract": "NODE_ENV=extract webpack",
-    "clean": "rimraf ./build ./dist ./es6 ./lib",
+    "clean": "rimraf ./build ./dist",
     "start": "NODE_ENV=demo node server.demo.js"
   },
   "author": "Ascribe",

@@ -15,7 +15,5 @@
 
 build/*
 dist/*
-es6/*
-lib/*
 
 node_modules/*
