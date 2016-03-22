@@ -7,7 +7,7 @@ styleLoaders:
     - postcss
     - sass?sourceMap&output=expanded&precision=8
 
-preBootstrapCustomizations: ./modules/styles/bootstrap_defaults.scss
+preBootstrapCustomizations: ./modules/styles/_bootstrap_defaults.scss
 
 styles:
     # Always needs to be included
