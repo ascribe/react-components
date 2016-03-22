@@ -1,5 +1,5 @@
-@import '../../styles/colors.scss';
-@import '../../styles/mixins/properties.scss';
+@import '../../styles/colors';
+@import '../../styles/mixins/properties';
 
 .base {
     @include ascribe-property--input-base;

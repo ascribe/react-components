@@ -1,4 +1,4 @@
-@import '../../styles/mixins/properties.scss';
+@import '../../styles/mixins/properties';
 
 .collapsible-property {
     composes: property from './property.scss';
