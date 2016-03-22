@@ -100,6 +100,11 @@ import Uploader from 'ascribe-react-components/modules/uploader';
 import { ReactS3FineUploader } from 'ascribe-react-components/modules/uploader';
 ```
 
+Note that if you directly import components from `/modules/...`, you will have to
+load the bootstrap dependencies yourself, as the components aren't able to import
+them directly. See the component's documentation, as well as
+[.bootstraprc](/.bootstraprc) for the necessary bootstrap stylesheets.
+
 Versioning
 ----------
 
