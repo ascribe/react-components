@@ -2,7 +2,7 @@
 
 /* Import react-datepicker's stylesheet into global css. */
 :global {
-    @import 'react-datepicker/dist/react-datepicker';
+    @import '~react-datepicker/dist/react-datepicker';
 }
 
 :global .datepicker__input {
