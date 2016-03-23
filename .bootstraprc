@@ -13,17 +13,11 @@ styles:
     # Always needs to be included
     mixins: true
 
-    # Normalize
-    normalize: true
-    scaffolding: true
-
     # Utilities
     utilities: true
 
     # Selected stylesheets
     buttons: true
     forms: true
-    grid: true
-    panels: true
 
 scripts: false
