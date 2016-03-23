@@ -1,8 +1,14 @@
 /**
- * Default variable overrides against bootstrap's. Load this **before** loading bootstrap variables.
+ * Default variable overrides against bootstrap's for future / deprecated components.
  *
- * NOTE: This is a collection of carried-over variable changes from before CSS Modules, and should
- * be phased out as components get built and override the default bootstrap components.
+ * This is a collection of carried-over variable changes from before CSS Modules, and should be
+ * phased out as components get built and override the default bootstrap components. As of now,
+ * no components actually use these overrides and so this is left more for documentation purposes
+ * when future components using these overrides are built, or when deprecated components are fully
+ * removed.
+ *
+ * As such, we don't actually use these overrides when building bootstrap and users of these
+ * components shouldn't import this file as well.
  */
 
 @import "./colors.scss";
@@ -15,7 +21,7 @@ $border-radius-large:             0;
 $border-radius-small:             0;
 
 /* Other buttons have been moved over to their component's styles */
-$btn-danger-border:               $ascribe-colors--error;
+$btn-danger-color:               $ascribe-colors--error;
 
 $input-group-addon-bg:            $ascribe-colors--dark-blue;
 $input-group-addon-border-color:  transparent;

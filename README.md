@@ -163,3 +163,5 @@ TODO
 * [ ] Unit tests
 * [ ] Add themable extensions, maybe forking [rethemable](https://github.com/andreypopp/rethemeable)
 * [ ] Upgrade FineUploader, and don't use the commonJS hack
+* [ ] Phase out [bootstrap overrides](./modules/styles/_bootstrap_defaults.scss)
+      as new components are built / old components from Onion are removed
