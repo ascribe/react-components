@@ -1,6 +1,8 @@
 import React from 'react';
 import CssModules from 'react-css-modules';
 
+import HiddenInput from './hidden_input';
+
 import { noop, safeInvoke } from '../utils/general';
 
 import styles from './checkbox.scss';
@@ -30,7 +32,7 @@ const Checkbox = React.createClass({
     },
 
     focus() {
-        this.refs.input.focus();
+        this.inputElement.focus();
     },
 
     getChecked() {
@@ -70,25 +72,15 @@ const Checkbox = React.createClass({
         // Instead, we style another element as the UI but still keep a hidden <input> in case a
         // parent <form> relies on this component to have a native input for sending data
         // (eg. a <form method="post">).
-        //
-        // Inputs cannot be focused when they are hidden with display: none and visibility: hidden,
-        // so we have to use opacity and positioning instead
         return (
             <label className={className} styleName={styleName}>
-                <input
-                    ref="input"
+                <HiddenInput
+                    ref={(ref) => { this.inputElement = ref && ref.inputElement; }}
                     {...inputCheckboxProps}
                     checked={checked}
                     disabled={disabled}
                     required={false}
                     onChange={this.onCheckboxChange}
-                    style={{
-                        height: 0,
-                        opacity: 0,
-                        position: 'absolute',
-                        top: 0,
-                        width: 0
-                    }}
                     type="checkbox" />
                 <span>{label}</span>
             </label>

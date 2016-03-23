@@ -1,13 +1,17 @@
 import React from 'react';
 
+import HiddenInput from '../ui/hidden_input';
+
+
 const { bool, func, string } = React.PropTypes;
 
 const FileInput = React.createClass({
     propTypes: {
-        onChange: func.isRequired,
-
+        // All props given will be passed down to the backing input element.
+        // This is just a list of the more useful props that you'll likely want to use:
         accept: string,
-        multiple: bool
+        multiple: bool,
+        onChange: func
     },
 
     // Fake click events to act as if the user clicked directly on this input instead of its
@@ -28,32 +32,18 @@ const FileInput = React.createClass({
         }
 
         evt.stopPropagation();
-        this.refs.inputElement.dispatchEvent(evt);
+        this.inputElement.dispatchEvent(evt);
     },
 
     reset() {
-        this.refs.inputElement.value = '';
+        this.inputElement.value = '';
     },
 
     render() {
-        const { accept, multiple, onChange } = this.props;
-
-        // Opera doesn't trigger simulated click events if the targeted input has `display:none`
-        // set, which means we need to set its visibility to hidden instead.
-        // See http://stackoverflow.com/questions/12880604/jquery-triggerclick-not-working-on-opera-if-the-element-is-not-displayed
         return (
-            <input
-                ref="inputElement"
-                accept={accept}
-                multiple={multiple}
-                onChange={onChange}
-                style={{
-                    height: 0,
-                    position: 'absolute',
-                    top: 0,
-                    visibility: 'hidden',
-                    width: 0
-                }}
+            <HiddenInput
+                ref={(ref) => { this.inputElement = ref && ref.inputElement; }}
+                {...this.props}
                 type="file" />
         );
     }
