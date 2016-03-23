@@ -165,7 +165,7 @@ const App = () => {
                         </select>
                     </Property>
                     <Property
-                        highlight
+                        highlighted
                         label="Highlighted label"
                         name="highlighted">
                         <input placeholder="highlighted placeholder" type="text" defaultValue="higlighted" />

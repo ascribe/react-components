@@ -48,7 +48,7 @@ const Property = React.createClass({
         footer: node,
         footerType: func,
         hidden: bool,
-        highlight: bool,
+        highlighted: bool,
         ignoreFocus: bool,
         label: node,
         labelType: func,
@@ -211,7 +211,7 @@ const Property = React.createClass({
     },
 
     getStatus() {
-        const { disabled, highlight, hidden } = this.props;
+        const { disabled, highlighted, hidden } = this.props;
         const { errorMessage, isFocused } = this.state;
 
         if (hidden) {
@@ -222,7 +222,7 @@ const Property = React.createClass({
             return 'error';
         } else if (isFocused) {
             return 'focused';
-        } else if (highlight) {
+        } else if (highlighted) {
             return 'highlighted';
         }
     },
