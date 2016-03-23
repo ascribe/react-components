@@ -72,11 +72,13 @@ let FileDragAndDropInput = React.createClass({
     },
 
     render() {
-        const { allowedExtensions,
-                children,
-                className,
-                disabled,
-                multiple } = this.props;
+        const {
+            allowedExtensions,
+            children,
+            className,
+            disabled,
+            multiple
+        } = this.props;
 
         return (
             <div

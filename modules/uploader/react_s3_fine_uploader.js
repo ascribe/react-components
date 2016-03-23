@@ -15,16 +15,7 @@ import { extractFileExtensionFromString } from '../utils/file';
 import { arrayFrom, safeInvoke } from '../utils/general';
 
 
-const { any,
-        arrayOf,
-        bool,
-        element,
-        func,
-        number,
-        object,
-        oneOfType,
-        shape,
-        string } = React.PropTypes;
+const { any, arrayOf, bool, element, func, number, object, oneOfType, shape, string } = React.PropTypes;
 
 // ReactS3FineUploader is essentially just a react layer around FineUploader's s3 uploader that
 // mirrors the internally tracked files of FineUploader to pass them down as props for child
@@ -393,7 +384,7 @@ const ReactS3FineUploader = React.createClass({
     componentWillMount() {
         // Set up internal storage for file input ref that may need to also be propagated back up to the
         // parent component
-        this._refs = {};
+        this.= {};
     },
 
     componentWillUnmount() {
@@ -413,29 +404,31 @@ const ReactS3FineUploader = React.createClass({
     },
 
     clearFileSelection() {
-        const { fileInput } = this.refs;
+        const { fileInput } = this;
         if (fileInput) {
             safeInvoke(fileInput.clearSelection);
         }
     },
 
     createNewFineUploader() {
-        const { autoUpload,
-                chunking,
-                cors,
-                debug,
-                deleteFile,
-                formatFileName,
-                messages,
-                multiple,
-                objectProperties,
-                request,
-                resume,
-                retry,
-                session,
-                signature,
-                uploadSuccess,
-                validation } = this.props;
+        const {
+            autoUpload,
+            chunking,
+            cors,
+            debug,
+            deleteFile,
+            formatFileName,
+            messages,
+            multiple,
+            objectProperties,
+            request,
+            resume,
+            retry,
+            session,
+            signature,
+            uploadSuccess,
+            validation
+        } = this.props;
 
         const uploaderConfig = {
             autoUpload,
@@ -932,7 +925,7 @@ const ReactS3FineUploader = React.createClass({
             return React.cloneElement(FileInputElement, {
                 ...props,
                 ref: (ref) => {
-                    this._refs.fileInput = ref;
+                    this.fileInput = ref;
 
                     // If the given FileInputElement has a ref callback defined, propagate the new
                     // component back up to the parent component so it can keep a ref to it too
@@ -942,7 +935,7 @@ const ReactS3FineUploader = React.createClass({
         } else {
             return (
                 <FileInputElement
-                    ref={ref => this._refs.fileInput = ref}
+                    ref={ref => this.fileInput = ref}
                     {...props} />
             );
         }
