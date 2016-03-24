@@ -12,3 +12,4 @@ export ValidationErrors from './constants/validation_errors';
 export * as FileFilters from './utils/file_filters';
 export * as FormValidationUtils from './utils/form_validation_utils';
 export MimeTypeMapping from './utils/mime_type_mapping';
+export Uploadify from './utils/uploadify';
