@@ -1,7 +1,7 @@
 import React from 'react';
 
 import FileInput from '../file_input';
-import FileStatus from '../file_status';
+import FileStatus from '../constants/file_status';
 
 import Button from '../../buttons/button';
 import ButtonContainer from '../../buttons/button_container';

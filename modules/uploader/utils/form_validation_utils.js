@@ -1,6 +1,6 @@
 import { processingFilter, successfullyUploadedFilter } from './file_filters';
 
-import FileStatus from '../file_status';
+import FileStatus from '../constants/file_status';
 
 /**
  * Returns a boolean if there has been at least one file uploaded

@@ -3,9 +3,9 @@ import update from 'react-addons-update'
 import FineUploader from './vendor/s3.fine-uploader';
 
 import UploadButton from './upload_button/upload_button';
+import FileStatus from './constants/file_status';
+import ValidationErrors from './constants/validation_errors';
 
-import FileStatus from './file_status';
-import ValidationErrors from './validation_errors';
 
 import { validFilesFilter } from './utils/file_filters';
 import MimeTypeMapping from './utils/mime_type_mapping';

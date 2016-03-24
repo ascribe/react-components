@@ -1,4 +1,4 @@
-import FileStatus from '../file_status';
+import FileStatus from '../constants/file_status';
 
 /**
  * Filter function for filtering out currently processing files
