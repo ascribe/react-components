@@ -1,4 +1,4 @@
-import fineUploader from './vendor/s3.fine-uploader';
+import fineUploader from '../vendor/s3.fine-uploader';
 
 
 // Re-export qq.status from FineUploader with an additional online
