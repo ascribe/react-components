@@ -1,6 +1,6 @@
 import React from 'react';
 
-import HiddenInput from '../ui/hidden_input';
+import HiddenInput from '../../ui/hidden_input';
 
 
 const { bool, func, string } = React.PropTypes;
