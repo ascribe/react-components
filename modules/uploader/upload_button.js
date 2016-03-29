@@ -1,154 +1,159 @@
 import React from 'react';
 
-import FileInput from '../file_input';
-import FileStatus from '../constants/file_status';
+import Uploadify from './utils/uploadify';
 
-import Button from '../../buttons/button';
-import ButtonContainer from '../../buttons/button_container';
+import Button from '../buttons/button';
+import ButtonContainer from '../buttons/button_container';
 
-import { successfullyUploadedFilter, uploadingFilter, validProgressFilesFilter } from '../utils/file_filters';
+import { successfullyUploadedFilter, uploadingFilter, validProgressFilesFilter } from './utils/file_filters';
 
-import { safeInvoke, truncateTextAtCharIndex } from '../../utils/general';
+import { truncateTextAtCharIndex } from '../utils/general';
 
 
-const { array, bool, func, string } = React.PropTypes;
+const { arrayOf, bool, func, node, object } = React.PropTypes;
 
-export default function UploadButton({
-            buttonElement = (<Button />),
-            fileLabels = {
-                singular: 'file',
-                plural: 'files'
+const FileLabel = ({ files, handleRemoveFiles }) => {
+    if (files.length) {
+        const labelText = files.length > 1 ? `${files.length} files`
+                                           : truncateTextAtCharIndex(files[0].name, 40);
+
+        return (
+            <span>
+                {`${labelText} `}
+                <a onClick={handleRemoveFiles}>remove</a>
+            </span>
+        );
+    } else {
+        return (<span>No file selected</span>);
+    }
+};
+
+const UploadButton = Uploadify(React.createClass({
+    propTypes: {
+        buttonType: func,
+        children: node,
+        disabled: bool,
+
+        /**
+         * Get the button's label (ie. children). By default, if you provide children to this
+         * component and do not provide this function, the children will be used as the label in
+         * all states.
+         *
+         * @param  {boolean}  uploading     Whether there are files currently uploading
+         * @param  {object[]} uploaderFiles All files tracked by uploader
+         * @param  {number}   progress      Total progress on set of valid files tracked by uploader
+         * @return {node}                   Button label
+         *
+        */
+        getButtonLabel: func,
+
+        fileLabelType: func,
+
+        // Provided by ReactS3FineUploader
+        uploaderFiles: arrayOf(object)
+
+        // All other props and the disabled prop are passed to buttonType
+    },
+
+    contextTypes: {
+        handleCancelFile: func.isRequired,
+        handleDeleteFile: func.isRequired,
+        handleSelectFiles: func.isRequired
+    },
+
+    getDefaultProps() {
+        return {
+            buttonType: Button,
+            getButtonLabel: (uploading, progress) => {
+                return uploading ? `Upload progress: ${progress}`
+                                 : 'file';
             },
-            getDefaultButtonLabel = (multiple) => {
-                return multiple ? fileLabels.plural : fileLabels.singular;
-            },
-            getUploadingButtonLabel = (progress) => {
-                return `Upload progress: ${progress}%`;
-            },
-            getLabel = (files, handleRemoveFiles, canBeMultiple) => {
-                if (files.length) {
-                    const labelText = files.length > 1 ? `${files.length} files`
-                                                       : truncateTextAtCharIndex(files[0].name, 40);
-                    return (
-                        <span>
-                            {` ${labelText} `}
-                            <a onClick={handleRemoveFiles}>remove</a>
-                        </span>
-                    );
-                } else {
-                    return `No ${canBeMultiple ? 'files' : 'file'} selected`;
-                }
-            }
-        } = {}) {
+            fileLabelType: FileLabel
+        };
+    },
 
-    return React.createClass({
-        displayName: 'UploadButton',
+    getButtonLabel() {
+        const { children, getButtonLabel, uploaderFiles } = this.props;
 
-        propTypes: {
-            // Provided by ReactS3FineUploader
-            filesToUpload: array.isRequired,
-            handleCancelFile: func.isRequired,
-            handleDeleteFile: func.isRequired,
-            handleSubmitFile: func.isRequired,
-
-            allowedExtensions: string,
-            disabled: bool,
-            multiple: bool
-        },
-
-        onFileSubmit(event) {
-            const { handleSubmitFile } = this.props;
-            const disabled = this.isDisabled();
-            const files = event.target.files;
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            if (!disabled && files) {
-                safeInvoke(handleSubmitFile, files);
-            }
-        },
-
-        clearSelection() {
-            this.refs.fileSelector.reset();
-        },
-
-        getButtonLabel() {
-            const { filesToUpload, multiple } = this.props;
-
-            if (this.getUploadingFiles().length) {
-                // Filter invalid files that might have been deleted or canceled before finding progress
-                const validFiles = filesToUpload.filter(validProgressFilesFilter);
-                const progress = validFiles.reduce((sum, file) => sum + file.progress, 0) / validFiles.length;
-
-                return getUploadingButtonLabel(progress);
-            } else {
-                return getDefaultButtonLabel(multiple);
-            }
-        },
-
-        getUploadingFiles(filesToUpload = this.props.filesToUpload) {
-            return filesToUpload.filter(uploadingFilter);
-        },
-
-        getUploadedFiles() {
-            return this.props.filesToUpload.filter(successfullyUploadedFilter);
-        },
-
-        handleOnClick() {
-            if (!this.isDisabled()) {
-                // First, remove any currently uploading or uploaded items before selecting more
-                // items to upload
-                this.handleRemoveFiles();
-
-                // Dispatch a fake click through the fileSelector to show the native file selector
-                this.refs.fileSelector.dispatchClickEvent();
-            }
-        },
-
-        handleRemoveFiles() {
-            const { handleCancelFile, handleDeleteFile } = this.props;
-            const uploadingFiles = this.getUploadingFiles();
-
-            this.clearSelection();
-
-            if (uploadingFiles.length) {
-                uploadingFiles.forEach((file) => handleCancelFile(file.id));
-            } else {
-                this.getUploadedFiles().forEach((file) => handleDeleteFile(file.id));
-            }
-        },
-
-        isDisabled() {
-            return this.props.disabled || !!this.getUploadingFiles().length;
-        },
-
-        render() {
-            const { allowedExtensions, filesToUpload, multiple } = this.props;
-            const buttonLabel = this.getButtonLabel();
-            const label = getLabel(filesToUpload, this.handleRemoveFiles, multiple);
-
-            const buttonChildren = [buttonLabel, (
-                <FileInput
-                    ref="fileSelector"
-                    accept={allowedExtensions}
-                    multiple={multiple}
-                    onChange={this.onFileSubmit} />
-            )];
-
-            // The button needs to be of `type="button"` as it may be nested in a form that should
-            // not be submitted through this button
-            const button = React.cloneElement(buttonElement, {
-                disabled: this.isDisabled(),
-                onClick: this.handleOnClick,
-                type: 'button'
-            }, ...buttonChildren);
-
-            return (
-                <ButtonContainer label={label}>
-                    {button}
-                </ButtonContainer>
-            );
+        if (children) {
+            // If this component already has children, use them for the button label as is
+            // consistent with other buttons.
+            return children;
         }
-    });
-}
+
+        let uploading = false;
+        let progress = 0;
+
+        if (this.getUploadingFiles().length) {
+            uploading = true;
+
+            // Filter invalid files that might have been deleted or canceled before calculating progress
+            const progressFiles = this.getProgressFiles();
+            const progress = progressFiles.reduce((sum, file) => sum + file.progress, 0) / progressFiles.length;
+        }
+
+        return getButtonLabel(uploading, uploaderFiles, progress);
+    },
+
+    getProgressFiles() {
+        return this.props.uploaderFiles.filter(validProgressFilesFilter);
+    },
+
+    getUploadingFiles() {
+        return this.props.uploaderFiles.filter(uploadingFilter);
+    },
+
+    getUploadedFiles() {
+        return this.props.uploaderFiles.filter(successfullyUploadedFilter);
+    },
+
+    handleRemoveFiles() {
+        const { handleCancelFile, handleDeleteFile } = this.context;
+
+        this.getUploadingFiles().forEach((file) => handleCancelFile(file.id));
+        this.getUploadedFiles().forEach((file) => handleDeleteFile(file.id));
+    },
+
+    isDisabled() {
+        return this.props.disabled || this.getUploadingFiles().length;
+    },
+
+    onFileSelect(event) {
+        if (!this.isDisabled()) {
+            // First, remove any currently uploading or uploaded items before selecting more items
+            // to upload
+            this.handleRemoveFiles();
+
+            this.context.handleSelectFiles();
+        }
+    },
+
+    render() {
+        const {
+            buttonType: ButtonType,
+            fileLabelType: FileLabelType,
+            children, // ignore
+            getButtonLabel, // ignore
+            uploaderFiles, // ignore
+            ...buttonProps
+        } = this.props
+        const buttonChildren = this.getButtonLabel();
+        const fileLabel = (
+            <FileLabelType
+                files={this.getProgressFiles()}
+                handleRemoveFiles={this.handleRemoveFiles} />
+        );
+
+        return (
+            <ButtonContainer label={fileLabel}>
+                {/* The button needs to be of `type="button"` as it may be nested in a form that
+                    should not be submitted through this button */}
+                <ButtonType {...buttonProps} onClick={this.onFileSelect} type="button">
+                    {buttonChildren}
+                </ButtonType>
+            </ButtonContainer>
+        );
+    }
+}));
+
+export default UploadButton;
