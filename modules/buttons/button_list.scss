@@ -7,7 +7,7 @@
 .button-list {
     composes: base;
 
-    button {
+    button, a[role="button"] {
         margin-right: 1px;
     }
 }
@@ -15,7 +15,7 @@
 .button-list-vertical {
     composes: base;
 
-    button {
+    button, a[role="button"] {
         display: block;
         margin-bottom: 1px;
     }

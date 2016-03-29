@@ -39,6 +39,7 @@ const App = () => {
                 <Button size="xs">Primary XS</Button>
                 <Button size="sm">Primary SM</Button>
                 <Button size="lg">Primary LG</Button>
+                <Button href="http://www.google.com" size="lg">Primary LG Anchor</Button>
                 <div>
                     <Button wide>Primary Wide</Button>
                 </div>
@@ -51,6 +52,7 @@ const App = () => {
                 <Button classType="secondary" size="xs">Secondary XS</Button>
                 <Button classType="secondary" size="sm">Secondary SM</Button>
                 <Button classType="secondary" size="lg">Secondary LG</Button>
+                <Button classType="secondary" href="http://www.google.com" size="lg">Primary LG Anchor</Button>
                 <div>
                     <Button classType="secondary" wide>Secondary Wide</Button>
                 </div>
@@ -63,6 +65,7 @@ const App = () => {
                 <Button classType="tertiary" size="xs">Tertiary XS</Button>
                 <Button classType="tertiary" size="sm">Tertiary SM</Button>
                 <Button classType="tertiary" size="lg">Tertiary LG</Button>
+                <Button classType="tertiary" href="http://www.google.com" size="lg">Primary LG Anchor</Button>
                 <div>
                     <Button classType="tertiary" wide>Tertiary Wide</Button>
                 </div>
@@ -108,6 +111,14 @@ const App = () => {
                     <Button>Button 1</Button>
                     <Button classType="secondary">Button 2</Button>
                     <Button classType="tertiary">Button 3</Button>
+                </ButtonList>
+            </div>
+            <h4>Anchor buttons</h4>
+            <div>
+                <ButtonList>
+                    <Button href="http://www.google.com">Button 1</Button>
+                    <Button classType="secondary" href="http://www.google.com">Button 2</Button>
+                    <Button classType="tertiary" href="http://www.google.com">Button 3</Button>
                 </ButtonList>
             </div>
             <h2>Forms</h2>
