@@ -17,6 +17,7 @@ Usage Dependencies
 * React-addon-update >= 0.14 (should be same version as React)
 * [Babel-polyfill](https://babeljs.io/docs/usage/polyfill/) (cause babel can't statically transform 'em all)
 * CSS Modules, with [React CSS Modules](https://github.com/gajus/react-css-modules)
+* [SASS](http://sass-lang.com/)
 * [Bootstrap 3](http://getbootstrap.com/) -- see [.bootstraprc](./.bootstraprc)
   and [Bootstrap-loader](https://github.com/shakacode/bootstrap-loader)
 
@@ -105,6 +106,11 @@ load the bootstrap dependencies yourself, as the components aren't able to impor
 them directly. See the component's documentation, as well as
 [.bootstraprc](/.bootstraprc) for the necessary bootstrap stylesheets.
 
+Extending Components
+--------------------
+
+TODO
+
 Versioning
 ----------
 
@@ -131,6 +137,20 @@ repo. A good guide for setting up private repos as modules [can be
 found here](http://fiznool.com/blog/2015/05/20/an-alternative-to-npm-private-modules/).
 
 
+Developing
+==========
+
+Demo server
+-----------
+
+There's a (currently ugly) demo page that allows you to test components
+that's served with webpack-dev-server. To run it:
+
+```bash
+npm install
+npm run start
+```
+
 Style guide
 -----------
 
@@ -145,17 +165,20 @@ transpiled by Babel:
   * [Object-rest-spread](https://github.com/sebmarkbage/ecmascript-rest-spread): Stage 2
   * [Object-values-entries](https://github.com/tc39/proposal-object-values-entries): Stage 3
 
+CSS / SASS
+----------
 
-Developing
-==========
+Every component should be styled using their own CSS Module. Variables
+and mixins should be used when something can be generalized for multiple
+components or be used in the future to more easily extend or customize
+styles. They should be placed in the [styles](./styles/) folder.
 
-There's a (currently ugly) demo page that allows you to test components
-that's served with webpack-dev-server. To run it:
-
-```bash
-npm install
-npm run start
-```
+[Sass-resources-loader](https://github.com/shakacode/sass-resources-loader)
+is used to inject variables and mixins from bootstrap and our
+[styles](./styles/) folder into all sass files during compile time (so
+you don't have to declare imports for them, but **make sure** that any
+file injected by sass-resources-loader doesn't contain real css;
+otherwise, that css will be injected into every file as well).
 
 
 TODO
