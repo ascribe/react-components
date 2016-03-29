@@ -71,7 +71,7 @@ const CSS_LOADER = combineLoaders([
         loader: 'css',
         query: {
             modules: true,
-            importLoaders: 2,
+            importLoaders: 3,
             localIdentName: '[path]__[name]__[local]_[hash:base64:5]',
             sourceMap: true
         }
@@ -86,6 +86,9 @@ const CSS_LOADER = combineLoaders([
             outputStyle: 'expanded',
             sourceMap: true
         }
+    },
+    {
+        loader: 'sass-resources'
     }
 ]);
 
@@ -136,7 +139,8 @@ const config = {
         ]
     },
 
-    postcss: [autoPrefixer({ browsers: COMPATIBILITY })]
+    postcss: [autoPrefixer({ browsers: COMPATIBILITY })],
+    sassResources: './sass-resources.scss'
 };
 
 module.exports = config;

@@ -1,6 +1,3 @@
-@import '../../styles/colors';
-@import '../../styles/mixins/properties';
-
 .base {
     @include ascribe-property--input-base;
 
