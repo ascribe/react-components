@@ -3,7 +3,7 @@ import FileStatus from '../constants/file_status';
 /**
  * Filter function for filtering out currently processing files
  * (ie. still uploading, deleting, in queue, or paused)
- * @param  {object}  file  A file from filesToUpload, that has a status as a prop.
+ * @param  {object}  file  A file from filesToUpload, that has a status property.
  * @return {boolean}       True if file is still getting processed
  */
 export function processingFilter(file) {
@@ -17,7 +17,7 @@ export function processingFilter(file) {
 }
 /**
  * Filter function for filtering out successfully uploaded files
- * @param  {object}  file  A file from filesToUpload, that has a status as a prop.
+ * @param  {object}  file  A file from filesToUpload, that has a status property.
  * @return {boolean}       True if file was uploaded successfully
  */
 export function successfullyUploadedFilter(file) {
@@ -26,7 +26,7 @@ export function successfullyUploadedFilter(file) {
 
 /**
  * Filter function for filtering out currently uploaded files
- * @param  {object}  file  A file from filesToUpload, that has a status as a prop.
+ * @param  {object}  file  A file from filesToUpload, that has a status property.
  * @return {boolean}       True if file is still uploading
  */
 export function uploadingFilter(file) {
@@ -36,7 +36,7 @@ export function uploadingFilter(file) {
 
 /**
  * Filter function for filtering out all deleted, canceled, and failed files
- * @param  {object}  file A file from filesToUpload that has status as a prop.
+ * @param  {object}  file A file from filesToUpload that has a status property.
  * @return {boolean}      True if file is valid
  */
 export function validFilesFilter(file) {
@@ -47,8 +47,8 @@ export function validFilesFilter(file) {
 }
 
 /**
- * Filter function for which files to integrate in the progress process
- * @param  {object}  file A file from filesToUpload, that has a status as a prop.
+ * Filter function for which files to integrate into a total progress calculation
+ * @param  {object}  file A file from filesToUpload, that has a status property.
  * @return {boolean}      True if file is valid
  */
 export function validProgressFilesFilter(file) {
@@ -60,7 +60,7 @@ export function validProgressFilesFilter(file) {
 
 /**
  * Filter function for filtering all files except for deleted, canceled, and failed files
- * @param  {object} file A file from filesToUpload that has status as a prop.
+ * @param  {object} file A file from filesToUpload that has a status property.
  * @return {boolean}
  */
 export function removedFilesFilter(file) {

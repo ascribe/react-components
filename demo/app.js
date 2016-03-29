@@ -7,7 +7,9 @@ import ReactDOM from 'react-dom';
 import { Button, ButtonContainer, ButtonList } from '../modules/buttons';
 import { CollapsibleCheckboxProperty, CollapsibleProperty, Form, InputCheckbox, InputDate, InputTextarea, Property } from '../modules/form';
 import { Checkbox } from '../modules/ui';
-import { FileDragAndDropInput, ReactS3FineUploader, UploadButton } from '../modules/uploader';
+import { UploadButton, UploadDragAndDropArea } from '../modules/uploader';
+
+import { arrayFrom } from '../modules/utils/general';
 
 import './app.scss';
 
@@ -22,22 +24,6 @@ const App = () => {
             endpoint: 's3/signature/'
         }
     };
-
-    const FileDragAndDrop = (
-        <FileDragAndDropInput
-            handleSubmitFile={() => {
-                /* Just to avoid the .isRequired error.
-                 *
-                 * Actual usage of this component would probably involve it being wrapped by
-                 * another component with the props getting passed down during the render.
-                 *
-                 * This is only a problem here because we're directly instantiating the
-                 * class to add child UI elements.
-                 */
-            }}>
-            <div style={{'width': 100, 'height': 100, 'backgroundColor': 'red'}} />
-        </FileDragAndDropInput>
-    );
 
     return (
         <div>
@@ -346,22 +332,36 @@ const App = () => {
             <h2>Uploader</h2>
             <h3>Upload button</h3>
             <div>
-                <ReactS3FineUploader {...dummyUploaderProps} />
+                <UploadButton uploaderProps={dummyUploaderProps} />
             </div>
             <h4>Custom upload button</h4>
             <div>
-                <ReactS3FineUploader
-                    {...dummyUploaderProps}
-                    fileInputElement={UploadButton({
-                        buttonElement: (<Button classType="secondary" />),
-                        getLabel: () => null
-                    })} />
+                <UploadButton
+                    classType="secondary"
+                    uploaderProps={dummyUploaderProps}
+                    wide />
+            </div>
+            <h4>Disabled upload button</h4>
+            <div>
+                <UploadButton disabled uploaderProps={dummyUploaderProps} />
             </div>
             <h3>Drag and drop</h3>
             <div>
-                <ReactS3FineUploader
-                    {...dummyUploaderProps}
-                    fileInputElement={FileDragAndDrop} />
+                <UploadDragAndDropArea uploaderProps={dummyUploaderProps}>
+                    <div style={{'width': 100, 'height': 100, 'backgroundColor': 'green'}} />
+                </UploadDragAndDropArea>
+            </div>
+            <h3>Drag and drop ignore files</h3>
+            <div>
+                <UploadDragAndDropArea
+                    onDrop={(event) => {
+                        if (event && event.dataTransfer && event.dataTransfer.files.length > 0) {
+                            alert('Ignoring dropped files: ' + arrayFrom(event.dataTransfer.files).reduce((names, file) => `${names} ${file.name}`, ''));
+                        }
+                    }}
+                    uploaderProps={dummyUploaderProps}>
+                    <div style={{'width': 100, 'height': 100, 'backgroundColor': 'red'}} />
+                </UploadDragAndDropArea>
             </div>
         </div>
     );
