@@ -12,7 +12,7 @@ import { transformAllowedExtensionsToInputAcceptProp } from './utils/private/dom
 import FileSelector from '../file_handlers/file_selector';
 
 import { extractFileExtensionFromString } from '../utils/file';
-import { arrayFrom, safeInvoke } from '../utils/general';
+import { arrayFrom, isShallowEqual, safeInvoke } from '../utils/general';
 
 
 const { bool, func, node, object } = React.PropTypes;
@@ -138,7 +138,6 @@ const ReactS3FineUploader = React.createClass({
          *
          * Errors:
          *   'Delete completed for unfound file with id: ${id}'
-         *   'Failed to delete unfound file with id: ${id}'
          *   'Failed to set status of unfound file with id: {id} to: {status}'
          *
          * @param {string} desc  Description of error
@@ -525,6 +524,10 @@ const ReactS3FineUploader = React.createClass({
         return transformAllowedExtensionsToInputAcceptProp(allowedExtensions, mimeTypeMapping);
     },
 
+    isFileTrackedByUploader(file) {
+        return isShallowEqual(file, this.state.uploaderFiles[file.id]);
+    },
+
     isFileValid(file) {
         const { onValidationFailed, validation: { allowedExtensions, sizeLimit }  } = this.props;
         const fileExt = extractFileExtensionFromString(file.name);
@@ -802,6 +805,11 @@ const ReactS3FineUploader = React.createClass({
 
     /***** HANDLERS FOR ACTIONS *****/
     handleCancelFile(file) {
+        if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
+            console.warn('Ignoring attempt to cancel file not tracked by this uploader', file);
+            return;
+        }
+
         this.cancelUploads(file.id);
     },
 
@@ -809,8 +817,8 @@ const ReactS3FineUploader = React.createClass({
         const { handleDeleteOnlineFile, onFileError } = this.props;
         const { uploader, uploaderFiles } = this.state;
 
-        if (!fileToDelete) {
-            safeInvoke(onFileError, `Failed to delete unfound file with id: ${fileId}`);
+        if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
+            console.warn('Ignoring attempt to delete file not tracked by this uploader', file);
             return;
         }
 
@@ -854,6 +862,11 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handlePauseFile(file) {
+        if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
+            console.warn('Ignoring attempt to pause file not tracked by this uploader', file);
+            return;
+        }
+
         if (this.state.uploader.pauseUpload(file.id)) {
             this.setStatusOfFile(file.id, FileStatus.PAUSED)
                 .then((file) => safeInvoke(this.props.onPause, file));
@@ -863,6 +876,11 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleResumeFile(file) {
+        if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
+            console.warn('Ignoring attempt to resume file not tracked by this uploader', file);
+            return;
+        }
+
         const resumeSuccessful = this.state.uploader.continueUpload(file.id);
 
         if (resumeSuccessful) {
@@ -877,6 +895,11 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleRetryFile(file) {
+        if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
+            console.warn('Ignoring attempt to manually retry file not tracked by this uploader', file);
+            return;
+        }
+
         // Our onManualRetry handler for FineUploader will take care of setting the status of our tracked file
         this.state.uploader.retry(file.id);
     },
