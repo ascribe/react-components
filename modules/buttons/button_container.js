@@ -23,7 +23,7 @@ ButtonContainerLabel.displayName = 'ButtonContainerLabel';
 const ButtonContainer = ({ children, className, label }) => (
     <div
         className={className}
-        styleName={label ? 'container' : 'container-has-label'}>
+        styleName={label ? 'container-has-label' : 'container'}>
         {children}
         <ButtonContainerLabel content={label} />
     </div>
