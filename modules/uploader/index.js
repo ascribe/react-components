@@ -2,7 +2,7 @@
 export ReactS3FineUploader from './react_s3_fine_uploader';
 
 // Uploader UI
-export UploadButton from './upload_button/upload_button';
+export UploadButton from './upload_button';
 export UploadDragAndDropArea from './upload_drag_and_drop_area';
 
 // Utilities and constants
