@@ -319,6 +319,50 @@ const ReactS3FineUploader = React.createClass({
         validation: object
     },
 
+    childContextTypes: {
+        /**
+         * Attempts to cancel the given file tracked by this uploader
+         *
+         * @param {object} File File to cancel
+        */
+        handleCancelFile: func,
+
+        /**
+         * Attempts to delete the given file tracked by this uploader
+         *
+         * @param {object} File File to delete
+        */
+        handleDeleteFile: func,
+
+        /**
+         * Attempts to pause the given file tracked by this uploader
+         *
+         * @param {object} File File to pause
+        */
+        handlePauseFile: func,
+
+        /**
+         * Attempts to resume the given file tracked by this uploader
+         *
+         * @param {object} File File to resume
+        */
+        handleResumeFile: func,
+
+        /**
+         * Attempts to retry the given file tracked by this uploader
+         *
+         * @param {object} File File to retry
+        */
+        handleRetryFile: func,
+
+        /**
+         * Submits the given files to the uploader
+         *
+         * @param {File[]} Files Files to submit
+        */
+        handleSubmitFiles: func
+    },
+
     getDefaultProps() {
         return {
             mimeTypeMapping: MimeTypeMapping,
@@ -368,29 +412,6 @@ const ReactS3FineUploader = React.createClass({
         };
     },
 
-    //FIXME: add documentation
-    childContextTypes: {
-        handleCancelFile: func,
-        handleDeleteFile: func,
-        handleSubmitFiles: func,
-        handlePauseFile: func,
-        handleResumeFile: func,
-        handleRetryFile: func,
-    },
-
-    getChildContext() {
-        // Pass through an uploader API as context so any child component in the subtree
-        // can access and use them
-        return {
-            handleCancelFile: this.handleCancelFile,
-            handleDeleteFile: this.handleDeleteFile,
-            handleSubmitFiles: this.handleSubmitFiles,
-            handlePauseFile: this.handlePauseFile,
-            handleResumeFile: this.handleResumeFile,
-            handleRetryFile: this.handleRetryFile
-        };
-    },
-
     getInitialState() {
         return {
             uploader: this.createNewFineUploader(),
@@ -399,6 +420,19 @@ const ReactS3FineUploader = React.createClass({
 
             // for logging
             chunks: {}
+        };
+    },
+
+    getChildContext() {
+        // Pass through an uploader API as context so any child component in the subtree
+        // can access and use them
+        return {
+            handleCancelFile: this.handleCancelFile,
+            handleDeleteFile: this.handleDeleteFile,
+            handlePauseFile: this.handlePauseFile,
+            handleResumeFile: this.handleResumeFile,
+            handleRetryFile: this.handleRetryFile,
+            handleSubmitFiles: this.handleSubmitFiles
         };
     },
 
@@ -767,14 +801,13 @@ const ReactS3FineUploader = React.createClass({
 
 
     /***** HANDLERS FOR ACTIONS *****/
-    handleCancelFile(fileId) {
-        this.cancelUploads(fileId);
+    handleCancelFile(file) {
+        this.cancelUploads(file.id);
     },
 
-    handleDeleteFile(fileId) {
+    handleDeleteFile(file) {
         const { handleDeleteOnlineFile, onFileError } = this.props;
         const { uploader, uploaderFiles } = this.state;
-        const fileToDelete = uploaderFiles[fileId];
 
         if (!fileToDelete) {
             safeInvoke(onFileError, `Failed to delete unfound file with id: ${fileId}`);
@@ -794,22 +827,22 @@ const ReactS3FineUploader = React.createClass({
         //
         // To check which files were uploaded from previous sessions we can check their status;
         // If they are online, the status will be "online".
-        if (fileToDelete.status !== FileStatus.ONLINE) {
+        if (file.status !== FileStatus.ONLINE) {
             // FineUploader handled this file and internally registered an id to it, so
             // we can just let FineUploader handle the deletion
             //
             // To check on the status of the deletion, see onDeleteComplete as
             // FineUploader's deleteFile does not return a callback or promise
-            uploader.deleteFile(fileId);
+            uploader.deleteFile(file.id);
         } else {
             safeInvoke({
                 fn: handleDeleteOnlineFile,
-                params: [fileToDelete],
-                error: new Error(`ReactS3FineUploader cannot delete file (${fileToDelete.name}) ` +
+                params: [file],
+                error: new Error(`ReactS3FineUploader cannot delete file (${file.name}) ` +
                                  'originating from a previous session because ' +
                                  'handleDeleteOnlineFile() was not was specified as a prop.')
-            }).result.then(() => this.onDeleteComplete(fileId, null, false))
-                     .catch(() => this.onDeleteComplete(fileId, null, true));
+            }).result.then(() => this.onDeleteComplete(file.id, null, false))
+                     .catch(() => this.onDeleteComplete(file.id, null, true));
         }
 
         // We set the files state to 'deleted' immediately, so that the user is not confused with
@@ -817,30 +850,35 @@ const ReactS3FineUploader = React.createClass({
         //
         // If there is an error during the deletion, we will just change the status back to FileStatus.ONLINE
         // and display an error message
-        this.setStatusOfFile(fileId, FileStatus.DELETED);
+        this.setStatusOfFile(file.id, FileStatus.DELETED);
     },
 
-    handlePauseFile(fileId) {
-        if (this.state.uploader.pauseUpload(fileId)) {
-            this.setStatusOfFile(fileId, FileStatus.PAUSED)
+    handlePauseFile(file) {
+        if (this.state.uploader.pauseUpload(file.id)) {
+            this.setStatusOfFile(file.id, FileStatus.PAUSED)
                 .then((file) => safeInvoke(this.props.onPause, file));
         } else {
             throw new Error('File upload could not be paused.');
         }
     },
 
-    handleResumeFile(fileId) {
-        const resumeSuccessful = this.state.uploader.continueUpload(fileId);
+    handleResumeFile(file) {
+        const resumeSuccessful = this.state.uploader.continueUpload(file.id);
 
         if (resumeSuccessful) {
             // FineUploader's onResume callback is **ONLY** used for when a file is resumed from
             // persistent storage, not when they're paused and continued, so we have to handle
             // this callback ourselves
-            this.setStatusOfFile(fileId, FileStatus.UPLOADING)
+            this.setStatusOfFile(file.id, FileStatus.UPLOADING)
                 .then((file) => safeInvoke(this.props.onResume, file));
         } else {
             throw new Error('File upload could not be resumed.');
         }
+    },
+
+    handleRetryFile(file) {
+        // Our onManualRetry handler for FineUploader will take care of setting the status of our tracked file
+        this.state.uploader.retry(file.id);
     },
 
     handleSubmitFiles(files) {

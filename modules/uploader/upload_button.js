@@ -110,15 +110,15 @@ const UploadButton = Uploadify(React.createClass({
     handleRemoveFiles() {
         const { handleCancelFile, handleDeleteFile } = this.context;
 
-        this.getUploadingFiles().forEach((file) => handleCancelFile(file.id));
-        this.getUploadedFiles().forEach((file) => handleDeleteFile(file.id));
+        this.getUploadingFiles().forEach(handleCancelFile);
+        this.getUploadedFiles().forEach(handleDeleteFile);
     },
 
     isDisabled() {
         return this.props.disabled || this.getUploadingFiles().length;
     },
 
-    onFileSelect(event) {
+    onFileSelect() {
         if (!this.isDisabled()) {
             // First, remove any currently uploading or uploaded items before selecting more items
             // to upload
