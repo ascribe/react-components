@@ -108,11 +108,6 @@ const Property = React.createClass({
         };
     },
 
-    componentWillMount() {
-        // Set up internal storage for callback refs
-        this._refs = {};
-    },
-
     componentDidMount() {
         if (this.props.autoFocus) {
             this.focus();
@@ -132,14 +127,12 @@ const Property = React.createClass({
             value: this.state.initialValue
         });
 
-        const inputElement = this._refs.input;
-
-        if (inputElement) {
+        if (this.inputElement) {
             // In case the input element needs more than just the value changing to the initial
             // value to reset it, it can expose a reset method
             safeInvoke({
-                fn: inputElement.reset,
-                context: inputElement
+                fn: this.inputElement.reset,
+                context: this.inputElement
             });
         }
 
@@ -151,12 +144,11 @@ const Property = React.createClass({
             return;
         }
 
-        const { input: inputElement } = this._refs;
-        if (inputElement) {
+        if (this.inputElement) {
             // Safe invoke in case the inputElement is a component without a focus function
             safeInvoke({
-                fn: inputElement.focus,
-                context: inputElement
+                fn: this.inputElement.focus,
+                context: this.inputElement
             });
         }
     },
@@ -203,7 +195,7 @@ const Property = React.createClass({
     },
 
     getValueOfInputElement() {
-        const { input: { getValue = noop, value } = {} } = this._refs;
+        const { inputElement: { getValue = noop, value } = {} } = this;
 
         // If our child input is not a native input element, we expect it to have a `getValue()`
         // method that give us its value.
@@ -234,7 +226,7 @@ const Property = React.createClass({
         const child = this.getChild();
         return React.cloneElement(child, {
             ref: (ref) => {
-                this._refs.input = ref;
+                this.inputElement = ref;
 
                 // By attaching refs to the child from this component, we're overwriting any
                 // already attached refs to the child. As we'd still like to allow parents
@@ -273,10 +265,8 @@ const Property = React.createClass({
     },
 
     validate() {
-        const { input: inputElement } = this._refs;
-
-        if (inputElement) {
-            const errorProp = validateInput(inputElement, this.getValueOfInputElement());
+        if (this.inputElement) {
+            const errorProp = validateInput(this.inputElement, this.getValueOfInputElement());
             const newState = { errorMessage: null };
 
             if (errorProp) {
