@@ -199,13 +199,18 @@ const ReactS3FineUploader = React.createClass({
         /**
          * Similar to FineUploader's onSessionRequestComplete
          * (http://docs.fineuploader.com/branch/master/api/events.html#sessionRequestComplete).
-         * Assumes the response from the session request will contain an array of files to be
-         * initially loaded into the uploader. Files successfully requested from the session will
-         * also have their status set to FileStatus.ONLINE.
          *
-         * @param {object[]} response Response from session request
-         * @param {boolean}  success  If the session request was successful or not
-         * @param {xhr|xdr}  xhr      The xhr used to make the request
+         * `onSessionRequestComplete` must be defined if FineUploader's session
+         * (http://docs.fineuploader.com/branch/master/features/session.html) feature is used.
+         *
+         * It is expected that `onSessionRequestComplete` will return an array of files that
+         * will be tracked by this uploader. All files obtained through `onSessionRequestComplete`
+         * will automatically have their status set to FileStatus.ONLINE and progress set to 100.
+         *
+         * @param  {object[]} response Response from session request
+         * @param  {boolean}  success  If the session request was successful or not
+         * @param  {xhr|xdr}  xhr      The xhr used to make the request
+         * @return {object[]}          Array of files to be tracked by this component
          */
         onSessionRequestComplete: func,
 
@@ -729,15 +734,30 @@ const ReactS3FineUploader = React.createClass({
         });
     },
 
-    onSessionRequestComplete(response, success, xhr) {
-        if (success && Array.isArray(response)) {
-            response.forEach((file) => {
-                file.status = FileStatus.ONLINE;
-                file.progress = 100;
-            });
+    onSessionRequestComplete(...params) {
+        const { onFilesChanged, onSessionRequestComplete } = this.props;
+
+        const { invoked, result: sessionFiles } = safeInvoke({
+            fn: onSessionRequestComplete,
+            params: params,
+            error: new Error("FineUploader's session feature was used without providing an " +
+                             'onSessionRequestComplete() callback to ReactS3FineUploader')
+        });
+
+        if (!Array.isArray(sessionFiles)) {
+            throw new Error("ReactS3FineUploader's onSessionRequestComplete() did not return an " +
+                            'array of files.');
         }
 
-        safeInvoke(this.props.onSessionRequestComplete, response, success, xhr);
+        sessionFiles.forEach((file) => {
+            file.status = FileStatus.ONLINE;
+            file.progress = 100;
+        });
+
+        // Update our tracked files with the ones loaded from the session
+        this.setState({ uploaderFiles: this.state.uploaderFiles.concat(sessionFiles) }, () => {
+            safeInvoke(onFilesChanged, this.state.uploaderFiles);
+        });
     },
 
     onStatusChange(fileId, oldStatus, newStatus) {
