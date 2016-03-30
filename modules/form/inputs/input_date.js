@@ -64,21 +64,20 @@ const InputDate = React.createClass({
         const momentValue = this.getValueMoment();
 
         // To make it easier to compose a JSON structure for form data, return a formatted string
-        // of the currently selected date to the Property managing this input.
+        // of the currently selected date to the parent managing this input.
         return momentValue ? momentValue.format(this.props.dateFormat) : '';
     },
 
     getValueMoment() {
         const { dateFormat, defaultValue, value } = this.props;
 
-        // If this input's been user edited, we should use the value passed from Property as
-        // Property is the one that manages an input component's values.
+        // If this input's been user edited, we should use the value passed from the controlling
+        // parent component as its the one that managing this input component's values.
         const curValue = this.state.edited ? value : defaultValue;
 
         return curValue ? moment(curValue, dateFormat, true) : null;
     },
 
-    // Required Property API
     reset() {
         this.setState({ edited: false });
     },

@@ -127,14 +127,12 @@ const Property = React.createClass({
             value: this.state.initialValue
         });
 
-        if (this.inputElement) {
-            // In case the input element needs more than just the value changing to the initial
-            // value to reset it, it can expose a reset method
-            safeInvoke({
-                fn: this.inputElement.reset,
-                context: this.inputElement
-            });
-        }
+        // In case the input element needs more than just the value changing to the initial
+        // value to reset it, it can expose a reset method
+        safeInvoke({
+            fn: this.inputElement.reset,
+            context: this.inputElement
+        });
 
         return this.state.initialValue;
     },
@@ -144,13 +142,11 @@ const Property = React.createClass({
             return;
         }
 
-        if (this.inputElement) {
-            // Safe invoke in case the inputElement is a component without a focus function
-            safeInvoke({
-                fn: this.inputElement.focus,
-                context: this.inputElement
-            });
-        }
+        // Safe invoke in case the inputElement is a component without a focus function
+        safeInvoke({
+            fn: this.inputElement.focus,
+            context: this.inputElement
+        });
     },
 
     onInputChange(event) {
@@ -168,6 +164,7 @@ const Property = React.createClass({
         this.setState({ isFocused: true }, () => safeInvoke(this.props.onFocus, event));
     },
 
+    // Required by Form API
     onSubmitFailure() {
         // If submission failed, just unfocus any properties in the form
         this.setState({
@@ -175,6 +172,7 @@ const Property = React.createClass({
         });
     },
 
+    // Required by Form API
     onSubmitSuccess() {
         this.setState({
             isFocused: false,
@@ -190,12 +188,13 @@ const Property = React.createClass({
         return React.Children.only(this.props.children);
     },
 
+    // Required by Form API
     getValue() {
         return this.state.value;
     },
 
     getValueOfInputElement() {
-        const { inputElement: { getValue = noop, value } = {} } = this;
+        const { getValue = noop, value } = this.inputElement;
 
         // If our child input is not a native input element, we expect it to have a `getValue()`
         // method that give us its value.
@@ -264,22 +263,21 @@ const Property = React.createClass({
         });
     },
 
+    // Required by Form API
     validate() {
-        if (this.inputElement) {
-            const errorProp = validateInput(this.inputElement, this.getValueOfInputElement());
-            const newState = { errorMessage: null };
+        const errorProp = validateInput(this.inputElement, this.getValueOfInputElement());
+        const newState = { errorMessage: null };
 
-            if (errorProp) {
-                const { invoked, result: errorMessage } = safeInvoke(this.props.createErrorMessage, errorProp);
+        if (errorProp) {
+            const { invoked, result: errorMessage } = safeInvoke(this.props.createErrorMessage, errorProp);
 
-                if (invoked && errorMessage) {
-                    newState.errorMessage = errorMessage;
-                }
+            if (invoked && errorMessage) {
+                newState.errorMessage = errorMessage;
             }
-
-            this.setState(newState);
-            return errorProp;
         }
+
+        this.setState(newState);
+        return errorProp;
     },
 
     render() {

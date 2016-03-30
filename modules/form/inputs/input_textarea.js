@@ -67,12 +67,11 @@ const InputTextarea = React.createClass({
     getValue() {
         const { defaultValue, value } = this.props;
 
-        // If this input's been user edited, we should use the value passed from Property as
-        // Property is the one that manages an input component's values.
+        // If this input's been user edited, we should use the value passed from the controlling
+        // parent component as its the one that managing this input component's values.
         return this.state.edited ? value : defaultValue;
     },
 
-    // Required Property API
     reset() {
         this.setState({ edited: false });
     },
@@ -89,7 +88,7 @@ const InputTextarea = React.createClass({
         const { convertLinks, disabled, maxRows, placeholder, rows, ...textareaProps } = this.props;
         const value = this.getValue();
 
-        // TextareaAutosize doesn't implement a disabled property, so switch to using a <pre>
+        // TextareaAutosize doesn't implement a disabled prop, so switch to using a <pre>
         // when this input's disabled.
         if (!disabled) {
             return (
