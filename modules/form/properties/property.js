@@ -93,32 +93,32 @@ const Property = React.createClass({
     },
 
     getInitialState() {
+        const defaultValue = this.getChild().props.defaultValue;
+
         return {
             /**
              * initialValue is used to reset the child input to its initial state. We initially use
              * the child's defaultValue as this value, but this can change later on as the form gets
              * submitted and further changes are made (if the form has already been submitted,
              * resetting the form afterwards should restore it to its last submission state).
-            */
-            initialValue: this.getChild().props.defaultValue,
+             */
+            initialValue: defaultValue,
 
             errorMessage: null,
             isFocused: false,
-            value: null
+
+            /**
+             * `value` is a representation of the child input's value that is used only to control
+             * the input (ie. handle its edited value); any time we need to use the input's value,
+             * we request it directly using its value property (on native inputs) or `getValue()`.
+             */
+            value: defaultValue
         };
     },
 
     componentDidMount() {
         if (this.props.autoFocus) {
             this.focus();
-        }
-
-        const inputValue = this.getValueOfInputElement();
-
-        if (inputValue != null) {
-            // We need to wait until componentDidMount to set this state as we have to wait for
-            // the input element to render before we can get its value
-            this.setState({ value: inputValue });
         }
     },
 
@@ -190,7 +190,7 @@ const Property = React.createClass({
 
     // Required by Form API
     getValue() {
-        return this.state.value;
+        return this.getValueOfInputElement();
     },
 
     getValueOfInputElement() {
