@@ -145,6 +145,14 @@ const ReactS3FineUploader = React.createClass({
         onFileError: func,
 
         /**
+         * Called whenever any of the internal files tracked by this component changes (ie. a file
+         * is added, or a file's status was changed)
+         *
+         * @param {object[]} files Files tracked by this component
+         */
+        onFilesChanged: func,
+
+        /**
          * Similar to FineUploader's onManualRetry
          * (http://docs.fineuploader.com/branch/master/api/events.html#manualRetry), except like
          * onAutoRetry, this will also give the number of previous retry attempts for the file.
@@ -589,7 +597,7 @@ const ReactS3FineUploader = React.createClass({
     // This method has been made promise-based to allow a callback function
     // to execute immediately after the state is set.
     setStatusOfFile(fileId, status, changeSet = {}) {
-        const { onFileError, onStatusChange } = this.props;
+        const { onFileError, onFilesChanged, onStatusChange } = this.props;
 
         return new Promise((resolve) => {
             const file = this.state.uploaderFiles[fileId];
@@ -608,6 +616,7 @@ const ReactS3FineUploader = React.createClass({
                     const updatedFile = this.state.uploaderFiles[fileId];
 
                     safeInvoke(onStatusChange, updatedFile, oldStatus, status);
+                    safeInvoke(onFilesChanged, this.state.uploaderFiles);
                     resolve(updatedFile);
                 });
             } else {
@@ -706,13 +715,18 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onProgress(fileId, name, uploadedBytes, totalBytes) {
+        const { onFilesChanged, onProgress } = this.props;
+
         const uploaderFiles = update(this.state.uploaderFiles, {
             [fileId]: {
                 progress: { $set: (uploadedBytes / totalBytes) * 100}
             }
         });
 
-        this.setState({ uploaderFiles }, () => safeInvoke(this.props.onProgress, uploaderFiles[fileId], uploadedBytes, totalBytes));
+        this.setState({ uploaderFiles }, () => {
+            safeInvoke(onProgress, this.state.uploaderFiles[fileId], uploadedBytes, totalBytes)
+            safeInvoke(onFilesChanged, this.state.uploaderFiles);
+        });
     },
 
     onSessionRequestComplete(response, success, xhr) {
@@ -737,6 +751,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onSubmitted(fileId, name) {
+        const { onFilesChanged, onSubmitted } = this.props;
         const { uploader } = this.state;
 
         const submittedFile = uploader.getUploads({ id: fileId });
@@ -757,7 +772,10 @@ const ReactS3FineUploader = React.createClass({
             }
         });
 
-        this.setState({ uploaderFiles }, () => safeInvoke(this.props.onSubmitted, this.state.uploaderFiles[fileId]));
+        this.setState({ uploaderFiles }, () => {
+            safeInvoke(onSubmitted, this.state.uploaderFiles[fileId])
+            safeInvoke(onFilesChanged, this.state.uploaderFiles);
+        });
     },
 
     onTotalProgress(totalUploadedBytes, totalBytes) {

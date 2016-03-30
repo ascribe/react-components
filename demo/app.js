@@ -5,7 +5,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { Button, ButtonContainer, ButtonList } from '../modules/buttons';
-import { CollapsibleCheckboxProperty, CollapsibleProperty, Form, InputCheckbox, InputDate, InputTextarea, Property } from '../modules/form';
+import { CollapsibleCheckboxProperty, CollapsibleProperty, Form, InputCheckbox, InputDate, InputTextarea, InputUploader, Property } from '../modules/form';
 import { Checkbox } from '../modules/ui';
 import { UploadButton, UploadDragAndDropArea } from '../modules/uploader';
 
@@ -373,6 +373,27 @@ const App = () => {
                     uploaderProps={dummyUploaderProps}>
                     <div style={{'width': 100, 'height': 100, 'backgroundColor': 'red'}} />
                 </UploadDragAndDropArea>
+            </div>
+            <h3>Form Uploader</h3>
+            <div>
+                <Form
+                    header="Uploader Form"
+                    onSubmit={(data) => {
+                        console.log(data);
+                        return Promise.resolve();
+                    }}>
+                    <Property
+                        label="input uploader"
+                        name="inputuploader">
+                        <InputUploader
+                            filesValidation={(files) => files.length > 1}
+                            onFilesValidationChange={(prevResult, nextResult) => {
+                                alert(`file validation toggled with prev: ${prevResult} and next: ${nextResult}`);
+                            }}>
+                            <UploadButton uploaderProps={dummyUploaderProps} />
+                        </InputUploader>
+                    </Property>
+                </Form>
             </div>
         </div>
     );

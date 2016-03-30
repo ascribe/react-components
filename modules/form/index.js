@@ -9,6 +9,7 @@ export Property from './properties/property';
 export InputCheckbox from './inputs/input_checkbox';
 export InputDate from './inputs/input_date';
 export InputTextarea from './inputs/input_textarea';
+export InputUploader from './inputs/input_uploader';
 
 // Utilities
 export PropertyExtender from './utils/property_extender';
