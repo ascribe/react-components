@@ -456,6 +456,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     /** EXPOSED METHODS FOR PARENTS **/
+    getUploader() {
+        return this.state.uploader;
+    },
+
     getUploaderFiles() {
         return this.state.uploaderFiles;
     },

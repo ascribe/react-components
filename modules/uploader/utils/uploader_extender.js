@@ -8,6 +8,7 @@ const UploaderExtender = (UploaderComponent, uploaderRefName = 'uploader') => {
     });
 
     builder
+        .extendForFn('getUploader')
         .extendForFn('getUploaderFiles')
         .extendForFn('reset');
 
