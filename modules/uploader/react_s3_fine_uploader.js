@@ -132,7 +132,7 @@ const ReactS3FineUploader = React.createClass({
         onError: func,
 
         /**
-         * Called when an error occurs with the internal files kept by this component
+         * Called when an error occurs with the internal files tracked by this component
          * (**NOT** FineUploader's), such as trying to set the status of a nonexisting
          * (or for example, filtered out) file.
          *
@@ -442,6 +442,27 @@ const ReactS3FineUploader = React.createClass({
         this.state.uploader.cancelAll();
     },
 
+    /** EXPOSED METHODS FOR PARENTS **/
+    getUploaderFiles() {
+        return this.state.uploaderFiles;
+    },
+
+    // Resets the whole react FineUploader component to its initial state
+    reset() {
+        // Tell the parent we're reseting
+        safeInvoke(this.props.onReset);
+
+        // then cancel all currently ongoing uploads
+        this.cancelUploads();
+
+        // reset uploader
+        this.state.uploader.reset();
+
+        // and finally reset internal data structures of component
+        this.setState(this.getInitialState());
+    },
+
+    /** PRIVATE METHODS **/
     // Cancel uploads and clear previously selected files on the input element
     cancelUploads(fileId) {
         typeof fileId !== 'undefined' ? this.state.uploader.cancel(fileId) : this.state.uploader.cancelAll();
@@ -559,21 +580,6 @@ const ReactS3FineUploader = React.createClass({
             const filesToDisplay = this.state.uploaderFiles.filter(validFilesFilter);
             return filesToDisplay.length > 0;
         }
-    },
-
-    // Resets the whole react FineUploader component to its initial state
-    reset() {
-        // Tell the parent we're reseting
-        safeInvoke(this.props.onReset);
-
-        // then cancel all currently ongoing uploads
-        this.cancelUploads();
-
-        // reset uploader
-        this.state.uploader.reset();
-
-        // and finally reset internal data structures of component
-        this.setState(this.getInitialState());
     },
 
     selectValidFiles(files) {
