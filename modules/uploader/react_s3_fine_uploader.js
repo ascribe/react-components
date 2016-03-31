@@ -248,9 +248,9 @@ const ReactS3FineUploader = React.createClass({
          * and add nothing to the queue. Resolving with an empty array or something that is not
          * an array is the same as rejecting.
          *
-         * @param  {object[]} files Files to be uploaded
-         * @return {Promise}        Promise that resolves with an array of files to be added to the
-         *                          upload queue
+         * @param  {File[]} files Files to be uploaded
+         * @return {Promise}      Promise that resolves with an array of files to be added to the
+         *                        upload queue
          */
         onSubmitFiles: func,
 
@@ -294,15 +294,16 @@ const ReactS3FineUploader = React.createClass({
         onUpload: func,
 
         /**
-         * Called when validation of the submitted files fails.
+         * Called when validation fails for a group of files.
          *
-         * @param {object} file            File that failed validation, can be `null` if validation
-         *                                 applies in general and not just one file
-         * @param {object} validationError Error object describing the validation failure
-         * @param {string} validationError.error         Description of the failure
-         * @param {ValidationErrors} validationError.type Type of the failure
+         * @param {object[]} errors Array of errors describing each validation failure
+         *   @param {object} error  Each error object contains:
+         *     @param {File} error.file              File that failed validation
+         *     @param {object} error.validationError Error object describing the validation failure:
+         *       @param {string} validationError.error          Description of the failure
+         *       @param {ValidationErrors} validationError.type Type of the failure
          */
-        onValidationFailed: func,
+        onValidationFailure: func,
 
         /**
          * FineUploader options
@@ -566,41 +567,11 @@ const ReactS3FineUploader = React.createClass({
         return isShallowEqual(file, this.state.uploaderFiles[file.id]);
     },
 
-    isFileValid(file) {
-        const { onValidationFailed, validation: { allowedExtensions, sizeLimit }  } = this.props;
-        const fileExt = extractFileExtensionFromString(file.name);
-        let validationError;
-
-        if (sizeLimit && file.size > sizeLimit) {
-            validationError = {
-                error: `A file you submitted is bigger than ${sizeLimit / 1000000} MB`,
-                type: ValidationErrors.SIZE,
-            };
-        } else if (allowedExtensions && !allowedExtensions.includes(fileExt)) {
-            validationError = {
-                error: `The file you've submitted is of an invalid file format: Valid format(s): ${allowedExtensions.join(', ')}`,
-                type: ValidationErrors.EXTENSION
-            };
-        }
-
-        if (validationError) {
-            safeInvoke(onValidationFailed, file, validationError);
-
-            return false;
-        } else {
-            return true;
-        }
-    },
-
     isUploaderDisabled() {
         if (!this.props.multiple) {
             const filesToDisplay = this.state.uploaderFiles.filter(validFilesFilter);
             return filesToDisplay.length > 0;
         }
-    },
-
-    selectValidFiles(files) {
-        return arrayFrom(files).filter(this.isFileValid);
     },
 
     // This method has been made promise-based to allow a callback function
@@ -633,6 +604,59 @@ const ReactS3FineUploader = React.createClass({
                 reject();
             }
         });
+    },
+
+    validateFiles(files) {
+        const {
+            multiple,
+            onValidationFailure,
+            validation: { allowedExtensions, itemLimit, sizeLimit }
+        } = this.props;
+
+        const validFiles = [];
+        const errors = [];
+
+        arrayFrom(files).forEach((file, fileIndex) => {
+            const fileExt = extractFileExtensionFromString(file.name);
+            let validationError;
+
+            if ((!multiple || itemLimit === 1) && fileIndex > 0) {
+                // If multiple is set to false, the user shouldn't be able to select more than
+                // one file using the file selector, but he could always drop multiple files
+                // into the dropzone.
+                validationError = {
+                    error: 'Only one file allowed (took first one)',
+                    type: ValidationErrors.EXTRA_FILES
+                };
+            } else if (itemLimit && fileIndex >= itemLimit) {
+                validationError = {
+                    error: `Too many files selected (only took first ${itemLimit})`,
+                    type: ValidationErrors.EXTRA_FILES
+                };
+            } else if (sizeLimit && file.size > sizeLimit) {
+                validationError = {
+                    error: `A file you submitted is bigger than ${sizeLimit / 1000000} MB`,
+                    type: ValidationErrors.SIZE,
+                };
+            } else if (allowedExtensions && !allowedExtensions.includes(fileExt)) {
+                validationError = {
+                    error: `The file you've submitted is of an invalid file format: Valid format(s): ${allowedExtensions.join(', ')}`,
+                    type: ValidationErrors.EXTENSION
+                };
+            }
+
+            if (validationError) {
+                errors.push({ file, validationError });
+            } else {
+                validFiles.push(file);
+            }
+        });
+
+        if (errors.length) {
+            safeInvoke(onValidationFailure, errors);
+        }
+
+        return validFiles;
     },
 
 
@@ -953,7 +977,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleSubmitFiles(files) {
-        const { multiple, onSubmitFiles, onValidationFailed, validation: { itemLimit } } = this.props;
+        const { multiple, onSubmitFiles } = this.props;
         const { uploader, uploaderFiles } = this.state;
 
         // If multiple is set and user has already uploaded a work, cancel upload
@@ -962,30 +986,8 @@ const ReactS3FineUploader = React.createClass({
             return;
         }
 
-        // Select only the submitted files that fit the file size and allowed extensions
-        files = this.selectValidFiles(files);
-
-        // If the user selects or drops too many files, take as many as possible and use
-        // onValidationFailed to notify the parent component that some files were omitted
-        let extraFilesError;
-
-        if ((!multiple || itemLimit === 1) && files.length > 1) {
-            // If multiple is set to false, the user shouldn't be able to select more than
-            // one file using the file selector, but he could always drop multiple files
-            // into the dropzone.
-            extraFilesError = 'Only one file allowed (took first one)';
-            files = files.slice(0, 1);
-        } else if (itemLimit && files.length > itemLimit) {
-            extraFilesError = `Too many files selected (only took first ${itemLimit})`;
-            files = files.slice(0, itemLimit);
-        }
-
-        if (extraFilesError) {
-            safeInvoke(onValidationFailed, null, {
-                error: extraFilesError,
-                type: ValidationErrors.EXTRA_FILES
-            });
-        }
+        // Submit only the files that pass validation to the uploader
+        files = this.validateFiles(files);
 
         if (files.length) {
             onSubmitFiles(files).then((files) => {
