@@ -76,8 +76,8 @@ const Form = React.createClass({
         })),
         header: string,
         headerType: func,
-        onError: func,
-        onSubmit: func
+        onSubmit: func,
+        onValidationError: func
     },
 
     getDefaultProps() {
@@ -124,13 +124,13 @@ const Form = React.createClass({
     },
 
     onSubmit(event) {
-        const { onError, onSubmit } = this.props;
+        const { onSubmit, onValidationError } = this.props;
 
         event.preventDefault();
 
         const errors = this.validate();
         if (Object.keys(errors).length) {
-            safeInvoke(onError, errors);
+            safeInvoke(onValidationError, errors);
         } else {
             const { invoked, result } = safeInvoke(onSubmit, this.getFormData());
 
