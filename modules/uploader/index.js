@@ -1,5 +1,7 @@
-// Uploader
+// Uploaders
 export ReactS3FineUploader from './react_s3_fine_uploader';
+
+export CreateBlobUploader from './extended_uploaders/create_blob_uploader';
 
 // Uploader UI
 export UploadButton from './upload_button';

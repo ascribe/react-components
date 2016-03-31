@@ -455,7 +455,7 @@ const ReactS3FineUploader = React.createClass({
         this.state.uploader.cancelAll();
     },
 
-    /** EXPOSED METHODS FOR PARENTS **/
+    /** PUBLIC EXPOSED METHODS FOR PARENTS (EVEN AFTER EXTENSION) **/
     getUploader() {
         return this.state.uploader;
     },
@@ -479,7 +479,7 @@ const ReactS3FineUploader = React.createClass({
         this.setState(this.getInitialState());
     },
 
-    /** PRIVATE METHODS **/
+    /** PROTECTED METHODS **/
     // Cancel uploads and clear previously selected files on the input element
     cancelUploads(fileId) {
         typeof fileId !== 'undefined' ? this.state.uploader.cancel(fileId) : this.state.uploader.cancelAll();
