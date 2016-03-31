@@ -81,7 +81,10 @@ let UploadDragAndDropArea = Uploadify(React.createClass({
             <div
                 className={className}
                 onDragOver={this.onDragOver}
-                onDrop={this.onDrop}>
+                onDrop={this.onDrop}
+                style={{
+                    display: 'inline-block'
+                }}>
                 {React.Children.map(children, (child) => React.cloneElement(child, childProps))}
             </div>
         );
