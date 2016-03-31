@@ -259,4 +259,4 @@ const Form = React.createClass({
     }
 });
 
-export default CssModules(Form, styles);
+export default Form;
