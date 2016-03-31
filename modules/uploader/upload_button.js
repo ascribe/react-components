@@ -5,7 +5,7 @@ import Uploadify from './utils/uploadify';
 import Button from '../buttons/button';
 import ButtonContainer from '../buttons/button_container';
 
-import { successfullyUploadedFilter, uploadingFilter, validProgressFilesFilter } from './utils/file_filters';
+import { uploadedFilesFilter, uploadingFilesFilter, validFilesFilter, validProgressFilesFilter } from './utils/file_filters';
 
 import { truncateTextAtCharIndex } from '../utils/general';
 
@@ -64,7 +64,7 @@ const UploadButton = Uploadify(React.createClass({
     getDefaultProps() {
         return {
             buttonType: Button,
-            getButtonLabel: (uploading, progress) => {
+            getButtonLabel: (uploading, uploaderFiles, progress) => {
                 return uploading ? `Upload progress: ${progress}`
                                  : 'file';
             },
@@ -88,23 +88,19 @@ const UploadButton = Uploadify(React.createClass({
             uploading = true;
 
             // Filter invalid files that might have been deleted or canceled before calculating progress
-            const progressFiles = this.getProgressFiles();
+            const progressFiles = uploaderFiles.filter(validProgressFilesFilter);
             const progress = progressFiles.reduce((sum, file) => sum + file.progress, 0) / progressFiles.length;
         }
 
         return getButtonLabel(uploading, uploaderFiles, progress);
     },
 
-    getProgressFiles() {
-        return this.props.uploaderFiles.filter(validProgressFilesFilter);
-    },
-
     getUploadingFiles() {
-        return this.props.uploaderFiles.filter(uploadingFilter);
+        return this.props.uploaderFiles.filter(uploadingFilesFilter);
     },
 
     getUploadedFiles() {
-        return this.props.uploaderFiles.filter(successfullyUploadedFilter);
+        return this.props.uploaderFiles.filter(uploadedFilesFilter);
     },
 
     handleRemoveFiles() {
@@ -134,13 +130,15 @@ const UploadButton = Uploadify(React.createClass({
             fileLabelType: FileLabelType,
             children, // ignore
             getButtonLabel, // ignore
-            uploaderFiles, // ignore
+            uploaderFiles,
             ...buttonProps
         } = this.props
         const buttonChildren = this.getButtonLabel();
+        const validFiles = uploaderFiles.filter(validFilesFilter);
+
         const fileLabel = (
             <FileLabelType
-                files={this.getProgressFiles()}
+                files={validFiles}
                 handleRemoveFiles={this.handleRemoveFiles} />
         );
 
