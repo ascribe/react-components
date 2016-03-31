@@ -219,7 +219,7 @@ const Property = React.createClass({
     },
 
     renderChildren() {
-        const { children, disabled, name } = this.props;
+        const { children, disabled, ignoreFocus, name } = this.props;
         const { initialValue, value } = this.state;
 
         const child = this.getChild();
@@ -256,7 +256,7 @@ const Property = React.createClass({
                 safeInvoke(child.props.onChange, ...args);
                 this.onInputChange(...args);
             },
-            onFocus: (...args) => {
+            onFocus: ignoreFocus ? noop : (...args) => {
                 safeInvoke(child.props.onFocus, ...args);
                 this.onFocus();
             }

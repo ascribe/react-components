@@ -168,6 +168,12 @@ const App = () => {
                         <input placeholder="highlighted placeholder" type="text" defaultValue="higlighted" />
                     </Property>
                     <Property
+                        ignoreFocus
+                        label="Ignore focus label"
+                        name="ignorefocus">
+                        <input placeholder="ignore focus placeholder" type="text" defaultValue="ignore focus" />
+                    </Property>
+                    <Property
                         disabled
                         label="Disabled prop label"
                         name="disabled">
