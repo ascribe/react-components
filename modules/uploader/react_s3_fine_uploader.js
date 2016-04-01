@@ -32,10 +32,10 @@ const ReactS3FineUploader = React.createClass({
          * Uploading functionality of ReactS3FineUploader is disconnected from its UI layer.
          * Children are cloned with these additional props to help them render uploader
          * specific states:
-         *   * allowedExtensions: Allowed file extensions for the uploader
-         *   * disabled: Whether the uploader is disabled (possibly due to hitting a file limit)
-         *   * uploaderFiles: Files currently tracked by the uploader
-         *   * uploadInProgress: Whether there is an upload in progress
+         *   @param {boolean}  disabled         Whether the uploader is disabled (possibly due to
+         *                                      hitting a file limit)
+         *   @param {object[]} uploaderFiles    Files currently tracked by the uploader
+         *   @param {boolean}  uploadInProgress Whether there is an upload in progress
          */
         children: node.isRequired,
 
@@ -337,42 +337,42 @@ const ReactS3FineUploader = React.createClass({
          * Attempts to cancel the given file tracked by this uploader
          *
          * @param {object} File File to cancel
-        */
+         */
         handleCancelFile: func,
 
         /**
          * Attempts to delete the given file tracked by this uploader
          *
          * @param {object} File File to delete
-        */
+         */
         handleDeleteFile: func,
 
         /**
          * Attempts to pause the given file tracked by this uploader
          *
          * @param {object} File File to pause
-        */
+         */
         handlePauseFile: func,
 
         /**
          * Attempts to resume the given file tracked by this uploader
          *
          * @param {object} File File to resume
-        */
+         */
         handleResumeFile: func,
 
         /**
          * Attempts to retry the given file tracked by this uploader
          *
          * @param {object} File File to retry
-        */
+         */
         handleRetryFile: func,
 
         /**
          * Submits the given files to the uploader
          *
          * @param {File[]} Files Files to submit
-        */
+         */
         handleSubmitFiles: func
     },
 
@@ -557,7 +557,7 @@ const ReactS3FineUploader = React.createClass({
         return new FineUploader.s3.FineUploaderBasic(uploaderConfig);
     },
 
-    getAllowedExtensions() {
+    getAcceptedExtensions() {
         const { mimeTypeMapping, validation: { allowedExtensions } } = this.props;
 
         return transformAllowedExtensionsToInputAcceptProp(allowedExtensions, mimeTypeMapping);
@@ -1004,19 +1004,17 @@ const ReactS3FineUploader = React.createClass({
     render() {
         const { children, multiple } = this.props;
         const { uploaderFiles, uploadInProgress } = this.state;
-        const allowedExtensions = this.getAllowedExtensions();
         const uploaderDisabled = this.isUploaderDisabled();
 
         return (
             <FileSelector
                 ref={(ref) => { this.fileSelector = ref; }}
-                accept={allowedExtensions}
+                accept={this.getAcceptedExtensions()}
                 disabled={uploaderDisabled}
                 multiple={multiple}
                 onSelectFiles={this.handleSubmitFiles}>
                 {React.Children.map(children, (child) => {
                     return React.cloneElement(child, {
-                        allowedExtensions,
                         uploaderFiles,
                         uploadInProgress,
                         disabled: child.props.disabled || uploaderDisabled
