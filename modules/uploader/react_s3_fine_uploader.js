@@ -568,10 +568,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isUploaderDisabled() {
-        if (!this.props.multiple) {
-            const filesToDisplay = this.state.uploaderFiles.filter(validFilesFilter);
-            return filesToDisplay.length > 0;
-        }
+        const { multiple, validation: { itemLimit } } = this.props;
+        const validFiles = this.state.uploaderFiles.filter(validFilesFilter);
+
+        return !!((!multiple && validFiles.length) || (itemLimit && validFiles.length >= itemLimit));
     },
 
     // This method has been made promise-based to allow a callback function
