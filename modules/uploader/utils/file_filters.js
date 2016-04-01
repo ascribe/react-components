@@ -44,7 +44,9 @@ export function removedFilesFilter(file) {
  * @return {boolean}       True if file was uploaded successfully
  */
 export function uploadedFilesFilter(file) {
-    return file.status === FileStatus.UPLOAD_SUCCESSFUL;
+    return file.progress === 100 &&
+           (file.status === FileStatus.UPLOAD_SUCCESSFUL ||
+            file.status === Filestatus.ONLINE);
 }
 
 /**
