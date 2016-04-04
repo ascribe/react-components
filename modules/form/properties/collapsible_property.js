@@ -2,7 +2,7 @@ import React from 'react';
 import CssModules from 'react-css-modules';
 
 import Property from './property';
-import PropertyExtender from '../utils/property_extender';
+import propertySpecExtender from '../utils/property_spec_extender';
 
 import { safeInvoke } from '../../utils/general';
 import { PropStuffer } from '../../utils/react';
@@ -51,8 +51,10 @@ CollapsibleHeader.displayName = 'CollapsibleHeader';
 CollapsibleLayout.displayName = 'CollapsibleLayout';
 CollapsiblePanel.displayName = 'CollapsiblePanel';
 
-// Use PropertyExtender to shim into this component the public Property API that Form depends on.
-const CollapsibleProperty = PropertyExtender(React.createClass({
+// Use propertySpecExtender to shim Property's public API (that Form depends on) into this component.
+const CollapsibleProperty = React.createClass(propertySpecExtender({
+    displayName: 'CollapsibleProperty',
+
     propTypes: {
         children: element.isRequired,
         name: string.isRequired,

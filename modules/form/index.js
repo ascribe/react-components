@@ -12,4 +12,4 @@ export InputTextarea from './inputs/input_textarea';
 export InputUploader from './inputs/input_uploader';
 
 // Utilities
-export PropertyExtender from './utils/property_extender';
+export PropertySpecExtender from './utils/property_spec_extender';

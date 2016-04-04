@@ -139,10 +139,7 @@ const InputUploader = React.createClass({
             };
         };
 
-        //FIXME: Not the safest check, since you could be using Uploadify and not provide any
-        // uploaderProps, but I'm not sure there's a better way to check for this given that
-        // Uploadified components are also wrapped with UploaderExtender.
-        if (child.props.hasOwnProperty('uploaderProps')) {
+        if (child.type.displayName === 'Uploadify') {
             // If the child uploader is composed with Uploadify, we need to inject our change
             // handlers to the uploaderProps instead
             const { uploaderProps } = child.props;

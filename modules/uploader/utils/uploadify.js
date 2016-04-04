@@ -1,6 +1,6 @@
 import React from 'react';
 
-import UploaderExtender from './uploader_extender';
+import uploaderSpecExtender from './uploader_spec_extender';
 
 import ReactS3FineUploader from '../react_s3_fine_uploader';
 
@@ -8,7 +8,7 @@ import ReactS3FineUploader from '../react_s3_fine_uploader';
 const { func, object } = React.PropTypes;
 
 const Uploadify = (Component) => {
-    const uploader = React.createClass({
+    return React.createClass(uploaderSpecExtender({
         displayName: 'Uploadify',
 
         propTypes: {
@@ -34,9 +34,7 @@ const Uploadify = (Component) => {
                 </UploaderType>
             );
         }
-    });
-
-    return UploaderExtender(uploader);
+    }));
 };
 
 export default Uploadify;

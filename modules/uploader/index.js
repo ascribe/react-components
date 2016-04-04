@@ -14,5 +14,5 @@ export ValidationErrors from './constants/validation_errors';
 export * as FileFilters from './utils/file_filters';
 export * as FileValidationUtils from './utils/file_validation_utils';
 export MimeTypeMapping from './utils/mime_type_mapping';
-export UploaderExtender from './utils/uploader_extender';
+export uploaderSpecExtender from './utils/uploader_spec_extender';
 export Uploadify from './utils/uploadify';

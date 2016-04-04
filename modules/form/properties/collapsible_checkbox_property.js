@@ -2,7 +2,7 @@ import React from 'react';
 import CssModules from 'react-css-modules';
 
 import CollapsibleProperty from './collapsible_property';
-import PropertyExtender from '../utils/property_extender';
+import propertySpecExtender from '../utils/property_spec_extender';
 
 import Checkbox from '../../ui/checkbox';
 
@@ -27,8 +27,10 @@ const PropertyCheckboxHeading = CssModules(({ disabled, expanded, handleExpandTo
 
 PropertyCheckboxHeading.displayName = 'PropertyCheckboxHeading';
 
-// Use PropertyExtender to shim into this component the public Property API that Form depends on.
-const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
+// Use propertySpecExtender to shim Property's public API (that Form depends on) into this component.
+const CollapsibleCheckboxProperty = React.createClass(propertySpecExtender({
+    displayName: 'CollapsibleCheckboxProperty',
+
     propTypes: {
         children: element.isRequired,
         name: string.isRequired,
@@ -60,7 +62,9 @@ const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
         // `expanding` is false) since the user doesn't want to specify their own value for this
         // property.
         if (!expanding) {
-            this.refs.property.reset(); // Supplied by PropertyExtender and delegates to base Property
+            // CollapsibleProperty.reset is supplied by propertySpecExtender and delegates to the
+            // base Property
+            this.refs.property.reset();
         }
 
         safeInvoke(onExpandToggle, expanding);

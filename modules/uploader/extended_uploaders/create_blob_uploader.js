@@ -2,12 +2,14 @@ import React from 'react';
 
 import ReactS3FineUploader from '../react_s3_fine_uploader';
 
-import UploaderExtender from '../utils/uploader_extender';
+import uploaderSpecExtender from '../utils/uploader_spec_extender';
 
 
 const { func } = React.PropTypes;
 
-const CreateBlobUploader = React.createClass({
+const CreateBlobUploader = React.createClass(uploaderSpecExtender({
+    displayName: 'CreateBlobUploader',
+
     propTypes: {
         handleBlobCreation: func
 
@@ -49,6 +51,6 @@ const CreateBlobUploader = React.createClass({
                 onSuccess={this.onUploadSuccess} />
         );
     }
-});
+}));
 
-export default UploaderExtender(CreateBlobUploader);
+export default CreateBlobUploader;
