@@ -12,7 +12,7 @@ import { transformAllowedExtensionsToInputAcceptProp } from './utils/private/dom
 import FileSelector from '../file_handlers/file_selector';
 
 import { extractFileExtensionFromString } from '../utils/file';
-import { arrayFrom, isShallowEqual, safeInvoke } from '../utils/general';
+import { arrayFrom, isShallowEqual, omitFromObject, safeInvoke } from '../utils/general';
 
 
 const { bool, func, node, object } = React.PropTypes;
@@ -309,27 +309,12 @@ const ReactS3FineUploader = React.createClass({
          * FineUploader options
          * ====================
          *
-         * For an explaination of how to use these options, see the docs:
+         * Any other props passed into this component will be passed through to FineUploader.
+         *
+         * For an explaination on the options available and their defaults, see the docs:
          *   * http://docs.fineuploader.com/branch/master/api/options.html
          *   * http://docs.fineuploader.com/branch/master/api/options-s3.html
          */
-        debug: bool,
-
-        autoUpload: bool,
-        chunking: object,
-        cors: object,
-        deleteFile: object,
-        formatFileName: func,
-        messages: object,
-        multiple: bool,
-        objectProperties: object,
-        request: object,
-        resume: object,
-        retry: object,
-        session: object,
-        signature: object,
-        uploadSuccess: object,
-        validation: object
     },
 
     childContextTypes: {
@@ -379,49 +364,10 @@ const ReactS3FineUploader = React.createClass({
     getDefaultProps() {
         return {
             mimeTypeMapping: MimeTypeMapping,
-
-            // FineUploader options
-            debug: false,
-
-            autoUpload: true,
-            chunking: {
-                enabled: true,
-                concurrent: {
-                    enabled: true
-                }
-            },
-            cors: {
-                expected: true,
-                sendCredentials: true
-            },
-            deleteFile: {},
-            formatFileName: (name) => {
-                return (name && name.length > 30) ? `${name.slice(0, 15)}...${name.slice(-15)}`
-                                                  : name;
-            },
-            messages: {},
-            multiple: false,
-            objectProperties: {},
             onSubmitFiles: (files) => Promise.resolve(files),
-            request: {},
-            resume: {
-                enabled: true
-            },
-            retry: {
-                enableAuto: false
-            },
-            session: {
-                endpoint: null
-            },
-            uploadSuccess: {
-                params: {
-                    isBrowserPreviewCapable: FineUploader.supportedFeatures.imagePreviews
-                }
-            },
-            validation: {
-                itemLimit: 0,
-                sizeLimit: 0
-            }
+
+            // Default FineUploader options that we use in this component and are true by default
+            multiple: true
         };
     },
 
@@ -499,42 +445,35 @@ const ReactS3FineUploader = React.createClass({
     },
 
     createNewFineUploader() {
-        const {
-            autoUpload,
-            chunking,
-            cors,
-            debug,
-            deleteFile,
-            formatFileName,
-            messages,
-            multiple,
-            objectProperties,
-            request,
-            resume,
-            retry,
-            session,
-            signature,
-            uploadSuccess,
-            validation
-        } = this.props;
+        // Strip away all props intended for this component to get the config for FineUploader
+        const configFromProps = omitFromObject(this.props, [
+            'children',
+            'handleDeleteOnlineFile',
+            'mimeTypeMapping',
+            'onAllComplete',
+            'onAutoRetry',
+            'onCanceled',
+            'onDeleteComplete',
+            'onError',
+            'onFileError',
+            'onFilesChanged',
+            'onManualRetry',
+            'onPause',
+            'onProgress',
+            'onReset',
+            'onResume',
+            'onSessionRequestComplete',
+            'onStatusChange',
+            'onSubmitFiles',
+            'onSubmitted',
+            'onSuccess',
+            'onTotalProgress',
+            'onUpload',
+            'onValidationFailure'
+        ]);
 
         const uploaderConfig = {
-            autoUpload,
-            chunking,
-            cors,
-            debug,
-            deleteFile,
-            formatFileName,
-            multiple,
-            messages,
-            objectProperties,
-            request,
-            resume,
-            retry,
-            session,
-            signature,
-            uploadSuccess,
-            validation,
+            ...configFromProps,
             callbacks: {
                 onAllComplete: this.onAllComplete,
                 onAutoRetry: this.onAutoRetry,
@@ -558,7 +497,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     getAcceptedExtensions() {
-        const { mimeTypeMapping, validation: { allowedExtensions } } = this.props;
+        const {
+            mimeTypeMapping,
+            validation: { allowedExtensions } = {} //eslint-disable-line react/prop-types
+        } = this.props;
 
         return transformAllowedExtensionsToInputAcceptProp(allowedExtensions, mimeTypeMapping);
     },
@@ -568,7 +510,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isUploaderDisabled() {
-        const { multiple, validation: { itemLimit } } = this.props;
+        const { multiple, validation: { itemLimit } = {} } = this.props; //eslint-disable-line react/prop-types
         const validFiles = this.state.uploaderFiles.filter(validFilesFilter);
 
         return !!((!multiple && validFiles.length) || (itemLimit && validFiles.length >= itemLimit));
@@ -608,9 +550,9 @@ const ReactS3FineUploader = React.createClass({
 
     validateFiles(files) {
         const {
-            multiple,
+            multiple, //eslint-disable-line react/prop-types
             onValidationFailure,
-            validation: { allowedExtensions, itemLimit, sizeLimit }
+            validation: { allowedExtensions, itemLimit, sizeLimit } = {} //eslint-disable-line react/prop-types
         } = this.props;
 
         const validFiles = [];
@@ -977,7 +919,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleSubmitFiles(files) {
-        const { multiple, onSubmitFiles } = this.props;
+        const {
+            multiple, //eslint-disable-line react/prop-types
+            onSubmitFiles
+        } = this.props;
         const { uploader, uploaderFiles } = this.state;
 
         // If multiple is set and user has already uploaded a work, cancel upload
@@ -1002,7 +947,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     render() {
-        const { children, multiple } = this.props;
+        const {
+            children,
+            multiple //eslint-disable-line react/prop-types
+        } = this.props;
         const { uploaderFiles, uploadInProgress } = this.state;
         const uploaderDisabled = this.isUploaderDisabled();
 
