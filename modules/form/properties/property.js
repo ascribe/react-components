@@ -174,12 +174,18 @@ const Property = React.createClass({
 
     // Required by Form API
     onSubmitSuccess() {
-        this.setState({
-            isFocused: false,
+        const newState = {
+            isFocused: false
+        };
 
-            // Also update initialValue in case of the user updating and canceling their actions again
-            initialValue: this.getValueOfInputElement()
-        });
+        // Also update initialValue in case of the user updating and canceling their actions again.
+        // We avoid doing this if we're already removing our child input's value as the "removed"
+        // value isn't really representative of the input's default or last submitted value.
+        if (!this.getChild().props.removeValue) {
+            newState.initialValue = this.getValueOfInputElement();
+        }
+
+        this.setState(newState);
     },
 
     getChild() {
@@ -223,6 +229,13 @@ const Property = React.createClass({
         const { initialValue, value } = this.state;
 
         const child = this.getChild();
+        const {
+            onBlur,
+            onChange,
+            onFocus,
+            removeValue // If set, remove this child input's value during submission and validation
+        } = child.props;
+
         return React.cloneElement(child, {
             ref: (ref) => {
                 this.inputElement = ref;
@@ -238,26 +251,29 @@ const Property = React.createClass({
                 });
             },
 
+            disabled,
+            name,
+
             // Similar to how the child input's value is controlled using this Property's `value`
             // state, the input's defaultValue is also controlled with the `initialValue` state.
             // This allows a reset to return the input's value to its last submitted value rather
             // than the initial value it had upon its initial render (although if no changes have
             // been made, these two will be the same).
-            defaultValue: initialValue,
+            defaultValue: removeValue ? null : initialValue,
 
-            disabled,
-            name,
-            value,
+            // Control the child input's with this Property
+            value: removeValue ? null : value,
+
             onBlur: (...args) => {
-                safeInvoke(child.props.onBlur, ...args);
+                safeInvoke(onBlur, ...args);
                 this.onBlur(...args);
             },
             onChange: (...args) => {
-                safeInvoke(child.props.onChange, ...args);
+                safeInvoke(onChange, ...args);
                 this.onInputChange(...args);
             },
             onFocus: ignoreFocus ? noop : (...args) => {
-                safeInvoke(child.props.onFocus, ...args);
+                safeInvoke(onFocus, ...args);
                 this.onFocus();
             }
         });
@@ -311,4 +327,4 @@ const Property = React.createClass({
     }
 });
 
-export default CssModules(Property, styles);
+export default Property;

@@ -64,7 +64,6 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
         headerLabel: string,
         headerType: func,
 
-        ignoreValueWhenCollapsed: bool,
         layoutType: func,
 
         /**
@@ -74,8 +73,7 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
          */
         onExpandToggle: func,
 
-        // Style overrides for the base Property. See form/properties/property for class names to implement.
-        propertyStyle: object,
+        removeValueWhenCollapsed: bool,
 
         // Any props used by the base Property are also passed down
     },
@@ -118,11 +116,6 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
             nextProps.layoutType !== this.props.layoutType) {
             this.registerLayouts(nextProps);
         }
-    },
-
-    getValue() {
-        return (this.props.ignoreValueWhenCollapsed && !this.state.expanded) ? null
-                                                                             : this.refs.property.getValue();
     },
 
     handleExpandToggle() {
@@ -189,23 +182,28 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
     },
 
     renderChildren() {
+        const { children, removeValueWhenCollapsed } = this.props;
+
         // Ensure that only one child is used per property; if there is more than one child,
         // React.Children.only() will throw
-        const child = React.Children.only(this.props.children);
+        const child = React.Children.only(children);
 
         // Don't show the children unless the property's expanded
-        return this.state.expanded ? child : React.cloneElement(child, { className: 'hide' });
+        return this.state.expanded ? child : React.cloneElement(child, {
+            className: 'hide',
+            removeValue: removeValueWhenCollapsed
+        });
     },
 
     render() {
-        // Ignore some of this component's props before passing them down to the base Property
         const {
-            headerLabel,
-            headerType,
-            layoutType,
-            onExpandToggle,
-            expanded: _, // rename to avoid clash
-            propertyStyle,
+            children, // ignore
+            headerLabel, // ignore
+            headerType, // ignore
+            layoutType, // ignore
+            onExpandToggle, // ignore
+            removeValueWhenCollapsed, // ignore
+            expanded: _, // ignore and rename to avoid clash
             ...propertyProps
         } = this.props;
         const { expanded } = this.state;
@@ -214,8 +212,7 @@ const CollapsibleProperty = PropertyExtender(React.createClass({
             <Property
                 ref="property"
                 {...propertyProps}
-                layoutType={expanded ? this.expandedLayout : this.collapsedLayout}
-                style={propertyStyle}>
+                layoutType={expanded ? this.expandedLayout : this.collapsedLayout}>
                 {this.renderChildren()}
             </Property>
         );

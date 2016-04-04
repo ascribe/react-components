@@ -90,8 +90,8 @@ const CollapsibleCheckboxProperty = PropertyExtender(React.createClass({
                 expanded={!!checked}
                 headerLabel={checkboxLabel}
                 headerType={this.headerLayout}
-                ignoreValueWhenCollapsed
-                onExpandToggle={this.onExpandToggle} />
+                onExpandToggle={this.onExpandToggle}
+                removeValueWhenCollapsed />
         );
     }
 }));
