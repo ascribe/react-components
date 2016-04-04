@@ -110,6 +110,14 @@ const ReactS3FineUploader = React.createClass({
         onCanceled: func,
 
         /**
+         * Similar to FineUploader's onDelete
+         * (http://docs.fineuploader.com/branch/master/api/events.html#delete)
+         *
+         * @param {object} file File that will be deleted
+         */
+        onDelete: func,
+
+        /**
          * Similar to FineUploader's onDeleteComplete
          * (http://docs.fineuploader.com/branch/master/api/events.html#deleteComplete). This is
          * also called upon resolution of `handleDeleteOnlineFile()`.
@@ -453,6 +461,7 @@ const ReactS3FineUploader = React.createClass({
             'onAllComplete',
             'onAutoRetry',
             'onCanceled',
+            'onDelete',
             'onDeleteComplete',
             'onError',
             'onFileError',
@@ -479,6 +488,7 @@ const ReactS3FineUploader = React.createClass({
                 onAutoRetry: this.onAutoRetry,
                 onCancel: this.onCancel,
                 onComplete: this.onComplete,
+                onDelete: this.onDelete,
                 onDeleteComplete: this.onDeleteComplete,
                 onError: this.onError,
                 onManualRetry: this.onManualRetry,
@@ -658,6 +668,10 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
+    onDelete(fileId) {
+        safeInvoke(this.props.onDelete, this.state.uploaderFiles[fileId]);
+    },
+
     onDeleteComplete(fileId, xhr, isError) {
         const { onDeleteComplete, onFileError } = this.prop;s
 
@@ -694,7 +708,7 @@ const ReactS3FineUploader = React.createClass({
 
         const uploaderFiles = update(this.state.uploaderFiles, {
             [fileId]: {
-                progress: { $set: (uploadedBytes / totalBytes) * 100}
+                progress: { $set: (uploadedBytes / totalBytes) * 100 }
             }
         });
 
