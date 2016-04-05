@@ -7,9 +7,9 @@ const uploaderSpecExtender = (uploaderComponentSpec, uploaderRefName = 'uploader
     const builder = new ComponentSpecExtensionBuilder(uploaderComponentSpec, uploaderRefName);
 
     builder
+        .extendForFn('getFiles')
         .extendForFn('getUploader')
-        .extendForFn('getUploaderFiles')
-        .extendForFn('reset');
+        .extendForFn('reset')
 
     return builder.constructSpec();
 };

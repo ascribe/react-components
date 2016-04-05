@@ -82,7 +82,7 @@ const InputUploader = React.createClass({
 
     // Required by Property API
     getValue() {
-        return this.getFileValues(this.uploaderElement.getUploaderFiles());
+        return this.getFileValues(this.uploaderElement.getFiles());
     },
 
     reset() {

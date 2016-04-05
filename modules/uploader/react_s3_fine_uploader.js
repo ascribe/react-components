@@ -411,12 +411,12 @@ const ReactS3FineUploader = React.createClass({
     },
 
     /** PUBLIC EXPOSED METHODS FOR PARENTS (EVEN AFTER EXTENSION) **/
-    getUploader() {
-        return this.state.uploader;
+    getFiles() {
+        return this.state.uploaderFiles;
     },
 
-    getUploaderFiles() {
-        return this.state.uploaderFiles;
+    getUploader() {
+        return this.state.uploader;
     },
 
     // Resets the whole react FineUploader component to its initial state
