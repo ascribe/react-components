@@ -153,7 +153,7 @@ const Property = React.createClass({
         const { name, onChange } = this.props;
         const value = event && event.target && event.target.value;
 
-        this.setState({ value }, () => safeInvoke(onChange, name, value));
+        this.setState({ value }, () => safeInvoke(onChange, value, name));
     },
 
     onBlur(event) {
