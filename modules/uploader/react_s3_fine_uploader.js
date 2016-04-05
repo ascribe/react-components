@@ -304,14 +304,14 @@ const ReactS3FineUploader = React.createClass({
         /**
          * Called when validation fails for a group of files.
          *
-         * @param {object[]} errors Array of errors describing each validation failure
+         * @param {object[]} errors Array of errors describing each validation error
          *   @param {object}   error  Each error object contains:
          *     @param {File}     error.file            File that failed validation
-         *     @param {object}   error.validationError Error object describing the validation failure:
-         *       @param {string}           validationError.error Description of the failure
-         *       @param {ValidationErrors} validationError.type  Type of the failure
+         *     @param {object}   error.validationError Error object describing the validation error:
+         *       @param {string}           validationError.error Description of the error
+         *       @param {ValidationErrors} validationError.type  Type of the error
          */
-        onValidationFailure: func,
+        onValidationError: func,
 
         /**
          * FineUploader options
@@ -510,7 +510,7 @@ const ReactS3FineUploader = React.createClass({
             'onSuccess',
             'onTotalProgress',
             'onUpload',
-            'onValidationFailure'
+            'onValidationError'
         ]);
 
         const uploaderConfig = {
@@ -561,7 +561,7 @@ const ReactS3FineUploader = React.createClass({
     validateFiles(files) {
         const {
             multiple, //eslint-disable-line react/prop-types
-            onValidationFailure,
+            onValidationError,
             validation: { allowedExtensions, itemLimit, sizeLimit } = {} //eslint-disable-line react/prop-types
         } = this.props;
 
@@ -605,7 +605,7 @@ const ReactS3FineUploader = React.createClass({
         });
 
         if (errors.length) {
-            safeInvoke(onValidationFailure, errors);
+            safeInvoke(onValidationError, errors);
         }
 
         return validFiles;

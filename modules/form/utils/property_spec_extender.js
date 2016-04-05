@@ -9,7 +9,7 @@ const propertySpecExtender = (propertyComponentSpec, propertyRefName = 'property
     builder
         .extendForFn('focus')
         .extendForFn('getValue')
-        .extendForFn('onSubmitFailure')
+        .extendForFn('onSubmitError')
         .extendForFn('onSubmitSuccess')
         .extendForFn('reset')
         .extendForFn('validate');

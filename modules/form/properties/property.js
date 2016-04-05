@@ -165,7 +165,7 @@ const Property = React.createClass({
     },
 
     // Required by Form API
-    onSubmitFailure() {
+    onSubmitError() {
         // If submission failed, just unfocus any properties in the form
         this.setState({
             isFocused: false

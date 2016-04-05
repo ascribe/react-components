@@ -136,7 +136,7 @@ const Form = React.createClass({
 
             if (invoked) {
                 result.then(this.onSubmitComplete((propertyRef) => propertyRef.onSubmitSuccess()))
-                      .catch(this.onSubmitComplete((propertyRef) => propertyRef.onSubmitFailure()));
+                      .catch(this.onSubmitComplete((propertyRef) => propertyRef.onSubmitError()));
             }
 
             this.setState({ submitting: true });
