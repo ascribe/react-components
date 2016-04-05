@@ -305,11 +305,11 @@ const ReactS3FineUploader = React.createClass({
          * Called when validation fails for a group of files.
          *
          * @param {object[]} errors Array of errors describing each validation failure
-         *   @param {object} error  Each error object contains:
-         *     @param {File} error.file              File that failed validation
-         *     @param {object} error.validationError Error object describing the validation failure:
-         *       @param {string} validationError.error          Description of the failure
-         *       @param {ValidationErrors} validationError.type Type of the failure
+         *   @param {object}   error  Each error object contains:
+         *     @param {File}     error.file            File that failed validation
+         *     @param {object}   error.validationError Error object describing the validation failure:
+         *       @param {string}           validationError.error Description of the failure
+         *       @param {ValidationErrors} validationError.type  Type of the failure
          */
         onValidationFailure: func,
 
@@ -434,6 +434,38 @@ const ReactS3FineUploader = React.createClass({
         this.setState(this.getInitialState());
     },
 
+    // This method has been made promise-based to allow a callback function
+    // to execute immediately after the state is set.
+    setStatusOfFile(fileId, status, changeSet = {}) {
+        const { onFileError, onFilesChanged, onStatusChange } = this.props;
+
+        return new Promise((resolve) => {
+            const file = this.state.uploaderFiles[fileId];
+
+            if (file) {
+                const oldStatus = file.status;
+
+                changeSet.status = { $set: status };
+                if (status === FileStatus.DELETED || status === FileStatus.CANCELED || status === FileStatus.UPLOAD_FAILED) {
+                    changeSet.progress = { $set: 0 };
+                }
+
+                const uploaderFiles = update(this.state.uploaderFiles, { [fileId]: changeSet });
+
+                this.setState({ uploaderFiles }, () => {
+                    const updatedFile = this.state.uploaderFiles[fileId];
+
+                    safeInvoke(onStatusChange, updatedFile, oldStatus, status);
+                    safeInvoke(onFilesChanged, this.state.uploaderFiles);
+                    resolve(updatedFile);
+                });
+            } else {
+                safeInvoke(onFileError, `Failed to change status of unfound file with id: ${fileId} to: ${status}`);
+                reject();
+            }
+        });
+    },
+
     /** PROTECTED METHODS **/
     // Cancel uploads and clear previously selected files on the input element
     cancelUploads(fileId) {
@@ -524,38 +556,6 @@ const ReactS3FineUploader = React.createClass({
         const validFiles = this.state.uploaderFiles.filter(validFilesFilter);
 
         return !!((!multiple && validFiles.length) || (itemLimit && validFiles.length >= itemLimit));
-    },
-
-    // This method has been made promise-based to allow a callback function
-    // to execute immediately after the state is set.
-    setStatusOfFile(fileId, status, changeSet = {}) {
-        const { onFileError, onFilesChanged, onStatusChange } = this.props;
-
-        return new Promise((resolve) => {
-            const file = this.state.uploaderFiles[fileId];
-
-            if (file) {
-                const oldStatus = file.status;
-
-                changeSet.status = { $set: status };
-                if (status === FileStatus.DELETED || status === FileStatus.CANCELED || status === FileStatus.UPLOAD_FAILED) {
-                    changeSet.progress = { $set: 0 };
-                }
-
-                const uploaderFiles = update(this.state.uploaderFiles, { [fileId]: changeSet });
-
-                this.setState({ uploaderFiles }, () => {
-                    const updatedFile = this.state.uploaderFiles[fileId];
-
-                    safeInvoke(onStatusChange, updatedFile, oldStatus, status);
-                    safeInvoke(onFilesChanged, this.state.uploaderFiles);
-                    resolve(updatedFile);
-                });
-            } else {
-                safeInvoke(onFileError, `Failed to change status of unfound file with id: ${fileId} to: ${status}`);
-                reject();
-            }
-        });
     },
 
     validateFiles(files) {

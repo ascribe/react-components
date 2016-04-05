@@ -10,6 +10,7 @@ const uploaderSpecExtender = (uploaderComponentSpec, uploaderRefName = 'uploader
         .extendForFn('getFiles')
         .extendForFn('getUploader')
         .extendForFn('reset')
+        .extendForFn('setStatusOfFile');
 
     return builder.constructSpec();
 };
