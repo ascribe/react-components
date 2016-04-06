@@ -126,8 +126,7 @@ const config = {
                 exclude: [PATHS.nodeModules],
                 loader: 'babel',
                 query: {
-                    cacheDirectory: true,
-                    presets: ['react', 'es2015-no-commonjs']
+                    cacheDirectory: true
                 }
             },
             {
