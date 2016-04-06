@@ -1,3 +1,6 @@
+@import '../../styles/colors.scss';
+@import '../../styles/mixins/buttons.scss';
+
 .base {
     composes: btn btn-default from global;
     border-radius: 0;

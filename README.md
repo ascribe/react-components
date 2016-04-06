@@ -168,17 +168,12 @@ transpiled by Babel:
 CSS / SASS
 ----------
 
-Every component should be styled using their own CSS Module. Variables
-and mixins should be used when something can be generalized for multiple
-components or be used in the future to more easily extend or customize
-styles. They should be placed in the [styles](./styles/) folder.
-
-[Sass-resources-loader](https://github.com/shakacode/sass-resources-loader)
-is used to inject variables and mixins from bootstrap and our
-[styles](./styles/) folder into all sass files during compile time (so
-you don't have to declare imports for them, but **make sure** that any
-file injected by sass-resources-loader doesn't contain real css;
-otherwise, that css will be injected into every file as well).
+Every component should be styled using their own CSS Module in a
+`[component_name].scss` file that's located in the same folder as the component.
+Variables and mixins should be used when something can be generalized for
+multiple components or be used in the future to more easily extend or
+customize styles. Pure SASS script files (ie. variables and mixins) should be
+placed in the [styles](./styles/) folder.
 
 
 TODO

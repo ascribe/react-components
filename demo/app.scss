@@ -1,6 +1,10 @@
+@import '~bootstrap-sass/assets/stylesheets/bootstrap/variables';
+@import '~bootstrap-sass/assets/stylesheets/bootstrap/mixins';
+@import '../styles/bootstrap_defaults';
+
 /* Load in normalize styles from bootstrap */
-@import "~bootstrap-sass/assets/stylesheets/bootstrap/normalize";
-@import "~bootstrap-sass/assets/stylesheets/bootstrap/scaffolding";
+@import '~bootstrap-sass/assets/stylesheets/bootstrap/normalize';
+@import '~bootstrap-sass/assets/stylesheets/bootstrap/scaffolding';
 
 * {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;

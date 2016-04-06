@@ -1,3 +1,5 @@
+@import '../../../styles/mixins/properties';
+
 /* Import react-datepicker's stylesheet into global css. */
 :global {
     @import '~react-datepicker/dist/react-datepicker';
