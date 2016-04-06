@@ -72,18 +72,18 @@
 }
 
 .label {
-    composes: clearfix from global;
-
     cursor: pointer;
-    display: block;
+    display: inline-block;
     font-size: 0.9em;
     font-weight: inherit;
     margin-bottom: 0.6em;
-    margin-top: 0;
+}
 
-    .error-label {
-        color: $ascribe-colors--text-danger;
-    }
+.label-error {
+    composes: label;
+
+    color: $ascribe-colors--text-danger;
+    float: right;
 }
 
 .footer {

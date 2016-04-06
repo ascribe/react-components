@@ -12,16 +12,15 @@ import styles from './property.scss';
 const { bool, element, func, node, shape, string } = React.PropTypes;
 
 // Default layouts
-const PropertyFooter = CssModules(({ footer }) => (
-    <div styleName="footer">{footer}</div>
+const PropertyErrorLabel = CssModules(({ children }) => (
+    <div styleName="label-error">{children}</div>
 ), styles);
 
-const PropertyLabel = CssModules(({ error, htmlFor, label }) => (
-    <label htmlFor={htmlFor} styleName="label">
-        <span className="pull-left">{label}</span>
-        <span className="pull-right" styleName="error-label">{error}</span>
-    </label>
+const PropertyFooter = CssModules(({ children }) => (
+    <div styleName="footer">{children}</div>
 ), styles);
+
+const PropertyLabel = CssModules((props) => (<label {...props} styleName="label" />), styles);
 
 // The default layout component acts as both the Property container and its body
 const PropertyLayout = CssModules(({ children, handleFocus, status }) => (
@@ -32,6 +31,7 @@ const PropertyLayout = CssModules(({ children, handleFocus, status }) => (
     </div>
 ), styles, { allowMultiple: true });
 
+PropertyErrorLabel.displayName = 'PropertyError';
 PropertyFooter.displayName = 'PropertyFooter';
 PropertyLabel.displayName = 'PropertyLabel';
 PropertyLayout.displayName = 'PropertyLayout';
@@ -45,6 +45,7 @@ const Property = React.createClass({
         className: string,
         createErrorMessage: func,
         disabled: bool,
+        errorLabelType: func,
         footer: node,
         footerType: func,
         hidden: bool,
@@ -86,6 +87,7 @@ const Property = React.createClass({
                     return null;
                 }
             },
+            errorLabelType: PropertyErrorLabel,
             footerType: PropertyFooter,
             labelType: PropertyLabel,
             layoutType: PropertyLayout
@@ -302,23 +304,28 @@ const Property = React.createClass({
             footer,
             label,
             name,
+            errorLabelType: ErrorLabelType,
             footerType: FooterType,
             labelType: LabelType,
             layoutType: LayoutType
         } = this.props;
         const { errorMessage } = this.state;
 
-        const labelElement = label || errorMessage ? (
-            <LabelType error={errorMessage} htmlFor={name} label={label} />
+        const errorElement = ErrorLabelType && errorMessage ? (
+            <ErrorLabelType>{errorMessage}</ErrorLabelType>
         ) : null;
 
-        const footerElement = footer ? (<FooterType footer={footer} />) : null;
+        const labelElement = LabelType && label ? (<LabelType htmlFor={name}>{label}</LabelType>)
+                                                : null;
+
+        const footerElement = FooterType && footer ? (<FooterType>{footer}</FooterType>) : null;
 
         return (
             <LayoutType
                 className={className}
                 handleFocus={this.focus}
                 status={this.getStatus()}>
+                {errorElement}
                 {labelElement}
                 {this.renderChildren()}
                 {footerElement}
