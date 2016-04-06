@@ -1,7 +1,3 @@
-.collapsible-property {
-    composes: property from './property.scss';
-}
-
 .header {
     padding: 1.5em;
 }
@@ -11,6 +7,10 @@
 
     // Collapsible property bodies always have a divider between them and their header
     border-top: 1px solid rgba(0, 0, 0, .05); /* Use alpha to make the border look thinner */
+}
+
+.collapsible-property {
+    composes: property from './property.scss';
 }
 
 // Statuses
