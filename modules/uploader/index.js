@@ -10,6 +10,7 @@ export UploadDragAndDropArea from './upload_drag_and_drop_area';
 
 // Utilities and constants
 export FileStatus from './constants/file_status';
+export SupportedFeatures from './constants/supported_features';
 export ValidationErrors from './constants/validation_errors';
 
 export * as FileFilters from './utils/file_filters';
