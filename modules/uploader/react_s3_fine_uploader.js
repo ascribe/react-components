@@ -1,3 +1,5 @@
+import coreIncludes from 'core-js/library/fn/array/includes';
+
 import React from 'react';
 import update from 'react-addons-update'
 import FineUploader from './vendor/s3.fine-uploader';
@@ -590,7 +592,7 @@ const ReactS3FineUploader = React.createClass({
                     error: `A file you submitted is bigger than ${sizeLimit / 1000000} MB`,
                     type: ValidationErrors.SIZE,
                 };
-            } else if (allowedExtensions && !allowedExtensions.includes(fileExt)) {
+            } else if (allowedExtensions && !coreIncludes(allowedExtensions, fileExt)) {
                 validationError = {
                     error: `The file you've submitted is of an invalid file format: Valid format(s): ${allowedExtensions.join(', ')}`,
                     type: ValidationErrors.EXTENSION

@@ -33,7 +33,6 @@
     "babel-plugin-transform-object-rest-spread": "^6.5.0",
     "babel-plugin-transform-react-display-name": "^6.5.0",
     "babel-plugin-transform-runtime": "^6.5.0",
-    "babel-polyfill": "^6.5.0",
     "babel-preset-es2015-no-commonjs": "0.0.2",
     "babel-preset-react": "^6.5.0",
     "bootstrap-loader": "^1.0.8",
@@ -60,9 +59,10 @@
     "webpack-dev-server": "^2.0.0-beta"
   },
   "dependencies": {
-    "babel-runtime": "^6.5.0",
+    "babel-runtime": "^6.6.1",
     "bootstrap-sass": "^3.3.6",
     "classnames": "^2.2.3",
+    "core-js": "^2.2.2",
     "moment": "^2.12.0",
     "react-css-modules": "^3.7.6",
     "react-datepicker": "^0.24.0",
@@ -70,8 +70,8 @@
     "shallow-equals": "0.0.0"
   },
   "peerDependencies": {
-    "babel-polyfill": "*",
-    "react": "~0.14.0"
+    "react": "~0.14.0",
+    "react-addons-update": "~0.14.0"
   },
   "keywords": [
     "react",

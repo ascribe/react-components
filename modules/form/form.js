@@ -1,3 +1,5 @@
+import coreIncludes from 'core-js/library/fn/array/includes';
+
 import React from 'react';
 import CssModules from 'react-css-modules';
 
@@ -185,7 +187,7 @@ const Form = React.createClass({
 
         return React.Children.map(children, (child) => {
             // Only register child Properties that are of a type known to this Form
-            if (trackedPropertyTypes.includes(child.type)) {
+            if (coreIncludes(trackedPropertyTypes, child.type)) {
                 const { props: { disabled: childDisabled, name, onChange, overrideFormDefaults } } = child;
 
                 return React.cloneElement(child, {
