@@ -30,6 +30,12 @@ const CustomHeaderOnChangeUploader = (Uploader) => {
             // All other props will be passed through to ReactS3FineUploader
         },
 
+        getDefaultProps() {
+            return {
+                onSubmitFiles: (files) => Promise.resolve(files)
+            };
+        },
+
         componentWillMount() {
             const {
                 deleteFile: { customHeaders: deleteCustomHeaders } = {}, //eslint-disable-line react/prop-types
@@ -85,7 +91,7 @@ const CustomHeaderOnChangeUploader = (Uploader) => {
         onSubmitFiles(...args) {
             this.handleCustomHeaderMayChange();
 
-            safeInvoke(this.props.onSubmitFiles, ...args); //eslint-disable-line react/prop-types
+            return this.props.onSubmitFiles(...args); //eslint-disable-line react/prop-types
         },
 
         render() {
