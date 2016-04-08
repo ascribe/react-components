@@ -1,8 +1,12 @@
 import React from 'react';
+import CssModules from 'react-css-modules';
 
 import Checkbox from '../../ui/checkbox';
 
 import { safeInvoke } from '../../utils/general';
+
+import styles from './input_checkbox.scss';
+
 
 const { bool, func, object, oneOfType, string } = React.PropTypes;
 
@@ -96,9 +100,10 @@ const InputCheckbox = React.createClass({
                 {...checkboxProps}
                 checked={this.getValue()}
                 onChange={this.onCheckboxChange}
+                styleName="input-checkbox"
                 styles={checkboxStyle} />
         );
     }
 });
 
-export default InputCheckbox;
+export default CssModules(InputCheckbox, styles);
