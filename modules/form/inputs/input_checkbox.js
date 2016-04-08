@@ -4,7 +4,7 @@ import Checkbox from '../../ui/checkbox';
 
 import { safeInvoke } from '../../utils/general';
 
-const { bool, func, object, string } = React.PropTypes;
+const { bool, func, object, oneOfType, string } = React.PropTypes;
 
 /**
  * This component can be used as a custom input element for Form Properties.
@@ -20,13 +20,16 @@ const InputCheckbox = React.createClass({
         // exposes a `defaultValue` rather than `defaultChecked` to stay consistent with the other
         // custom inputs. Form also injects `value` into inputs, so this also stays consistent
         // with `value`.
-        defaultValue: bool,
+        //
+        // We have to allow strings for defaultValue and value as cleared inputs with react 15.0
+        // require value="" rather than value={null}
+        defaultValue: oneOfType([bool, string]),
 
         disabled: bool,
         label: string,
         name: string,
         onChange: func,
-        value: bool,
+        value: oneOfType([bool, string]),
 
         // Only used to signal for validation in Property
         required: bool
@@ -58,7 +61,7 @@ const InputCheckbox = React.createClass({
 
         // If this input's been user edited, we should use the value passed from the controlling
         // parent component as its the one that managing this input component's values.
-        return this.state.edited ? value : !!defaultValue;
+        return !!(this.state.edited ? value : defaultValue);
     },
 
     reset() {

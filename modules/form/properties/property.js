@@ -113,8 +113,11 @@ const Property = React.createClass({
              * `value` is a representation of the child input's value that is used only to control
              * the input (ie. handle its edited value); any time we need to use the input's value,
              * we request it directly using its value property (on native inputs) or `getValue()`.
+             *
+             * With react 15.0, we have to make sure that valueless controlled inputs should use
+             * value="" instead of value={null}.
              */
-            value: defaultValue
+            value: defaultValue || ''
         };
     },
 
@@ -261,10 +264,10 @@ const Property = React.createClass({
             // This allows a reset to return the input's value to its last submitted value rather
             // than the initial value it had upon its initial render (although if no changes have
             // been made, these two will be the same).
-            defaultValue: removeValue ? null : initialValue,
+            defaultValue: removeValue ? '' : initialValue,
 
             // Control the child input's with this Property
-            value: removeValue ? null : value,
+            value: removeValue ? '' : value,
 
             onBlur: (...args) => {
                 safeInvoke(onBlur, ...args);
