@@ -214,6 +214,8 @@ const Form = React.createClass({
                         this.onPropertyChange();
                     }
                 });
+            } else {
+                return child;
             }
         });
     },
