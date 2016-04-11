@@ -74,6 +74,7 @@ const Checkbox = React.createClass({
         // (eg. a <form method="post">).
         return (
             <label className={className} styleName={styleName}>
+                {label}
                 <HiddenInput
                     ref={(ref) => { this.inputElement = ref && ref.inputElement; }}
                     {...inputCheckboxProps}
@@ -82,7 +83,6 @@ const Checkbox = React.createClass({
                     required={false}
                     onChange={this.onCheckboxChange}
                     type="checkbox" />
-                <span>{label}</span>
             </label>
         );
     }
