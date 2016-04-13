@@ -78,7 +78,7 @@ const Property = React.createClass({
             createErrorMessage: (errorProp) => {
                 switch (errorProp) {
                   case 'min' || 'max':
-                    return 'The field you defined is not in the valid range';
+                    return 'The value you defined is not in the valid range';
                   case 'pattern':
                     return 'The value you defined is not matching the valid pattern';
                   case 'required':
