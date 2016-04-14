@@ -3,7 +3,7 @@ import 'bootstrap-loader';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { Button, ButtonContainer, ButtonList } from '../modules/buttons';
+import { Button, ButtonContainer } from '../modules/buttons';
 import {
     CollapsibleCheckboxProperty,
     CollapsibleProperty,
@@ -15,7 +15,7 @@ import {
     InputUploader,
     Property
 } from '../modules/form';
-import { Checkbox } from '../modules/ui';
+import { Checkbox, Grouping } from '../modules/ui';
 import { UploadButton, UploadDragAndDropArea } from '../modules/uploader';
 
 import { arrayFrom } from '../modules/utils/general';
@@ -90,45 +90,49 @@ const App = () => {
                     <Button>A button with label</Button>
                 </ButtonContainer>
             </div>
-            <h3>Button List</h3>
+            <h3>Button Grouping</h3>
             <div>
-                <ButtonList>
+                <Grouping>
                     <Button>Button 1</Button>
                     <Button classType="secondary">Button 2</Button>
                     <Button classType="tertiary">Button 3</Button>
-                </ButtonList>
+                </Grouping>
             </div>
             <h4>Pulled right</h4>
             <div>
-                <ButtonList pull="right">
-                    <Button>Button 1</Button>
-                    <Button classType="secondary">Button 2</Button>
-                    <Button classType="tertiary">Button 3</Button>
-                </ButtonList>
+                <div className="clearfix">
+                    <Grouping className="pull-right">
+                        <Button>Button 1</Button>
+                        <Button classType="secondary">Button 2</Button>
+                        <Button classType="tertiary">Button 3</Button>
+                    </Grouping>
+                </div>
             </div>
             <h4>Vertical</h4>
             <div>
-                <ButtonList vertical>
+                <Grouping vertical>
                     <Button>Button 1</Button>
                     <Button classType="secondary">Button 2</Button>
                     <Button classType="tertiary">Button 3</Button>
-                </ButtonList>
+                </Grouping>
             </div>
             <h4>Vertical pulled right</h4>
             <div>
-                <ButtonList pull="right" vertical>
-                    <Button>Button 1</Button>
-                    <Button classType="secondary">Button 2</Button>
-                    <Button classType="tertiary">Button 3</Button>
-                </ButtonList>
+                <div className="clearfix">
+                    <Grouping className="pull-right" vertical>
+                        <Button>Button 1</Button>
+                        <Button classType="secondary">Button 2</Button>
+                        <Button classType="tertiary">Button 3</Button>
+                    </Grouping>
+                </div>
             </div>
             <h4>Anchor buttons</h4>
             <div>
-                <ButtonList>
+                <Grouping>
                     <Button href="http://www.google.com">Button 1</Button>
                     <Button classType="secondary" href="http://www.google.com">Button 2</Button>
                     <Button classType="tertiary" href="http://www.google.com">Button 3</Button>
-                </ButtonList>
+                </Grouping>
             </div>
             <h2>Forms</h2>
             <h3>Basic Form</h3>
