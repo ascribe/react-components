@@ -3,7 +3,7 @@ import 'bootstrap-loader';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { Button, ButtonContainer } from '../modules/buttons';
+import { Button } from '../modules/buttons';
 import {
     CollapsibleCheckboxProperty,
     CollapsibleProperty,
@@ -78,17 +78,6 @@ const App = () => {
                 <div>
                     <Button classType="tertiary" wide>Tertiary Wide</Button>
                 </div>
-            </div>
-            <h3>Button Container</h3>
-            <div>
-                <ButtonContainer>
-                    <Button>A button</Button>
-                </ButtonContainer>
-            </div>
-            <div>
-                <ButtonContainer label="Container label">
-                    <Button>A button with label</Button>
-                </ButtonContainer>
             </div>
             <h3>Button Grouping</h3>
             <div>
@@ -418,7 +407,7 @@ const App = () => {
                             onFilesValidationChange={(prevResult, nextResult) => {
                                 alert(`file validation toggled with prev: ${prevResult} and next: ${nextResult}`);
                             }}>
-                            <UploadButton uploaderProps={dummyUploaderProps} />
+                            <UploadButton className="upload-input" uploaderProps={dummyUploaderProps} />
                         </InputUploader>
                     </Property>
                 </Form>

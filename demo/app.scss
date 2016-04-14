@@ -6,7 +6,13 @@
 @import '~bootstrap-sass/assets/stylesheets/bootstrap/normalize';
 @import '~bootstrap-sass/assets/stylesheets/bootstrap/scaffolding';
 
-* {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-weight: 400;
+:global {
+    * {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-weight: 400;
+    }
+
+    .upload-input {
+        display: block;
+    }
 }
