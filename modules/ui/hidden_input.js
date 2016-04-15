@@ -29,9 +29,10 @@ const HiddenInput = React.createClass({
                 {...this.props}
                 style={{
                     height: 0,
+                    left: -100,
                     opacity: 0,
                     position: 'absolute',
-                    top: 0,
+                    top: -100,
                     width: 0
                 }} />
         );
