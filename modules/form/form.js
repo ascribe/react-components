@@ -15,7 +15,7 @@ import { safeInvoke } from '../utils/general';
 import styles from './form.scss';
 
 
-const { arrayOf, bool, func, node, shape, string } = React.PropTypes;
+const { arrayOf, bool, func, node, oneOf, shape, string } = React.PropTypes;
 
 // Property types that Form will always recognize and track
 const TRACKED_PROPERTY_TYPES = [CollapsibleCheckboxProperty, CollapsibleProperty, Property];
@@ -60,7 +60,7 @@ const Form = React.createClass({
     propTypes: {
         children: node.isRequired,
 
-        autoComplete: bool,
+        autoComplete: oneOf(['on', 'off']),
         buttonDefault: node,
         buttonEdited: node,
         buttonSubmitting: node,
@@ -84,6 +84,7 @@ const Form = React.createClass({
 
     getDefaultProps() {
         return {
+            autoComplete: 'off',
             buttonEdited: (<EditedButtonList />),
             customPropertyTypes: [],
             fakeAutoCompleteFields: [{
@@ -242,7 +243,7 @@ const Form = React.createClass({
             headerType: HeaderType
         } = this.props;
 
-        const fakeAutoCompleteInputs = autoComplete ? (
+        const fakeAutoCompleteInputs = autoComplete === 'on' && fakeAutoCompleteFields.length ? (
             <FakeAutoCompleteInputs fields={fakeAutoCompleteFields} />
         ) : null;
 
@@ -250,7 +251,7 @@ const Form = React.createClass({
 
         return (
             <form
-                autoComplete={autoComplete ? 'on' : 'off'}
+                autoComplete={autoComplete}
                 className={className}
                 onSubmit={this.onSubmit}
                 role="form">

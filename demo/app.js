@@ -189,7 +189,7 @@ const App = () => {
             <h3>Autocomplete form</h3>
             <div>
                 <Form
-                    autoComplete
+                    autoComplete="on"
                     header="Autocomplete form"
                     onSubmit={(data) => {
                         console.log(data);
