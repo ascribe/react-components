@@ -4,7 +4,16 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { Button, ButtonContainer, ButtonList } from '../modules/buttons';
-import { CollapsibleCheckboxProperty, CollapsibleProperty, Form, InputCheckbox, InputDate, InputTextarea, InputUploader, Property } from '../modules/form';
+import {
+    CollapsibleCheckboxProperty,
+    CollapsibleProperty,
+    Form,
+    InputCheckbox,
+    InputDate,
+    InputTextarea,
+    InputUploader,
+    Property
+} from '../modules/form';
 import { Checkbox } from '../modules/ui';
 import { UploadButton, UploadDragAndDropArea } from '../modules/uploader';
 

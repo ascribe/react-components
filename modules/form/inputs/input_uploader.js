@@ -77,7 +77,7 @@ const InputUploader = React.createClass({
     getFileValues(files) {
         const fileValues = sanitize(files.map(this.props.getFileValue));
 
-        return fileValues.length > 0 ? fileValues : null;
+        return fileValues.length ? fileValues : null;
     },
 
     // Required by Property API

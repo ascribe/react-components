@@ -18,11 +18,11 @@ let UploadDragAndDropArea = Uploadify(React.createClass({
         onDragOver: func,
 
         /**
-         * Called when a file was dropped into the drop zone. If this returns false, the dropped
-         * file will be discarded
+         * Called when any files are dropped into the drop zone. If this returns false, the dropped
+         * files will be discarded
          *
-         * @param  {Event}   event Drop event with the file
-         * @return {boolean}       Return false to prevent the dropped file from being submitted
+         * @param  {Event}   event Drop event with the files
+         * @return {boolean}       Return false to prevent the dropped files from being submitted
          *                         to the uploader
         */
         onDrop: func
@@ -48,6 +48,7 @@ let UploadDragAndDropArea = Uploadify(React.createClass({
     onDrop(event) {
         const { disabled, onDrop } = this.props;
         const { handleSelectFiles, handleSubmitFiles } = this.context;
+        const { dataTransfer: { files } = {} } = event;
 
         event.preventDefault();
         event.stopPropagation();
@@ -55,10 +56,10 @@ let UploadDragAndDropArea = Uploadify(React.createClass({
         if (!disabled) {
             const { invoked, shouldSubmit } = safeInvoke(onDrop, event);
 
-            if (!invoked || shouldSubmit) {
-                if (event.dataTransfer && event.dataTransfer.files.length) {
+            if (!invoked || shouldSubmit !== false) {
+                if (files && files.length) {
                     // Submit dropped files to the uploader
-                    handleSubmitFiles(event.dataTransfer.files);
+                    handleSubmitFiles(files);
                 } else {
                     // If somehow the browser doesn't give us any files or the user didn't drag any
                     // files, fallback to opening the file selector

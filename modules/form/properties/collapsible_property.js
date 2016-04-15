@@ -1,4 +1,5 @@
 import React from 'react';
+import classNames from 'classnames';
 import CssModules from 'react-css-modules';
 
 import Property from './property';
@@ -42,7 +43,7 @@ const CollapsibleLayout = CssModules(({
 ), styles);
 
 const CollapsiblePanel = CssModules(({ children, expanded, ...props }) => (
-    <div {...props} className={expanded ? '' : 'hide'} styleName="collapsible-body">
+    <div {...props} className={classNames({ 'hide': !expanded })} styleName="collapsible-body">
         {children}
     </div>
 ), styles);

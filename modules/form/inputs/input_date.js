@@ -73,9 +73,9 @@ const InputDate = React.createClass({
 
         // If this input's been user edited, we should use the value passed from the controlling
         // parent component as its the one that managing this input component's values.
-        const curValue = this.state.edited ? value : defaultValue;
+        const currentValue = this.state.edited ? value : defaultValue;
 
-        return curValue ? moment(curValue, dateFormat, true) : null;
+        return currentValue ? moment(currentValue, dateFormat, true) : null;
     },
 
     reset() {
@@ -98,11 +98,15 @@ const InputDate = React.createClass({
     },
 
     render() {
-        // Ignore some of the props meant only for this component before passing it on to DatePicker
         const {
-            defaultValue,
-            onChange,
-            value,
+            defaultValue, // ignore
+            onChange, // ignore
+
+            // Ignore, to avoid overriding DatePickers's styles with this component's styles (in
+            // case they ever use react-css-modules or expose a `style` prop)
+            styles, // eslint-disable-line react/prop-types
+
+            value, // ignore
             ...datePickerProps
         } = this.props;
 

@@ -5,6 +5,10 @@ import HiddenInput from '../ui/hidden_input';
 
 const { bool, func, string } = React.PropTypes;
 
+/**
+ * Convenience wrapper component for `<input type="file" />` that hides the backing native input to
+ * let users style the UI themselves (that default input button is UGLY!).
+ */
 const FileInput = React.createClass({
     propTypes: {
         // All props given will be passed down to the backing input element.
@@ -40,6 +44,7 @@ const FileInput = React.createClass({
     },
 
     render() {
+        // See the documentation in HiddenInput about the gotchas associated with hiding `<input />`s
         return (
             <HiddenInput
                 ref={(ref) => { this.inputElement = ref && ref.inputElement; }}

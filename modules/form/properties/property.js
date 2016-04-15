@@ -128,18 +128,20 @@ const Property = React.createClass({
     },
 
     reset() {
+        const { initialValue } = this.state;
+
         this.setState({
-            value: this.state.initialValue
+            value: initialValue
         });
 
-        // In case the input element needs more than just the value changing to the initial
+        // In case the input element needs more than just the value changed to the initial
         // value to reset it, it can expose a reset method
         safeInvoke({
             fn: this.inputElement.reset,
             context: this.inputElement
         });
 
-        return this.state.initialValue;
+        return initialValue;
     },
 
     focus() {

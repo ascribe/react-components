@@ -2,10 +2,12 @@ import React from 'react';
 
 /**
  * Builder for creating component extenders that propagate methods down to base refs.
+ * Allows for patterns that resemble selective inheritance (although technically speaking, the
+ * components are actually composed from each other).
  *
  * Useful when you want to add the same public API from a base component to extended components.
  * Only works when creating components with React.createClass(), as this directly adds methods to
- * the creation spec.
+ * the component spec.
  *
  * Usage:
  *   const componentSpecExtender = (componentSpec) => {
