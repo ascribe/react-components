@@ -140,28 +140,28 @@ const App = () => {
                     }}>
                     <div>Should be ignored in ref</div>
                     <Property
-                        label="Prop 1 label"
-                        name="prop1">
-                        <input placeholder="prop 1 placeholder" type="text" />
+                        label="Basic property"
+                        name="basic">
+                        <input placeholder="basic placeholder" type="text" />
                     </Property>
                     <Property
-                        label="Default label"
+                        label="Default value label"
                         name="default">
-                        <input placeholder="default placeholder" type="text" defaultValue="default" />
+                        <input placeholder="default value placeholder" type="text" defaultValue="default" />
                     </Property>
                     <Property
-                        label="Required prop label"
-                        name="required prop">
-                        <input placeholder="required prop placeholder" required type="text" />
+                        label="Required property label"
+                        name="required">
+                        <input placeholder="required property placeholder" required type="text" />
                     </Property>
                     <Property
                         footer="footer"
-                        label="Footer prop label"
-                        name="footer prop">
-                        <input placeholder="footer prop placeholder" type="text" />
+                        label="Footer property label"
+                        name="footer">
+                        <input placeholder="footer property placeholder" type="text" />
                     </Property>
                     <Property
-                        label="Plain checkbox prop label"
+                        label="Plain checkbox property label"
                         name="checkbox">
                         <input type="checkbox" defaultChecked />
                     </Property>
@@ -188,15 +188,15 @@ const App = () => {
                     </Property>
                     <Property
                         disabled
-                        label="Disabled prop label"
+                        label="Disabled property label"
                         name="disabled">
-                        <input placeholder="disabled prop placeholder" type="text" defaultValue="disabled" />
+                        <input placeholder="disabled property placeholder" type="text" defaultValue="disabled" />
                     </Property>
                     <Property
                         hidden
-                        label="Hidden prop label"
+                        label="Hidden property label"
                         name="hidden">
-                        <input placeholder="hidden prop placeholder" type="text" defaultValue="hidden" />
+                        <input placeholder="hidden property placeholder" type="text" defaultValue="hidden" />
                     </Property>
                 </Form>
             </div>
@@ -247,8 +247,8 @@ const App = () => {
                         });;
                     }}>
                     <Property
-                        label="Prop 1 label"
-                        name="prop1">
+                        label="Custom buttons label"
+                        name="custom buttons">
                         <input placeholder="custom buttons placeholder" type="text" />
                     </Property>
                 </Form>
