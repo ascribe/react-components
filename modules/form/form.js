@@ -1,7 +1,6 @@
 import coreIncludes from 'core-js/library/fn/array/includes';
 
 import React from 'react';
-import CssModules from 'react-css-modules';
 
 import CollapsibleCheckboxProperty from './properties/collapsible_checkbox_property';
 import CollapsibleProperty from './properties/collapsible_property';
@@ -11,8 +10,6 @@ import Button from '../buttons/button';
 import ButtonList from '../buttons/button_list';
 
 import { safeInvoke } from '../utils/general';
-
-import styles from './form.scss';
 
 
 const { arrayOf, bool, func, node, oneOf, shape, string } = React.PropTypes;
@@ -50,11 +47,8 @@ const FakeAutoCompleteInputs = ({ fields }) => (
     </div>
 );
 
-const FormHeader = CssModules(({ header }) => (<h3 styleName="header">{header}</h3>), styles);
-
 EditedButtonList.displayName = 'EditedButtonList';
 FakeAutoCompleteInputs.displayName = 'FakeAutoCompleteInputs';
-FormHeader.displayName = 'FormHeader';
 
 const Form = React.createClass({
     propTypes: {
@@ -76,8 +70,6 @@ const Form = React.createClass({
             name: string,
             type: string
         })),
-        header: string,
-        headerType: func,
         onSubmit: func,
         onValidationError: func
     },
@@ -94,7 +86,6 @@ const Form = React.createClass({
                 name: 'password',
                 type: 'password'
             }],
-            headerType: FormHeader
         };
     },
 
@@ -239,15 +230,11 @@ const Form = React.createClass({
             autoComplete,
             className,
             fakeAutoCompleteFields,
-            header,
-            headerType: HeaderType
         } = this.props;
 
         const fakeAutoCompleteInputs = autoComplete === 'on' && fakeAutoCompleteFields.length ? (
             <FakeAutoCompleteInputs fields={fakeAutoCompleteFields} />
         ) : null;
-
-        const headerElement = header ? (<HeaderType header={header} />) : null;
 
         return (
             <form
@@ -255,7 +242,6 @@ const Form = React.createClass({
                 className={className}
                 onSubmit={this.onSubmit}
                 role="form">
-                {headerElement}
                 {fakeAutoCompleteInputs}
                 {this.renderChildren()}
                 {this.getButtons()}

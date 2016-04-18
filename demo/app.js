@@ -133,12 +133,11 @@ const App = () => {
             <h3>Basic Form</h3>
             <div>
                 <Form
-                    header="Basic form"
                     onSubmit={(data) => {
                         console.log(data);
                         return Promise.resolve();
                     }}>
-                    <div>Should be ignored in ref</div>
+                    <div>Should be ignored in refs</div>
                     <Property
                         label="Basic property"
                         name="basic">
@@ -204,7 +203,6 @@ const App = () => {
             <div>
                 <Form
                     autoComplete="on"
-                    header="Autocomplete form"
                     onSubmit={(data) => {
                         console.log(data);
                         return Promise.resolve();
@@ -219,7 +217,6 @@ const App = () => {
             <h3>Custom header form</h3>
             <div>
                 <Form
-                    header="Custom header form"
                     headerType={({ header }) => (<h5>{header}</h5>)}
                     onSubmit={(data) => {
                         console.log(data);
@@ -256,7 +253,6 @@ const App = () => {
             <h3>Collapsible Properties</h3>
             <div>
                 <Form
-                    header="Collapsible properties"
                     onSubmit={(data) => {
                         console.log(data);
                         return Promise.resolve();
@@ -300,7 +296,6 @@ const App = () => {
             <h3>Custom Inputs</h3>
             <div>
                 <Form
-                    header="Custom inputs"
                     onSubmit={(data) => {
                         console.log(data);
                         return Promise.resolve();
