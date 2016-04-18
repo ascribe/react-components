@@ -307,6 +307,12 @@ const App = () => {
                         <InputCheckbox label="checkbox" />
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
+                        checkboxLabel="default checkbox"
+                        label="default checkbox label"
+                        name="defaultCheckbox">
+                        <InputCheckbox defaultChecked={true} label="defaultCheckbox" />
+                    </CollapsibleCheckboxProperty>
+                    <CollapsibleCheckboxProperty
                         checkboxLabel="required checkbox"
                         label="required checkbox label"
                         name="requiredCheckbox">

@@ -2,6 +2,8 @@ import React from 'react';
 import classNames from 'classnames';
 import CssModules from 'react-css-modules';
 
+import InputCheckbox from '../inputs/input_checkbox';
+
 import { validateInput } from '../utils/private/validation_utils';
 
 import { noop, safeInvoke } from '../../utils/general';
@@ -68,7 +70,6 @@ const Property = React.createClass({
          *
          * Currently inherited properties:
          *   - disabled: Disable this property
-         *
          */
         overrideFormDefaults: bool
     },
@@ -95,7 +96,7 @@ const Property = React.createClass({
     },
 
     getInitialState() {
-        const defaultValue = this.getChild().props.defaultValue;
+        const defaultValue = this.getDefaultValuePropOfChild();
 
         return {
             /**
@@ -206,6 +207,28 @@ const Property = React.createClass({
         return this.getValueOfInputElement();
     },
 
+    getDefaultValuePropOfChild() {
+        const child = this.getChild();
+        const { defaultChecked, defaultValue } = child.props;
+
+        switch (this.getInputTypeOfChild(child)) {
+          case 'checkbox':
+            return defaultChecked;
+          default:
+            return defaultValue;
+        }
+    },
+
+    getInputTypeOfChild(child) {
+        child = child || this.getChild();
+
+        if (child.type === InputCheckbox) {
+            return 'checkbox';
+        } else {
+            return 'normal';
+        }
+    },
+
     getValueOfInputElement() {
         const { getValue = noop, value } = this.inputElement;
 
@@ -240,8 +263,24 @@ const Property = React.createClass({
             onBlur,
             onChange,
             onFocus,
-            removeValue // If set, remove this child input's value during submission and validation
+            removeValue // If set on the child, reset this child input's defaultValue and value
+                        // to ''
         } = child.props;
+
+        // Change the defaultValue and value props based on different input types (ie. checkboxes)
+        let defaultValueProp;
+        let valueProp;
+
+        switch(this.getInputTypeOfChild(child)) {
+          case 'checkbox':
+            defaultValueProp = 'defaultChecked';
+            valueProp = 'checked';
+            break;
+          default:
+            defaultValueProp = 'defaultValue';
+            valueProp = 'value';
+            break;
+        }
 
         return React.cloneElement(child, {
             ref: (ref) => {
@@ -266,10 +305,10 @@ const Property = React.createClass({
             // This allows a reset to return the input's value to its last submitted value rather
             // than the initial value it had upon its initial render (although if no changes have
             // been made, these two will be the same).
-            defaultValue: removeValue ? '' : initialValue,
+            [defaultValueProp]: removeValue ? '' : initialValue,
 
             // Control the child input's with this Property
-            value: removeValue ? '' : value,
+            [valueProp]: removeValue ? '' : value,
 
             onBlur: (...args) => {
                 safeInvoke(onBlur, ...args);
