@@ -7,6 +7,7 @@ import { Button, ButtonContainer, ButtonList } from '../modules/buttons';
 import {
     CollapsibleCheckboxProperty,
     CollapsibleProperty,
+    FakeAutoCompleteInputs,
     Form,
     InputCheckbox,
     InputDate,
@@ -199,7 +200,6 @@ const App = () => {
                     </Property>
                 </Form>
             </div>
-            <h3>Autocomplete form</h3>
             <div>
                 <Form
                     autoComplete="on"
@@ -208,24 +208,14 @@ const App = () => {
                         return Promise.resolve();
                     }}>
                     <Property
-                        label="Prop 1 label"
-                        name="prop1">
-                        <input placeholder="autocomplete placeholder" type="text" />
+                        label="Autocomplete username label"
+                        name="username">
+                        <input placeholder="autocomplete username placeholder" type="text" />
                     </Property>
-                </Form>
-            </div>
-            <h3>Custom header form</h3>
-            <div>
-                <Form
-                    headerType={({ header }) => (<h5>{header}</h5>)}
-                    onSubmit={(data) => {
-                        console.log(data);
-                        return Promise.resolve();
-                    }}>
                     <Property
-                        label="Prop 1 label"
-                        name="prop1">
-                        <input placeholder="custom header placeholder" type="text" />
+                        label="Autocomplete password label"
+                        name="password">
+                        <input placeholder="autocomplete password placeholder" type="text" />
                     </Property>
                 </Form>
             </div>
@@ -235,7 +225,6 @@ const App = () => {
                     buttonDefault={<Button>Custom default button</Button>}
                     buttonEdited={<Button>Custom edited button</Button>}
                     buttonSubmitting={<Button>Custom submitting button</Button>}
-                    header="Custom buttons form"
                     onSubmit={(data) => {
                         console.log(data);
                         console.log('Wait 10s for submission to end...');
@@ -247,6 +236,21 @@ const App = () => {
                         label="Custom buttons label"
                         name="custom buttons">
                         <input placeholder="custom buttons placeholder" type="text" />
+                    </Property>
+                </Form>
+            </div>
+            <h3>Custom fake autocomplete form</h3>
+            <div>
+                <Form
+                    fakeAutoCompleteInputs={(<FakeAutoCompleteInputs fields={[{ name: 'name', type: 'password' }]} />)}
+                    onSubmit={(data) => {
+                        console.log(data);
+                        return Promise.resolve();
+                    }}>
+                    <Property
+                        label="Fake autocomplete label"
+                        name="fake autocomplete">
+                        <input placeholder="fake autocomplete placeholder" type="text" />
                     </Property>
                 </Form>
             </div>

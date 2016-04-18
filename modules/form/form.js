@@ -6,6 +6,8 @@ import CollapsibleCheckboxProperty from './properties/collapsible_checkbox_prope
 import CollapsibleProperty from './properties/collapsible_property';
 import Property from './properties/property';
 
+import FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
+
 import Button from '../buttons/button';
 import ButtonList from '../buttons/button_list';
 
@@ -31,24 +33,8 @@ const EditedButtonList = ({ handleCancel }) => (
     </ButtonList>
 );
 
-/**
- * All webkit-based browsers are ignoring the attribute autoComplete="off", as stated here:
- * http://stackoverflow.com/questions/15738259/disabling-chrome-autofill/15917221#15917221,
- * so if props.autoComplete is set to "off", we insert fake hidden inputs that mock the given
- * fields to trick chrome/safari into filling those instead of the actual fields
- */
-const FakeAutoCompleteInputs = ({ fields }) => (
-    <div style={{display: 'none'}}>
-        {fields.map(({ name, type }) => {
-            const fakeName = `fake-${name}`;
-
-            return (<input key={fakeName} name={fakeName} type={type} />);
-        })}
-    </div>
-);
-
 EditedButtonList.displayName = 'EditedButtonList';
-FakeAutoCompleteInputs.displayName = 'FakeAutoCompleteInputs';
+
 
 const Form = React.createClass({
     propTypes: {
@@ -66,26 +52,36 @@ const Form = React.createClass({
         customPropertyTypes: arrayOf(func),
 
         disabled: bool, // Can be used to freeze the whole form
-        fakeAutoCompleteFields: arrayOf(shape({
-            name: string,
-            type: string
-        })),
+
+        /**
+         * Allows you to specify fake hidden inputs that will be inserted at the start of the form
+         * when the `autoComplete` prop is also set to "off". This is necessary to trick
+         * Webkit-based browsers, which ignore the `autoComplete="off"` attribute
+         * (see http://stackoverflow.com/questions/15738259/disabling-chrome-autofill/15917221#15917221),
+         * into autocompleting these fake inputs rather than the actual inputs.
+         */
+        fakeAutoCompleteInputs: shape({
+            type: oneOf([FakeAutoCompleteInputs])
+        }),
+
         onSubmit: func,
         onValidationError: func
     },
 
     getDefaultProps() {
+        const fakeAutoCompleteFields = [{
+            name: 'username',
+            type: 'text'
+        }, {
+            name: 'password',
+            type: 'password'
+        }];
+
         return {
             autoComplete: 'off',
             buttonEdited: (<EditedButtonList />),
             customPropertyTypes: [],
-            fakeAutoCompleteFields: [{
-                name: 'username',
-                type: 'text'
-            }, {
-                name: 'password',
-                type: 'password'
-            }],
+            fakeAutoCompleteInputs: (<FakeAutoCompleteInputs fields={fakeAutoCompleteFields} />)
         };
     },
 
@@ -229,12 +225,8 @@ const Form = React.createClass({
         const {
             autoComplete,
             className,
-            fakeAutoCompleteFields,
+            fakeAutoCompleteInputs,
         } = this.props;
-
-        const fakeAutoCompleteInputs = autoComplete === 'on' && fakeAutoCompleteFields.length ? (
-            <FakeAutoCompleteInputs fields={fakeAutoCompleteFields} />
-        ) : null;
 
         return (
             <form
@@ -242,7 +234,7 @@ const Form = React.createClass({
                 className={className}
                 onSubmit={this.onSubmit}
                 role="form">
-                {fakeAutoCompleteInputs}
+                {autoComplete === 'off' ? fakeAutoCompleteInputs : null}
                 {this.renderChildren()}
                 {this.getButtons()}
             </form>
