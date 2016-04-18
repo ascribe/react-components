@@ -159,7 +159,17 @@ const Property = React.createClass({
 
     onInputChange(event) {
         const { name, onChange } = this.props;
-        const value = event && event.target && event.target.value;
+        let value;
+
+        if (event && event.target) {
+            const { target } = event;
+
+            if (target.type === 'checkbox') {
+                value = target.checked;
+            } else {
+                value = target.value;
+            }
+        }
 
         this.setState({ value }, () => safeInvoke(onChange, value, name));
     },
@@ -223,18 +233,29 @@ const Property = React.createClass({
         child = child || this.getChild();
 
         if (child.type === InputCheckbox) {
+            // Although InputCheckbox is a custom input, its API follows the native checkbox API
             return 'checkbox';
+        } else if (child.props.hasOwnProperty('type')) {
+            // Just reutrn the native input's type
+            return child.props.type;
         } else {
+            // All other custom inputs should follow the default input API
             return 'normal';
         }
     },
 
     getValueOfInputElement() {
-        const { getValue = noop, value } = this.inputElement;
+        const { getValue = noop, type, value } = this.inputElement;
 
-        // If our child input is not a native input element, we expect it to have a `getValue()`
-        // method that give us its value.
-        return value != null ? value : getValue();
+        if (type === 'checkbox') {
+            // Catch native checkboxes, ie. input[type="checkbox"], if they are used instead of a
+            // custom input component
+            return this.inputElement.checked;
+        } else {
+            // If our child input is not a native input element, we expect it to have a `getValue()`
+            // method that give us its value.
+            return value != null ? value : getValue();
+        }
     },
 
     getStatus() {
