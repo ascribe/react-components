@@ -5,7 +5,7 @@ import CssModules from 'react-css-modules';
 import styles from './grouping.scss';
 
 
-const { bool, node, number, oneOfType, string } = React.PropTypes;
+const { bool, node, number, object, oneOfType, string } = React.PropTypes;
 
 const propTypes = {
     children: node.isRequired,
@@ -15,6 +15,8 @@ const propTypes = {
     // Providing a number will default to using 'px' for the margin
     margin: oneOfType([number, string]),
 
+    style: object,
+
     vertical: bool
 };
 
@@ -22,32 +24,32 @@ const defaultProps = {
     margin: 1
 };
 
-const Grouping = ({ children, className, margin, vertical }) => {
-    const displayStyle = vertical ? {
+const Grouping = ({ children, className, margin, style, vertical }) => {
+    const childDisplayStyle = vertical ? {
         display: 'block'
     } : null;
 
-    const marginStyle = {
+    const childMarginStyle = {
         [vertical ? 'marginTop' : 'marginLeft']: margin
     };
 
-    const style = {
-        ...displayStyle,
-        ...marginStyle
+    const childStyle = {
+        ...childDisplayStyle,
+        ...childMarginStyle
     };
 
     return (
-        <span className={className} styleName="grouping-container">
+        <span className={className} style={style} styleName="grouping-container">
             {React.Children.map(children, (child, ii) => {
                 // Only apply the display style to the first child to avoid setting unnecessary
                 // margin at the start
-                const baseStyle = ii ? style : displayStyle;
+                const style = ii ? childStyle : childDisplayStyle;
 
                 return React.cloneElement(child, {
                     // If the child has styles applied to it already, let those override our base
                     // styles
                     style: {
-                        ...baseStyle,
+                        ...style,
                         ...child.props.style
                     }
                 });

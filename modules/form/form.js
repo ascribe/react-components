@@ -15,7 +15,7 @@ import Grouping from '../ui/grouping';
 import { safeInvoke } from '../utils/general';
 
 
-const { arrayOf, bool, func, node, oneOf, shape, string } = React.PropTypes;
+const { arrayOf, bool, func, node, object, oneOf, shape, string } = React.PropTypes;
 
 // Property types that Form will always recognize and track
 const TRACKED_PROPERTY_TYPES = [CollapsibleCheckboxProperty, CollapsibleProperty, Property];
@@ -65,7 +65,8 @@ const Form = React.createClass({
         }),
 
         onSubmit: func,
-        onValidationError: func
+        onValidationError: func,
+        style: object
     },
 
     getDefaultProps() {
@@ -226,6 +227,7 @@ const Form = React.createClass({
             autoComplete,
             className,
             fakeAutoCompleteInputs,
+            style
         } = this.props;
 
         return (
@@ -233,7 +235,8 @@ const Form = React.createClass({
                 autoComplete={autoComplete}
                 className={className}
                 onSubmit={this.onSubmit}
-                role="form">
+                role="form"
+                style={style}>
                 {autoComplete === 'off' ? fakeAutoCompleteInputs : null}
                 {this.renderChildren()}
                 {this.getButtons()}
