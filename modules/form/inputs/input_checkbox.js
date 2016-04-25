@@ -14,26 +14,24 @@ const { bool, func, object, oneOfType, string } = React.PropTypes;
  * This component can be used as a custom input element for Form Properties.
  * It exposes its state via a `getValue()` and can be considered as a reference implementation
  * for custom input components that live inside of a Property.
+ *
+ * Note that its `checked` and `defaultChecked` props would normally be `value` and `defaultValue`
+ * in other custom inputs.
  */
 const InputCheckbox = React.createClass({
     propTypes: {
         // Style overrides for the default checkbox. See ui/checkbox for class names to implement.
         checkboxStyle: object,
 
-        // Although inputs of type="checkbox" define their state via checked, this component still
-        // exposes a `defaultValue` rather than `defaultChecked` to stay consistent with the other
-        // custom inputs. Form also injects `value` into inputs, so this also stays consistent
-        // with `value`.
-        //
-        // We have to allow strings for defaultValue and value as cleared inputs with react 15.0
+        // We have to allow strings for checked and defaultChecked as cleared inputs with react 15.0
         // require value="" rather than value={null}
-        defaultValue: oneOfType([bool, string]),
+        checked: oneOfType([bool, string]),
+        defaultChecked: oneOfType([bool, string]),
 
         disabled: bool,
         label: string,
         name: string,
         onChange: func,
-        value: oneOfType([bool, string]),
 
         // Only used to signal for validation in Property
         required: bool
@@ -48,10 +46,23 @@ const InputCheckbox = React.createClass({
     },
 
     componentWillMount() {
-        // Developers are used to define defaultValues for inputs via defaultValue, but since this is a
-        // input of type checkbox we warn the dev not to do that.
-        if (process.env.NODE_ENV !== 'production' && this.props.hasOwnProperty('defaultChecked')) {
-            console.warn('Although InputCheckbox is of type checkbox, its default value is represented by defaultValue. defaultChecked will do nothing!');
+        // Developers are used to defining defaultValues and values for inputs via `defaultValue`
+        // and `value`, but since this is a input of type checkbox, which instead uses
+        // `defaultChecked` and `checked`, we warn the dev not to do that when in dev mode.
+        if (process.env.NODE_ENV !== 'production') {
+            if (this.props.hasOwnProperty('defaultValue')) {
+                console.warn('InputCheckbox is of type checkbox, so its default value is represented ' +
+                             'by `defaultChecked`. `defaultValue` will do nothing!');
+            }
+
+            // If the value prop is a boolean, the user was most likely expecting it to control the
+            // input rather than use it for its native behaviour
+            if (typeof this.props.value === 'boolean') { //eslint-disable-line react/prop-types
+                console.warn('InputCheckbox is of type checkbox, so its value is represented by ' +
+                             '`checked`. The `value` prop behaves the same as ' +
+                             'input[type="checkbox"]\'s native `value` attribute ' +
+                             '(see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox#Attributes)!');
+            }
         }
     },
 
@@ -61,11 +72,11 @@ const InputCheckbox = React.createClass({
 
     // Required Property API
     getValue() {
-        const { defaultValue, value } = this.props;
+        const { checked, defaultChecked } = this.props;
 
         // If this input's been user edited, we should use the value passed from the controlling
         // parent component as its the one that managing this input component's values.
-        return !!(this.state.edited ? value : defaultValue);
+        return !!(this.state.edited ? checked : defaultChecked );
     },
 
     reset() {
@@ -88,9 +99,9 @@ const InputCheckbox = React.createClass({
     render() {
         const {
             checkboxStyle,
-            defaultValue, // ignore
+            checked, // ignore
+            defaultChecked, // ignore
             onChange, // ignore
-            value, // ignore
             ...checkboxProps
         } = this.props;
 

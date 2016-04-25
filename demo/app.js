@@ -161,6 +161,11 @@ const App = () => {
                         <input placeholder="footer prop placeholder" type="text" />
                     </Property>
                     <Property
+                        label="Plain checkbox prop label"
+                        name="checkbox">
+                        <input type="checkbox" defaultChecked />
+                    </Property>
+                    <Property
                         label="Select prop label"
                         name="select">
                         <select>
@@ -305,6 +310,12 @@ const App = () => {
                         label="checkbox label"
                         name="checkbox">
                         <InputCheckbox label="checkbox" />
+                    </CollapsibleCheckboxProperty>
+                    <CollapsibleCheckboxProperty
+                        checkboxLabel="default checkbox"
+                        label="default checkbox label"
+                        name="defaultCheckbox">
+                        <InputCheckbox defaultChecked label="defaultCheckbox" />
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="required checkbox"
