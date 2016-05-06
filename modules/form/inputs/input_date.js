@@ -18,15 +18,13 @@ const { bool, func, object, oneOfType, string } = React.PropTypes;
 const InputDate = React.createClass({
     propTypes: {
         /**
-         * Before using any dates given as props (ie. defaultValue and value), we'll convert them
-         * into moment dates by using this format string.
-         * This will also specify the DatePicker's dateFormat.
+         * Before using any dates given as props (ie. value), we'll convert them into moment dates
+         * by using this format string. This will also specify the DatePicker's dateFormat.
          */
         dateFormat: string,
 
-        defaultValue: oneOfType([object, string]),
         onChange: func,
-        value: string,
+        value: oneOfType([object, string]),
 
         // Only used to signal for validation in Property
         // eslint-disable-next-line react/sort-prop-types
@@ -70,13 +68,9 @@ const InputDate = React.createClass({
     },
 
     getValueMoment() {
-        const { dateFormat, defaultValue, value } = this.props;
+        const { dateFormat, value } = this.props;
 
-        // If this input's been user edited, we should use the value passed from the controlling
-        // parent component as its the one that managing this input component's values.
-        const currentValue = this.state.edited ? value : defaultValue;
-
-        return currentValue ? moment(currentValue, dateFormat, true) : null;
+        return value ? moment(value, dateFormat, true) : null;
     },
 
     reset() {
@@ -100,7 +94,6 @@ const InputDate = React.createClass({
 
     render() {
         const {
-            defaultValue: ignoredDefaultValue, // ignore
             onChange: ignoredOnChange, // ignore
 
             // Ignore, to avoid overriding DatePickers's styles with this component's styles (in
