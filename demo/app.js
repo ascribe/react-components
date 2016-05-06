@@ -142,12 +142,10 @@ const App = () => {
                         <input placeholder="basic placeholder" type="text" />
                     </Property>
                     <Property
+                        defaultValue="default"
                         label="Default value label"
                         name="default">
-                        <input
-                            defaultValue="default"
-                            placeholder="default value placeholder"
-                            type="text" />
+                        <input placeholder="default value placeholder" type="text" />
                     </Property>
                     <Property
                         label="Required property label"
@@ -161,9 +159,10 @@ const App = () => {
                         <input placeholder="footer property placeholder" type="text" />
                     </Property>
                     <Property
-                        label="Plain checkbox property label"
+                        defaultValue={true}
+                        label="Plain checkbox label"
                         name="checkbox">
-                        <input defaultChecked type="checkbox" />
+                        <input type="checkbox" />
                     </Property>
                     <Property
                         label="Custom checkbox property label"
@@ -180,40 +179,32 @@ const App = () => {
                         </select>
                     </Property>
                     <Property
+                        defaultValue="higlighted"
                         highlighted
                         label="Highlighted label"
                         name="highlighted">
-                        <input
-                            defaultValue="higlighted"
-                            placeholder="highlighted placeholder"
-                            type="text" />
+                        <input placeholder="highlighted placeholder" type="text" />
                     </Property>
                     <Property
+                        defaultValue="ignore focus"
                         ignoreFocus
                         label="Ignore focus label"
                         name="ignorefocus">
-                        <input
-                            defaultValue="ignore focus"
-                            placeholder="ignore focus placeholder"
-                            type="text" />
+                        <input placeholder="ignore focus placeholder" type="text" />
                     </Property>
                     <Property
+                        defaultValue="disabled"
                         disabled
                         label="Disabled property label"
                         name="disabled">
-                        <input
-                            defaultValue="disabled"
-                            placeholder="disabled property placeholder"
-                            type="text" />
+                        <input placeholder="disabled property placeholder" type="text" />
                     </Property>
                     <Property
+                        defaultValue="hidden"
                         hidden
                         label="Hidden property label"
                         name="hidden">
-                        <input
-                            defaultValue="hidden"
-                            placeholder="hidden property placeholder"
-                            type="text" />
+                        <input placeholder="hidden property placeholder" type="text" />
                     </Property>
                 </Form>
             </div>
@@ -308,14 +299,12 @@ const App = () => {
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checked
+                        defaultValue="disabled"
                         disabled
                         checkboxLabel="disabled prop"
                         label="disabled prop label"
                         name="disabled">
-                        <input
-                            defaultValue="disabled"
-                            placeholder="disabled placeholder"
-                            type="text" />
+                        <input placeholder="disabled placeholder" type="text" />
                     </CollapsibleCheckboxProperty>
                 </Form>
             </div>
@@ -334,9 +323,10 @@ const App = () => {
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="default checkbox"
+                        defaultValue={true}
                         label="default checkbox label"
                         name="defaultCheckbox">
-                        <InputCheckbox defaultChecked label="defaultCheckbox" />
+                        <InputCheckbox label="defaultCheckbox" />
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="required checkbox"
@@ -352,9 +342,10 @@ const App = () => {
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="default date"
+                        defaultValue="2010-01-01"
                         label="default date label"
                         name="default Date">
-                        <InputDate defaultValue="2010-01-01" />
+                        <InputDate />
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="textarea"
@@ -364,16 +355,18 @@ const App = () => {
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="default textarea"
+                        defaultValue="default"
                         label="default textarea label"
                         name="defaulttextarea">
-                        <InputTextarea defaultValue="default" rows={2} />
+                        <InputTextarea rows={2} />
                     </CollapsibleCheckboxProperty>
                     <Property
+                        defaultValue="disabled"
                         disabled
                         checkboxLabel="disabled textarea"
                         label="disabled textarea label"
                         name="disabledtextarea">
-                        <InputTextarea defaultValue="disabled" rows={2} />
+                        <InputTextarea rows={2} />
                     </Property>
                 </Form>
             </div>

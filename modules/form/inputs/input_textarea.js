@@ -19,7 +19,6 @@ const InputTextarea = React.createClass({
     propTypes: {
         autoFocus: bool,
         convertLinks: bool,
-        defaultValue: string,
         disabled: bool,
         maxRows: number,
         onChange: func,
@@ -38,12 +37,6 @@ const InputTextarea = React.createClass({
         return {
             maxRows: 10,
             rows: 1
-        };
-    },
-
-    getInitialState() {
-        return {
-            edited: false
         };
     },
 
@@ -66,22 +59,10 @@ const InputTextarea = React.createClass({
 
     // Required Property API
     getValue() {
-        const { defaultValue, value } = this.props;
-
-        // If this input's been user edited, we should use the value passed from the controlling
-        // parent component as its the one that managing this input component's values.
-        return this.state.edited ? value : defaultValue;
-    },
-
-    reset() {
-        this.setState({ edited: false });
+        return this.props.value;
     },
 
     onTextChange(event) {
-        if (!this.state.edited) {
-            this.setState({ edited: true });
-        }
-
         safeInvoke(this.props.onChange, event);
     },
 
