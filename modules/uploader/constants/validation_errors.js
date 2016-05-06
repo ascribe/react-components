@@ -4,7 +4,7 @@
 const ValidationErrors = {
     SIZE: 'size',
     EXTENSION: 'extension',
-    EXTRA_FILES: 'extra_files'
+    FILE_LIMIT: 'file_limit'
 };
 
 export default ValidationErrors;
