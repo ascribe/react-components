@@ -1,5 +1,4 @@
 import React from 'react';
-import CssModules from 'react-css-modules';
 import moment from 'moment';
 
 import DatePicker from 'react-datepicker';
@@ -120,4 +119,4 @@ const InputDate = React.createClass({
     }
 });
 
-export default CssModules(InputDate, styles);
+export default InputDate;
