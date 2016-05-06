@@ -5,8 +5,6 @@
     @import '~react-datepicker/dist/react-datepicker';
 }
 
-:global .datepicker__input {
-    @include ascribe-property--input-base;
-
-    padding: 0;
+:global .react-datepicker__input-container {
+    display: block;
 }
