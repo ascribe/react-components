@@ -45,16 +45,16 @@
     "file-loader": "^0.8.5",
     "node-sass": "^3.4.2",
     "postcss-loader": "^0.8.2",
-    "react": "^0.14.7",
-    "react-addons-update": "^0.14.7",
-    "react-dom": "^0.14.7",
+    "react": "^15.0.2",
+    "react-addons-update": "^15.0.2",
+    "react-dom": "^15.0.2",
     "react-transform-hmr": "^1.0.4",
     "rimraf": "^2.5.2",
     "sass-loader": "^3.2.0",
     "style-loader": "^0.13.0",
     "url-loader": "^0.5.7",
-    "webpack": "^2.1.0-beta.4",
-    "webpack-combine-loaders": "^1.0.0",
+    "webpack": "^2.1.0-beta.6",
+    "webpack-combine-loaders": "^2.0.0",
     "webpack-dev-server": "^2.0.0-beta"
   },
   "dependencies": {
@@ -64,13 +64,13 @@
     "core-js": "^2.2.2",
     "moment": "^2.12.0",
     "react-css-modules": "^3.7.6",
-    "react-datepicker": "^0.24.0",
-    "react-textarea-autosize": "^3.3.0",
+    "react-datepicker": "^0.27.0",
+    "react-textarea-autosize": "^4.0.1",
     "shallow-equals": "0.0.0"
   },
   "peerDependencies": {
-    "react": "~0.14.0",
-    "react-addons-update": "~0.14.0"
+    "react": "~0.14.0 || ^15.0.0",
+    "react-addons-update": "~0.14.0 || ^15.0.0"
   },
   "keywords": [
     "react",
