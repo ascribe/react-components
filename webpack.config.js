@@ -17,9 +17,6 @@ const PATHS = {
     nodeModules: path.resolve(__dirname, 'node_modules')
 };
 
-// Browsers to target when prefixing CSS.
-const COMPATIBILITY = ['Chrome >= 30', 'Safari >= 6.1', 'Firefox >= 35', 'Opera >= 32', 'iOS >= 8', 'Android >= 2.3', 'ie >= 10'];
-
 // External libraries
 // Catch all react lib related imports
 const externals = [
@@ -135,7 +132,7 @@ const config = {
         ]
     },
 
-    postcss: [autoPrefixer({ browsers: COMPATIBILITY })]
+    postcss: [autoPrefixer()]
 };
 
 module.exports = config;
