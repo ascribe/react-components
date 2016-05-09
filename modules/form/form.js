@@ -9,7 +9,8 @@ import Property from './properties/property';
 import FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
 
 import Button from '../buttons/button';
-import ButtonList from '../buttons/button_list';
+
+import Grouping from '../ui/grouping';
 
 import { safeInvoke } from '../utils/general';
 
@@ -20,17 +21,16 @@ const { arrayOf, bool, func, node, oneOf, shape, string } = React.PropTypes;
 const TRACKED_PROPERTY_TYPES = [CollapsibleCheckboxProperty, CollapsibleProperty, Property];
 
 const EditedButtonList = ({ handleCancel }) => (
-    <ButtonList pull="right">
-        <Button type="submit">
-            SAVE
-        </Button>
-        <Button
-            classType="tertiary"
-            onClick={handleCancel}
-            type="button">
-            CANCEL
-        </Button>
-    </ButtonList>
+    <div className="clearfix">
+        <Grouping className="pull-right">
+            <Button type="submit">
+                SAVE
+            </Button>
+            <Button classType="tertiary" onClick={handleCancel} type="button">
+                CANCEL
+            </Button>
+        </Grouping>
+    </div>
 );
 
 EditedButtonList.displayName = 'EditedButtonList';

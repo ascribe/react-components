@@ -1,8 +1,11 @@
 import React from 'react';
+import CssModules from 'react-css-modules';
 
 import Uploadify from './utils/uploadify';
 
 import { safeInvoke } from '../utils/general';
+
+import styles from './upload_drag_and_drop_area.scss';
 
 
 const { bool, func, node, string } = React.PropTypes;
@@ -10,7 +13,7 @@ const { bool, func, node, string } = React.PropTypes;
 // Initially based off of https://github.com/fedosejev/react-file-drag-and-drop
 // We don't need something as heavy as react-dnd (https://github.com/gaearon/react-dnd) for this,
 // as we just need to take care of the drop and drag events
-let UploadDragAndDropArea = Uploadify(React.createClass({
+let UploadDragAndDropArea = React.createClass({
     propTypes: {
         children: node,
         className: string,
@@ -83,13 +86,11 @@ let UploadDragAndDropArea = Uploadify(React.createClass({
                 className={className}
                 onDragOver={this.onDragOver}
                 onDrop={this.onDrop}
-                style={{
-                    display: 'inline-block'
-                }}>
+                styleName="drag-and-drop-area">
                 {React.Children.map(children, (child) => React.cloneElement(child, childProps))}
             </div>
         );
     }
-}));
+});
 
-export default UploadDragAndDropArea;
+export default Uploadify(CssModules(UploadDragAndDropArea, styles));

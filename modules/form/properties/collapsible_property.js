@@ -222,4 +222,4 @@ const CollapsibleProperty = React.createClass(propertySpecExtender({
     }
 }));
 
-export default CssModules(CollapsibleProperty, styles);
+export default CollapsibleProperty;

@@ -1,37 +1,40 @@
 import React from 'react';
+import CssModules from 'react-css-modules';
 
 import Uploadify from './utils/uploadify';
 
 import Button from '../buttons/button';
-import ButtonContainer from '../buttons/button_container';
 
 import { uploadedFilesFilter, uploadingFilesFilter, validFilesFilter, validProgressFilesFilter } from './utils/file_filters';
 
 import { truncateTextAtCharIndex } from '../utils/general';
 
+import styles from './upload_button.scss';
 
-const { arrayOf, bool, func, node, object } = React.PropTypes;
 
-const FileLabel = ({ files, handleRemoveFiles }) => {
+const { arrayOf, bool, func, node, object, string } = React.PropTypes;
+
+const FileLabel = CssModules(({ files, handleRemoveFiles }) => {
+    let label = 'No file selected';
+
     if (files.length) {
         const labelText = files.length > 1 ? `${files.length} files`
                                            : truncateTextAtCharIndex(files[0].name, 40);
 
-        return (
-            <span>
-                {`${labelText} `}
-                <a onClick={handleRemoveFiles}>remove</a>
-            </span>
-        );
-    } else {
-        return (<span>No file selected</span>);
+       label = [
+           labelText,
+           (<a key="remove-link" onClick={handleRemoveFiles}>remove</a>)
+       ];
     }
-};
 
-const UploadButton = Uploadify(React.createClass({
+    return (<span styleName="file-label">{label}</span>);
+}, styles);
+
+const UploadButton = React.createClass({
     propTypes: {
         buttonType: func,
         children: node,
+        className: string,
         disabled: bool,
 
         /**
@@ -126,32 +129,32 @@ const UploadButton = Uploadify(React.createClass({
 
     render() {
         const {
+            className,
+            uploaderFiles,
             buttonType: ButtonType,
             fileLabelType: FileLabelType,
             children, // ignore
             getButtonLabel, // ignore
-            uploaderFiles,
+            // eslint-disable-next-line react/prop-types
+            styles, // ignore, to avoid overriding ButtonType's styles with this component's styles
             ...buttonProps
         } = this.props
         const buttonChildren = this.getButtonLabel();
         const validFiles = uploaderFiles.filter(validFilesFilter);
 
-        const fileLabel = (
-            <FileLabelType
-                files={validFiles}
-                handleRemoveFiles={this.handleRemoveFiles} />
-        );
-
         return (
-            <ButtonContainer label={fileLabel}>
+            <span className={className} styleName="container">
                 {/* The button needs to be of `type="button"` as it may be nested in a form that
                     should not be submitted through this button */}
                 <ButtonType {...buttonProps} onClick={this.onFileSelect} type="button">
                     {buttonChildren}
                 </ButtonType>
-            </ButtonContainer>
+                <FileLabelType
+                    files={validFiles}
+                    handleRemoveFiles={this.handleRemoveFiles} />
+            </span>
         );
     }
-}));
+});
 
-export default UploadButton;
+export default Uploadify(CssModules(UploadButton, styles));
