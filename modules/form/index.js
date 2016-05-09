@@ -12,4 +12,5 @@ export InputTextarea from './inputs/input_textarea';
 export InputUploader from './inputs/input_uploader';
 
 // Utilities
+export FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
 export PropertySpecExtender from './utils/property_spec_extender';

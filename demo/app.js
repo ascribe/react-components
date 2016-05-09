@@ -7,6 +7,7 @@ import { Button, ButtonContainer, ButtonList } from '../modules/buttons';
 import {
     CollapsibleCheckboxProperty,
     CollapsibleProperty,
+    FakeAutoCompleteInputs,
     Form,
     InputCheckbox,
     InputDate,
@@ -133,35 +134,34 @@ const App = () => {
             <h3>Basic Form</h3>
             <div>
                 <Form
-                    header="Basic form"
                     onSubmit={(data) => {
                         console.log(data);
                         return Promise.resolve();
                     }}>
-                    <div>Should be ignored in ref</div>
+                    <div>Should be ignored in refs</div>
                     <Property
-                        label="Prop 1 label"
-                        name="prop1">
-                        <input placeholder="prop 1 placeholder" type="text" />
+                        label="Basic property"
+                        name="basic">
+                        <input placeholder="basic placeholder" type="text" />
                     </Property>
                     <Property
-                        label="Default label"
+                        label="Default value label"
                         name="default">
-                        <input placeholder="default placeholder" type="text" defaultValue="default" />
+                        <input placeholder="default value placeholder" type="text" defaultValue="default" />
                     </Property>
                     <Property
-                        label="Required prop label"
-                        name="required prop">
-                        <input placeholder="required prop placeholder" required type="text" />
+                        label="Required property label"
+                        name="required">
+                        <input placeholder="required property placeholder" required type="text" />
                     </Property>
                     <Property
                         footer="footer"
-                        label="Footer prop label"
-                        name="footer prop">
-                        <input placeholder="footer prop placeholder" type="text" />
+                        label="Footer property label"
+                        name="footer">
+                        <input placeholder="footer property placeholder" type="text" />
                     </Property>
                     <Property
-                        label="Plain checkbox prop label"
+                        label="Plain checkbox property label"
                         name="checkbox">
                         <input type="checkbox" defaultChecked />
                     </Property>
@@ -188,47 +188,34 @@ const App = () => {
                     </Property>
                     <Property
                         disabled
-                        label="Disabled prop label"
+                        label="Disabled property label"
                         name="disabled">
-                        <input placeholder="disabled prop placeholder" type="text" defaultValue="disabled" />
+                        <input placeholder="disabled property placeholder" type="text" defaultValue="disabled" />
                     </Property>
                     <Property
                         hidden
-                        label="Hidden prop label"
+                        label="Hidden property label"
                         name="hidden">
-                        <input placeholder="hidden prop placeholder" type="text" defaultValue="hidden" />
+                        <input placeholder="hidden property placeholder" type="text" defaultValue="hidden" />
                     </Property>
                 </Form>
             </div>
-            <h3>Autocomplete form</h3>
             <div>
                 <Form
                     autoComplete="on"
-                    header="Autocomplete form"
                     onSubmit={(data) => {
                         console.log(data);
                         return Promise.resolve();
                     }}>
                     <Property
-                        label="Prop 1 label"
-                        name="prop1">
-                        <input placeholder="autocomplete placeholder" type="text" />
+                        label="Autocomplete username label"
+                        name="username">
+                        <input placeholder="autocomplete username placeholder" type="text" />
                     </Property>
-                </Form>
-            </div>
-            <h3>Custom header form</h3>
-            <div>
-                <Form
-                    header="Custom header form"
-                    headerType={({ header }) => (<h5>{header}</h5>)}
-                    onSubmit={(data) => {
-                        console.log(data);
-                        return Promise.resolve();
-                    }}>
                     <Property
-                        label="Prop 1 label"
-                        name="prop1">
-                        <input placeholder="custom header placeholder" type="text" />
+                        label="Autocomplete password label"
+                        name="password">
+                        <input placeholder="autocomplete password placeholder" type="text" />
                     </Property>
                 </Form>
             </div>
@@ -238,7 +225,6 @@ const App = () => {
                     buttonDefault={<Button>Custom default button</Button>}
                     buttonEdited={<Button>Custom edited button</Button>}
                     buttonSubmitting={<Button>Custom submitting button</Button>}
-                    header="Custom buttons form"
                     onSubmit={(data) => {
                         console.log(data);
                         console.log('Wait 10s for submission to end...');
@@ -247,16 +233,30 @@ const App = () => {
                         });;
                     }}>
                     <Property
-                        label="Prop 1 label"
-                        name="prop1">
+                        label="Custom buttons label"
+                        name="custom buttons">
                         <input placeholder="custom buttons placeholder" type="text" />
+                    </Property>
+                </Form>
+            </div>
+            <h3>Custom fake autocomplete form</h3>
+            <div>
+                <Form
+                    fakeAutoCompleteInputs={(<FakeAutoCompleteInputs fields={[{ name: 'name', type: 'password' }]} />)}
+                    onSubmit={(data) => {
+                        console.log(data);
+                        return Promise.resolve();
+                    }}>
+                    <Property
+                        label="Fake autocomplete label"
+                        name="fake autocomplete">
+                        <input placeholder="fake autocomplete placeholder" type="text" />
                     </Property>
                 </Form>
             </div>
             <h3>Collapsible Properties</h3>
             <div>
                 <Form
-                    header="Collapsible properties"
                     onSubmit={(data) => {
                         console.log(data);
                         return Promise.resolve();
@@ -300,7 +300,6 @@ const App = () => {
             <h3>Custom Inputs</h3>
             <div>
                 <Form
-                    header="Custom inputs"
                     onSubmit={(data) => {
                         console.log(data);
                         return Promise.resolve();

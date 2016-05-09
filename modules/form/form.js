@@ -1,18 +1,17 @@
 import coreIncludes from 'core-js/library/fn/array/includes';
 
 import React from 'react';
-import CssModules from 'react-css-modules';
 
 import CollapsibleCheckboxProperty from './properties/collapsible_checkbox_property';
 import CollapsibleProperty from './properties/collapsible_property';
 import Property from './properties/property';
 
+import FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
+
 import Button from '../buttons/button';
 import ButtonList from '../buttons/button_list';
 
 import { safeInvoke } from '../utils/general';
-
-import styles from './form.scss';
 
 
 const { arrayOf, bool, func, node, oneOf, shape, string } = React.PropTypes;
@@ -34,27 +33,8 @@ const EditedButtonList = ({ handleCancel }) => (
     </ButtonList>
 );
 
-/**
- * All webkit-based browsers are ignoring the attribute autoComplete="off", as stated here:
- * http://stackoverflow.com/questions/15738259/disabling-chrome-autofill/15917221#15917221,
- * so if props.autoComplete is set to "off", we insert fake hidden inputs that mock the given
- * fields to trick chrome/safari into filling those instead of the actual fields
- */
-const FakeAutoCompleteInputs = ({ fields }) => (
-    <div style={{display: 'none'}}>
-        {fields.map(({ name, type }) => {
-            const fakeName = `fake-${name}`;
-
-            return (<input key={fakeName} name={fakeName} type={type} />);
-        })}
-    </div>
-);
-
-const FormHeader = CssModules(({ header }) => (<h3 styleName="header">{header}</h3>), styles);
-
 EditedButtonList.displayName = 'EditedButtonList';
-FakeAutoCompleteInputs.displayName = 'FakeAutoCompleteInputs';
-FormHeader.displayName = 'FormHeader';
+
 
 const Form = React.createClass({
     propTypes: {
@@ -72,29 +52,36 @@ const Form = React.createClass({
         customPropertyTypes: arrayOf(func),
 
         disabled: bool, // Can be used to freeze the whole form
-        fakeAutoCompleteFields: arrayOf(shape({
-            name: string,
-            type: string
-        })),
-        header: string,
-        headerType: func,
+
+        /**
+         * Allows you to specify fake hidden inputs that will be inserted at the start of the form
+         * when the `autoComplete` prop is also set to "off". This is necessary to trick
+         * Webkit-based browsers, which ignore the `autoComplete="off"` attribute
+         * (see http://stackoverflow.com/questions/15738259/disabling-chrome-autofill/15917221#15917221),
+         * into autocompleting these fake inputs rather than the actual inputs.
+         */
+        fakeAutoCompleteInputs: shape({
+            type: oneOf([FakeAutoCompleteInputs])
+        }),
+
         onSubmit: func,
         onValidationError: func
     },
 
     getDefaultProps() {
+        const fakeAutoCompleteFields = [{
+            name: 'username',
+            type: 'text'
+        }, {
+            name: 'password',
+            type: 'password'
+        }];
+
         return {
             autoComplete: 'off',
             buttonEdited: (<EditedButtonList />),
             customPropertyTypes: [],
-            fakeAutoCompleteFields: [{
-                name: 'username',
-                type: 'text'
-            }, {
-                name: 'password',
-                type: 'password'
-            }],
-            headerType: FormHeader
+            fakeAutoCompleteInputs: (<FakeAutoCompleteInputs fields={fakeAutoCompleteFields} />)
         };
     },
 
@@ -238,16 +225,8 @@ const Form = React.createClass({
         const {
             autoComplete,
             className,
-            fakeAutoCompleteFields,
-            header,
-            headerType: HeaderType
+            fakeAutoCompleteInputs,
         } = this.props;
-
-        const fakeAutoCompleteInputs = autoComplete === 'on' && fakeAutoCompleteFields.length ? (
-            <FakeAutoCompleteInputs fields={fakeAutoCompleteFields} />
-        ) : null;
-
-        const headerElement = header ? (<HeaderType header={header} />) : null;
 
         return (
             <form
@@ -255,8 +234,7 @@ const Form = React.createClass({
                 className={className}
                 onSubmit={this.onSubmit}
                 role="form">
-                {headerElement}
-                {fakeAutoCompleteInputs}
+                {autoComplete === 'off' ? fakeAutoCompleteInputs : null}
                 {this.renderChildren()}
                 {this.getButtons()}
             </form>
