@@ -3,6 +3,7 @@ export ReactS3FineUploader from './react_s3_fine_uploader';
 
 export CreateBlobUploader from './extended_uploaders/create_blob_uploader';
 export CustomHeaderOnChangeUploader from './extended_uploaders/custom_header_on_change_uploader';
+export CustomValidationUploader from './extended_uploaders/custom_validation_uploader';
 
 // Uploader UI
 export UploadButton from './upload_button';

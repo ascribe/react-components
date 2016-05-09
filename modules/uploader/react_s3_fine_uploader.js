@@ -1,11 +1,8 @@
-import coreIncludes from 'core-js/library/fn/array/includes';
-
 import React from 'react';
 import update from 'react-addons-update'
 import FineUploader from './vendor/s3.fine-uploader';
 
 import FileStatus from './constants/file_status';
-import ValidationErrors from './constants/validation_errors';
 
 import { validFilesFilter } from './utils/file_filters';
 import MimeTypeMapping from './utils/mime_type_mapping';
@@ -13,8 +10,7 @@ import { transformAllowedExtensionsToInputAcceptProp } from './utils/private/dom
 
 import FileSelector from '../file_handlers/file_selector';
 
-import { extractFileExtensionFromString } from '../utils/file';
-import { arrayFrom, isShallowEqual, omitFromObject, safeInvoke } from '../utils/general';
+import { arrayFrom, isShallowEqual, noop, omitFromObject, safeInvoke } from '../utils/general';
 
 
 const { bool, func, node, object } = React.PropTypes;
@@ -304,18 +300,6 @@ const ReactS3FineUploader = React.createClass({
         onUpload: func,
 
         /**
-         * Called when validation fails for a group of files.
-         *
-         * @param {object[]} errors Array of errors describing each validation error
-         *   @param {object}   error  Each error object contains:
-         *     @param {File}     error.file            File that failed validation
-         *     @param {object}   error.validationError Error object describing the validation error:
-         *       @param {string}           validationError.error Description of the error
-         *       @param {ValidationErrors} validationError.type  Type of the error
-         */
-        onValidationError: func,
-
-        /**
          * FineUploader options
          * ====================
          *
@@ -511,8 +495,7 @@ const ReactS3FineUploader = React.createClass({
             'onSubmitted',
             'onSuccess',
             'onTotalProgress',
-            'onUpload',
-            'onValidationError'
+            'onUpload'
         ]);
 
         const uploaderConfig = {
@@ -559,60 +542,6 @@ const ReactS3FineUploader = React.createClass({
 
         return !!((!multiple && validFiles.length) || (itemLimit && validFiles.length >= itemLimit));
     },
-
-    validateFiles(files) {
-        const {
-            multiple, //eslint-disable-line react/prop-types
-            onValidationError,
-            validation: { allowedExtensions, itemLimit, sizeLimit } = {} //eslint-disable-line react/prop-types
-        } = this.props;
-
-        const validFiles = [];
-        const errors = [];
-
-        arrayFrom(files).forEach((file, fileIndex) => {
-            const fileExt = extractFileExtensionFromString(file.name);
-            let validationError;
-
-            if ((!multiple || itemLimit === 1) && fileIndex > 0) {
-                // If multiple is set to false, the user shouldn't be able to select more than
-                // one file using the file selector, but he could always drop multiple files
-                // into the dropzone.
-                validationError = {
-                    error: 'Only one file allowed (took first one)',
-                    type: ValidationErrors.EXTRA_FILES
-                };
-            } else if (itemLimit && fileIndex >= itemLimit) {
-                validationError = {
-                    error: `Too many files selected (only took first ${itemLimit})`,
-                    type: ValidationErrors.EXTRA_FILES
-                };
-            } else if (sizeLimit && file.size > sizeLimit) {
-                validationError = {
-                    error: `A file you submitted is bigger than ${sizeLimit / 1000000} MB`,
-                    type: ValidationErrors.SIZE,
-                };
-            } else if (allowedExtensions && !coreIncludes(allowedExtensions, fileExt)) {
-                validationError = {
-                    error: `The file you've submitted is of an invalid file format: Valid format(s): ${allowedExtensions.join(', ')}`,
-                    type: ValidationErrors.EXTENSION
-                };
-            }
-
-            if (validationError) {
-                errors.push({ file, validationError });
-            } else {
-                validFiles.push(file);
-            }
-        });
-
-        if (errors.length) {
-            safeInvoke(onValidationError, errors);
-        }
-
-        return validFiles;
-    },
-
 
     /***** FINEUPLOADER SPECIFIC CALLBACK FUNCTION HANDLERS *****/
     onAllComplete(succeeded, failed) {
@@ -747,7 +676,8 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onStatusChange(fileId, oldStatus, newStatus) {
-        // Only DELETE_FAILED, REJECTED, and QUEUED are status changes that we can't catch otherwise
+        // Only DELETE_FAILED, REJECTED, and QUEUED are status changes that we can't catch from
+        // FineUploader callbacks
         if (newStatus === FileStatus.DELETE_FAILED ||
             newStatus === FileStatus.REJECTED ||
             newStatus === FileStatus.QUEUED) {
@@ -935,31 +865,18 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleSubmitFiles(files) {
-        const {
-            multiple, //eslint-disable-line react/prop-types
-            onSubmitFiles
-        } = this.props;
-        const { uploader, uploaderFiles } = this.state;
-
-        // If multiple is set and user has already uploaded a work, cancel upload
-        if (!multiple && uploaderFiles.filter(validFilesFilter).length) {
-            this.clearFileSelection();
-            return;
-        }
-
-        // Submit only the files that pass validation to the uploader
-        files = this.validateFiles(files);
-
-        if (files.length) {
-            onSubmitFiles(files).then((files) => {
+        this.props.onSubmitFiles(arrayFrom(files))
+            .then((files) => {
                 if (Array.isArray(files) && files.length) {
-                    uploader.addFiles(files);
+                    this.state.uploader.addFiles(files);
                 }
-            });
-        }
-
-        // Reset file input once we've handle the file submission
-        this.clearFileSelection();
+            })
+            // Bit of a hack, but use this .catch() to let the next .then() become a .finally().
+            // Note that we have to give .catch() a function in order for it to resolve, otherwise
+            // it'll be ignored.
+            .catch(noop)
+            // Reset file input once we've handled the file submission
+            .then(this.clearFileSelection);
     },
 
     render() {

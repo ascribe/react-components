@@ -27,7 +27,7 @@ const CustomHeaderOnChangeUploader = (Uploader) => {
              */
             shouldCustomHeaderChange: func
 
-            // All other props will be passed through to ReactS3FineUploader
+            // All other props will be passed through to Uploader
         },
 
         getDefaultProps() {
