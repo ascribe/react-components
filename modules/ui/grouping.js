@@ -46,8 +46,10 @@ const Grouping = ({ children, className, margin, vertical }) => {
                 return React.cloneElement(child, {
                     // If the child has styles applied to it already, let those override our base
                     // styles
-                    style: child.props.style ? Object.assign({}, baseStyle, child.props.style)
-                                             : baseStyle
+                    style: {
+                        ...baseStyle,
+                        ...child.props.style
+                    }
                 });
             })}
         </span>
