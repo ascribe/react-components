@@ -15,14 +15,14 @@ import styles from './collapsible_checkbox_property.scss';
 const { bool, element, func, string } = React.PropTypes;
 
 const PropertyCheckboxHeading = CssModules(({ disabled, expanded, handleExpandToggle, label, name }) => (
-    <div onClick={handleExpandToggle} styleName="checkbox-header">
+    <button onClick={handleExpandToggle} styleName="checkbox-header">
         <Checkbox
             checked={expanded}
             disabled={disabled}
             label={label}
             name={`${name}-checkbox`}
             onChange={handleExpandToggle} />
-    </div>
+    </button>
 ), styles);
 
 PropertyCheckboxHeading.displayName = 'PropertyCheckboxHeading';

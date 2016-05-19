@@ -15,7 +15,7 @@ const { bool, element, func, object, string } = React.PropTypes;
 
 // Default layouts
 const CollapsibleHeader = CssModules(({ handleExpandToggle, label }) => (
-    <div onClick={handleExpandToggle} styleName="header">{label}</div>
+    <button onClick={handleExpandToggle} styleName="header">{label}</button>
 ), styles);
 
 const CollapsibleLayout = CssModules(({
