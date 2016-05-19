@@ -320,6 +320,7 @@ const Property = React.createClass({
 
             disabled,
             name,
+            id: name,
 
             // Similar to how the child input's value is controlled using this Property's `value`
             // state, the input's defaultValue is also controlled with the `initialValue` state.
