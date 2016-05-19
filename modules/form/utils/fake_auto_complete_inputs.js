@@ -15,7 +15,7 @@ const propTypes = {
  * attribute (see http://stackoverflow.com/questions/15738259/disabling-chrome-autofill/15917221#15917221).
  */
 const FakeAutoCompleteInputs = ({ fields }) => (
-    <div style={{display: 'none'}}>
+    <div style={{ display: 'none' }}>
         {fields.map(({ name, type }) => {
             const fakeName = `fake-${name}`;
 

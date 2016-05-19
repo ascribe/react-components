@@ -3,7 +3,7 @@ import CssModules from 'react-css-modules';
 
 import HiddenInput from './hidden_input';
 
-import { noop, safeInvoke } from '../utils/general';
+import { safeInvoke } from '../utils/general';
 
 import styles from './checkbox.scss';
 
@@ -46,7 +46,7 @@ const Checkbox = React.createClass({
         return this.props.hasOwnProperty('checked') ? this.props.checked : this.state.checked;
     },
 
-    onCheckboxChange(event) {
+    onCheckboxChange() {
         let checked;
 
         if (this.props.hasOwnProperty('checked')) {
@@ -64,8 +64,8 @@ const Checkbox = React.createClass({
             className,
             disabled,
             label,
-            checked: _, // ignore and rename to avoid name clash
-            onChange, // ignore
+            checked: ignoredChecked, // ignore
+            onChange: ignoredOnChange, // ignore
             ...inputCheckboxProps
         } = this.props;
         const checked = this.getChecked();
@@ -80,6 +80,8 @@ const Checkbox = React.createClass({
         // parent <form> relies on this component to have a native input for sending data
         // (eg. a <form method="post">).
         return (
+            // Don't need htmlFor as the label wraps an input
+            // eslint-disable-next-line jsx-a11y/label-has-for
             <label className={className} styleName={styleName}>
                 {label}
                 <HiddenInput
@@ -87,8 +89,8 @@ const Checkbox = React.createClass({
                     {...inputCheckboxProps}
                     checked={checked}
                     disabled={disabled}
-                    required={false}
                     onChange={this.onCheckboxChange}
+                    required={false}
                     type="checkbox" />
             </label>
         );

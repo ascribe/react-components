@@ -11,7 +11,7 @@ import { PropStuffer } from '../../utils/react';
 import styles from './collapsible_property.scss';
 
 
-const { bool, element, func, object, string } = React.PropTypes;
+const { bool, element, func, string } = React.PropTypes;
 
 // Default layouts
 const CollapsibleHeader = CssModules(({ handleExpandToggle, label }) => (
@@ -36,7 +36,7 @@ const CollapsibleLayout = CssModules(({
             expanded={expanded}
             handleExpandToggle={handleExpandToggle}
             label={headerLabel} />
-        <PropertyLayoutType onClick={handleFocus} expanded={expanded}>
+        <PropertyLayoutType expanded={expanded} onClick={handleFocus}>
             {children}
         </PropertyLayoutType>
     </div>
@@ -97,7 +97,7 @@ const CollapsibleProperty = React.createClass(propertySpecExtender({
             expanded: this.props.expanded,
 
             initialExpanded: this.props.expanded
-        }
+        };
     },
 
     componentWillMount() {
@@ -139,10 +139,8 @@ const CollapsibleProperty = React.createClass(propertySpecExtender({
     },
 
     onSubmitSuccess() {
-        const { expanded, initialExpanded } = this.state;
-
         this.setState({
-            initialExpanded: expanded
+            initialExpanded: this.state.expanded
         });
 
         this.refs.property.onSubmitSuccess();
@@ -200,13 +198,13 @@ const CollapsibleProperty = React.createClass(propertySpecExtender({
 
     render() {
         const {
-            children, // ignore
-            headerLabel, // ignore
-            headerType, // ignore
-            layoutType, // ignore
-            onExpandToggle, // ignore
-            removeValueWhenCollapsed, // ignore
-            expanded: _, // ignore and rename to avoid clash
+            children: ignoredChildren, // ignore
+            expanded: ignoredExpanded, // ignore
+            headerLabel: ignoredHeaderLabel, // ignore
+            headerType: ignoredHeaderType, // ignore
+            layoutType: ignoredLayoutType, // ignore
+            onExpandToggle: ignoredOnExpandToggle, // ignore
+            removeValueWhenCollapsed: ignoredRemoveValueWhenCollapsed, // ignore
             ...propertyProps
         } = this.props;
         const { expanded } = this.state;

@@ -20,6 +20,7 @@ const { arrayOf, bool, func, node, object, oneOf, shape, string } = React.PropTy
 // Property types that Form will always recognize and track
 const TRACKED_PROPERTY_TYPES = [CollapsibleCheckboxProperty, CollapsibleProperty, Property];
 
+// eslint-disable-next-line react/prop-types
 const EditedButtonList = ({ handleCancel }) => (
     <div className="clearfix">
         <Grouping className="pull-right">
@@ -146,7 +147,7 @@ const Form = React.createClass({
             Object.values(this._refs).forEach(propertyFn);
 
             this.setState({ edited: false, submitting: false });
-        }
+        };
     },
 
     getButtons() {
@@ -177,7 +178,14 @@ const Form = React.createClass({
         return React.Children.map(children, (child) => {
             // Only register child Properties that are of a type known to this Form
             if (coreIncludes(trackedPropertyTypes, child.type)) {
-                const { props: { disabled: childDisabled, name, onChange, overrideFormDefaults } } = child;
+                const {
+                    props: {
+                        disabled: childDisabled,
+                        name,
+                        onChange,
+                        overrideFormDefaults
+                    }
+                } = child;
 
                 return React.cloneElement(child, {
                     key: name,

@@ -51,13 +51,16 @@ const InputCheckbox = React.createClass({
         // `defaultChecked` and `checked`, we warn the dev not to do that when in dev mode.
         if (process.env.NODE_ENV !== 'production') {
             if (this.props.hasOwnProperty('defaultValue')) {
+                // eslint-disable-next-line no-console
                 console.warn('InputCheckbox is of type checkbox, so its default value is represented ' +
                              'by `defaultChecked`. `defaultValue` will do nothing!');
             }
 
             // If the value prop is a boolean, the user was most likely expecting it to control the
             // input rather than use it for its native behaviour
-            if (typeof this.props.value === 'boolean') { //eslint-disable-line react/prop-types
+            // eslint-disable-next-line react/prop-types
+            if (typeof this.props.value === 'boolean') {
+                // eslint-disable-next-line no-console
                 console.warn('InputCheckbox is of type checkbox, so its value is represented by ' +
                              '`checked`. The `value` prop behaves the same as ' +
                              'input[type="checkbox"]\'s native `value` attribute ' +
@@ -76,7 +79,7 @@ const InputCheckbox = React.createClass({
 
         // If this input's been user edited, we should use the value passed from the controlling
         // parent component as its the one that managing this input component's values.
-        return !!(this.state.edited ? checked : defaultChecked );
+        return !!(this.state.edited ? checked : defaultChecked);
     },
 
     reset() {
@@ -99,9 +102,9 @@ const InputCheckbox = React.createClass({
     render() {
         const {
             checkboxStyle,
-            checked, // ignore
-            defaultChecked, // ignore
-            onChange, // ignore
+            checked: ignoredChecked, // ignore
+            defaultChecked: ignoredDefaultChecked, // ignore
+            onChange: ignoredOnChange, // ignore
             ...checkboxProps
         } = this.props;
 

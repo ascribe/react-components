@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { ComponentSpecExtensionBuilder } from '../../utils/react';
 
 
