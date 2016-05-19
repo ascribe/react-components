@@ -26,4 +26,4 @@ export default {
     min: (val, min, type) => validateVal(val, min, type, 'min'),
     pattern: validatePattern,
     required: validateRequired
-}
+};

@@ -1,5 +1,4 @@
 import React from 'react';
-import update from 'react-addons-update'
 import CssModules from 'react-css-modules';
 
 import styles from './grouping.scss';
@@ -43,13 +42,13 @@ const Grouping = ({ children, className, margin, style, vertical }) => {
             {React.Children.map(children, (child, ii) => {
                 // Only apply the display style to the first child to avoid setting unnecessary
                 // margin at the start
-                const style = ii ? childStyle : childDisplayStyle;
+                const baseStyle = ii ? childStyle : childDisplayStyle;
 
                 return React.cloneElement(child, {
                     // If the child has styles applied to it already, let those override our base
                     // styles
                     style: {
-                        ...style,
+                        ...baseStyle,
                         ...child.props.style
                     }
                 });

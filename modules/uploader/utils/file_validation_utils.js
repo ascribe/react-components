@@ -1,6 +1,4 @@
-import { createdBlobFilesFilter, processingFilesFilter, successfullyUploadedFilter } from './file_filters';
-
-import FileStatus from '../constants/file_status';
+import { createdBlobFilesFilter, processingFilesFilter, uploadedFilesFilter } from './file_filters';
 
 /**
  * Returns a boolean if there has been at least one file uploaded successfully with
@@ -19,7 +17,7 @@ export function atLeastOneCreatedBlobFile(files) {
  * @return {boolean}
  */
 export function atLeastOneUploadedFile(files) {
-    return files.filter(successfullyUploadedFilter).length > 0;
+    return files.filter(uploadedFilesFilter).length > 0;
 }
 
 /**

@@ -1,8 +1,8 @@
 import coreIncludes from 'core-js/library/fn/array/includes';
 
 import React from 'react';
-import update from 'react-addons-update'
-import FineUploader from './vendor/s3.fine-uploader';
+import update from 'react-addons-update';
+import fineUploader from './vendor/s3.fine-uploader';
 
 import FileStatus from './constants/file_status';
 import ValidationErrors from './constants/validation_errors';
@@ -17,7 +17,7 @@ import { extractFileExtensionFromString } from '../utils/file';
 import { arrayFrom, isShallowEqual, omitFromObject, safeInvoke } from '../utils/general';
 
 
-const { bool, func, node, object } = React.PropTypes;
+const { func, node, object } = React.PropTypes;
 
 // ReactS3FineUploader is essentially just a react layer around FineUploader's s3 uploader that
 // mirrors the internally tracked files of FineUploader to pass them down as props for child
@@ -441,14 +441,16 @@ const ReactS3FineUploader = React.createClass({
     setStatusOfFile(fileId, status, changeSet = {}) {
         const { onFileError, onFilesChanged, onStatusChange } = this.props;
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const file = this.state.uploaderFiles[fileId];
 
             if (file) {
                 const oldStatus = file.status;
 
                 changeSet.status = { $set: status };
-                if (status === FileStatus.DELETED || status === FileStatus.CANCELED || status === FileStatus.UPLOAD_FAILED) {
+                if (status === FileStatus.DELETED ||
+                    status === FileStatus.CANCELED ||
+                    status === FileStatus.UPLOAD_FAILED) {
                     changeSet.progress = { $set: 0 };
                 }
 
@@ -462,16 +464,21 @@ const ReactS3FineUploader = React.createClass({
                     resolve(updatedFile);
                 });
             } else {
-                safeInvoke(onFileError, `Failed to change status of unfound file with id: ${fileId} to: ${status}`);
+                safeInvoke(onFileError, 'Failed to change status of unfound file with ' +
+                                        `id: ${fileId} to: ${status}`);
                 reject();
             }
         });
     },
 
-    /** PROTECTED METHODS **/
+    /** PROTECTED METHODS (SHOULD ONLY BE USED BY EXTENDED UPLOADERS) **/
     // Cancel uploads and clear previously selected files on the input element
     cancelUploads(fileId) {
-        typeof fileId !== 'undefined' ? this.state.uploader.cancel(fileId) : this.state.uploader.cancelAll();
+        if (typeof fileId !== 'undefined') {
+            this.state.uploader.cancel(fileId);
+        } else {
+            this.state.uploader.cancelAll();
+        }
 
         // Reset the file input element to clear the previously selected files so that
         // the user can reselect them again.
@@ -537,13 +544,13 @@ const ReactS3FineUploader = React.createClass({
             }
         };
 
-        return new FineUploader.s3.FineUploaderBasic(uploaderConfig);
+        return new fineUploader.s3.FineUploaderBasic(uploaderConfig);
     },
 
     getAcceptedExtensions() {
         const {
             mimeTypeMapping,
-            validation: { allowedExtensions } = {} //eslint-disable-line react/prop-types
+            validation: { allowedExtensions } = {} // eslint-disable-line react/prop-types
         } = this.props;
 
         return transformAllowedExtensionsToInputAcceptProp(allowedExtensions, mimeTypeMapping);
@@ -554,7 +561,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     isUploaderDisabled() {
-        const { multiple, validation: { itemLimit } = {} } = this.props; //eslint-disable-line react/prop-types
+        const { multiple, validation: { itemLimit } = {} } = this.props; // eslint-disable-line react/prop-types
         const validFiles = this.state.uploaderFiles.filter(validFilesFilter);
 
         return !!((!multiple && validFiles.length) || (itemLimit && validFiles.length >= itemLimit));
@@ -562,9 +569,9 @@ const ReactS3FineUploader = React.createClass({
 
     validateFiles(files) {
         const {
-            multiple, //eslint-disable-line react/prop-types
+            multiple, // eslint-disable-line react/prop-types
             onValidationError,
-            validation: { allowedExtensions, itemLimit, sizeLimit } = {} //eslint-disable-line react/prop-types
+            validation: { allowedExtensions, itemLimit, sizeLimit } = {} // eslint-disable-line react/prop-types
         } = this.props;
 
         const validFiles = [];
@@ -594,7 +601,8 @@ const ReactS3FineUploader = React.createClass({
                 };
             } else if (allowedExtensions && !coreIncludes(allowedExtensions, fileExt)) {
                 validationError = {
-                    error: `The file you've submitted is of an invalid file format: Valid format(s): ${allowedExtensions.join(', ')}`,
+                    error: `The file you've submitted is of an invalid file format: ${fileExt}. ` +
+                           `Valid format(s): ${allowedExtensions.join(', ')}`,
                     type: ValidationErrors.EXTENSION
                 };
             }
@@ -614,7 +622,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
 
-    /***** FINEUPLOADER SPECIFIC CALLBACK FUNCTION HANDLERS *****/
+    /** FINEUPLOADER SPECIFIC CALLBACK FUNCTION HANDLERS **/
     onAllComplete(succeeded, failed) {
         const { uploaderFiles, uploadInProgress } = this.state;
 
@@ -664,9 +672,9 @@ const ReactS3FineUploader = React.createClass({
             // Set the state of the completed file to 'upload successful' in order to
             // remove it from the GUI
             this.setStatusOfFile(fileId, FileStatus.UPLOAD_SUCCESSFUL, {
-                    key: { $set: this.state.uploader.getKey(fileId) }
-                })
-                .then((file) => safeInvoke(this.props.onSuccess, file, res, xhr));
+                key: { $set: this.state.uploader.getKey(fileId) }
+            })
+            .then((file) => safeInvoke(this.props.onSuccess, file, res, xhr));
         }
     },
 
@@ -675,7 +683,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     onDeleteComplete(fileId, xhr, isError) {
-        const { onDeleteComplete, onFileError } = this.prop;s
+        const { onDeleteComplete, onFileError } = this.props;
 
         const invokeCallback = (file = this.state.uploaderFiles[fileId]) => {
             if (file) {
@@ -683,7 +691,7 @@ const ReactS3FineUploader = React.createClass({
             } else {
                 safeInvoke(onFileError, `Delete completed for unfound file with id: ${fileId}`);
             }
-        }
+        };
 
         if (isError) {
             this.setStatusOfFile(fileId, FileStatus.ONLINE)
@@ -698,11 +706,11 @@ const ReactS3FineUploader = React.createClass({
             .then((file) => safeInvoke(this.props.onError, file, errorReason, xhr));
     },
 
-    onManualRetry(fileId, name) {
+    onManualRetry(fileId) {
         this.setStatusOfFile(fileId, FileStatus.UPLOAD_RETRYING, {
-                manualRetryAttempt: { $set: uploaderFiles[fileId].manualRetryAttempt + 1 }
-            })
-            .then((file) => safeInvoke(this.props.onManualRetry, file, file.manualRetryAttempt));
+            manualRetryAttempt: { $set: this.state.uploaderFiles[fileId].manualRetryAttempt + 1 }
+        })
+        .then((file) => safeInvoke(this.props.onManualRetry, file, file.manualRetryAttempt));
     },
 
     onProgress(fileId, name, uploadedBytes, totalBytes) {
@@ -715,7 +723,7 @@ const ReactS3FineUploader = React.createClass({
         });
 
         this.setState({ uploaderFiles }, () => {
-            safeInvoke(onProgress, this.state.uploaderFiles[fileId], uploadedBytes, totalBytes)
+            safeInvoke(onProgress, this.state.uploaderFiles[fileId], uploadedBytes, totalBytes);
             safeInvoke(onFilesChanged, this.state.uploaderFiles);
         });
     },
@@ -723,9 +731,9 @@ const ReactS3FineUploader = React.createClass({
     onSessionRequestComplete(...params) {
         const { onFilesChanged, onSessionRequestComplete } = this.props;
 
-        const { invoked, result: sessionFiles } = safeInvoke({
+        const { result: sessionFiles } = safeInvoke({
+            params,
             fn: onSessionRequestComplete,
-            params: params,
             error: new Error("FineUploader's session feature was used without providing an " +
                              'onSessionRequestComplete() callback to ReactS3FineUploader')
         });
@@ -756,7 +764,7 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
-    onSubmitted(fileId, name) {
+    onSubmitted(fileId) {
         const { onFilesChanged, onSubmitted } = this.props;
         const { uploader } = this.state;
 
@@ -779,7 +787,7 @@ const ReactS3FineUploader = React.createClass({
         });
 
         this.setState({ uploaderFiles }, () => {
-            safeInvoke(onSubmitted, this.state.uploaderFiles[fileId])
+            safeInvoke(onSubmitted, this.state.uploaderFiles[fileId]);
             safeInvoke(onFilesChanged, this.state.uploaderFiles);
         });
     },
@@ -788,7 +796,7 @@ const ReactS3FineUploader = React.createClass({
         safeInvoke(this.props.onTotalProgress, totalUploadedBytes, totalBytes);
     },
 
-    onUpload(fileId, name) {
+    onUpload(fileId) {
         if (!this.state.uploadInProgress) {
             this.setState({
                 uploadInProgress: true
@@ -833,9 +841,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
 
-    /***** HANDLERS FOR ACTIONS *****/
+    /** HANDLERS FOR ACTIONS **/
     handleCancelFile(file) {
         if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
+            // eslint-disable-next-line no-console
             console.warn('Ignoring attempt to cancel file not tracked by this uploader', file);
             return;
         }
@@ -844,10 +853,11 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleDeleteFile(file) {
-        const { handleDeleteOnlineFile, onFileError } = this.props;
-        const { uploader, uploaderFiles } = this.state;
+        const { handleDeleteOnlineFile } = this.props;
+        const { uploader } = this.state;
 
         if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
+            // eslint-disable-next-line no-console
             console.warn('Ignoring attempt to delete file not tracked by this uploader', file);
             return;
         }
@@ -893,13 +903,14 @@ const ReactS3FineUploader = React.createClass({
 
     handlePauseFile(file) {
         if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
+            // eslint-disable-next-line no-console
             console.warn('Ignoring attempt to pause file not tracked by this uploader', file);
             return;
         }
 
         if (this.state.uploader.pauseUpload(file.id)) {
             this.setStatusOfFile(file.id, FileStatus.PAUSED)
-                .then((file) => safeInvoke(this.props.onPause, file));
+                .then((updatedFile) => safeInvoke(this.props.onPause, updatedFile));
         } else {
             throw new Error('File upload could not be paused.');
         }
@@ -907,6 +918,7 @@ const ReactS3FineUploader = React.createClass({
 
     handleResumeFile(file) {
         if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
+            // eslint-disable-next-line no-console
             console.warn('Ignoring attempt to resume file not tracked by this uploader', file);
             return;
         }
@@ -918,7 +930,7 @@ const ReactS3FineUploader = React.createClass({
             // persistent storage, not when they're paused and continued, so we have to handle
             // this callback ourselves
             this.setStatusOfFile(file.id, FileStatus.UPLOADING)
-                .then((file) => safeInvoke(this.props.onResume, file));
+                .then((updatedFile) => safeInvoke(this.props.onResume, updatedFile));
         } else {
             throw new Error('File upload could not be resumed.');
         }
@@ -926,6 +938,7 @@ const ReactS3FineUploader = React.createClass({
 
     handleRetryFile(file) {
         if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
+            // eslint-disable-next-line no-console
             console.warn('Ignoring attempt to manually retry file not tracked by this uploader', file);
             return;
         }
@@ -936,7 +949,7 @@ const ReactS3FineUploader = React.createClass({
 
     handleSubmitFiles(files) {
         const {
-            multiple, //eslint-disable-line react/prop-types
+            multiple, // eslint-disable-line react/prop-types
             onSubmitFiles
         } = this.props;
         const { uploader, uploaderFiles } = this.state;
@@ -948,12 +961,12 @@ const ReactS3FineUploader = React.createClass({
         }
 
         // Submit only the files that pass validation to the uploader
-        files = this.validateFiles(files);
+        const validatedFiles = this.validateFiles(files);
 
-        if (files.length) {
-            onSubmitFiles(files).then((files) => {
-                if (Array.isArray(files) && files.length) {
-                    uploader.addFiles(files);
+        if (validatedFiles.length) {
+            onSubmitFiles(validatedFiles).then((submitFiles) => {
+                if (Array.isArray(submitFiles) && submitFiles.length) {
+                    uploader.addFiles(submitFiles);
                 }
             });
         }
@@ -965,7 +978,7 @@ const ReactS3FineUploader = React.createClass({
     render() {
         const {
             children,
-            multiple //eslint-disable-line react/prop-types
+            multiple // eslint-disable-line react/prop-types
         } = this.props;
         const { uploaderFiles, uploadInProgress } = this.state;
         const uploaderDisabled = this.isUploaderDisabled();
@@ -977,13 +990,13 @@ const ReactS3FineUploader = React.createClass({
                 disabled={uploaderDisabled}
                 multiple={multiple}
                 onSelectFiles={this.handleSubmitFiles}>
-                {React.Children.map(children, (child) => {
-                    return React.cloneElement(child, {
+                {React.Children.map(children, (child) => (
+                    React.cloneElement(child, {
                         uploaderFiles,
                         uploadInProgress,
                         disabled: child.props.disabled || uploaderDisabled
-                    });
-                })}
+                    })
+                ))}
             </FileSelector>
         );
     }

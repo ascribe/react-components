@@ -14,11 +14,11 @@
  */
 export function transformAllowedExtensionsToInputAcceptProp(allowedExtensions, mimeTypeMap) {
     // Get the mime type of the extension if it's defined or add a dot in front of the extension
-    const prefixedAllowedExtensions = (allowedExtensions || []).map((ext) => {
-        return (mimeTypeMap && mimeTypeMap[ext]) || ('.' + ext);
-    });
+    const prefixedAllowedExtensions = (allowedExtensions || []).map((ext) => (
+        (mimeTypeMap && mimeTypeMap[ext]) || `.${ext}`
+    ));
 
-    // generate a comma separated list to add them to the DOM element
+    // Generate a comma separated list to add them to the DOM element
     // See: http://stackoverflow.com/questions/4328947/limit-file-format-when-using-input-type-file
     return prefixedAllowedExtensions.join(', ');
 }

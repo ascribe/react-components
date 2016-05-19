@@ -63,7 +63,7 @@ export class ComponentSpecExtensionBuilder {
         // If the component being extended already has this function, don't overwrite it
         if (typeof componentSpec[fnName] !== 'function') {
             // Use traditional binding so `this.refs` evaluates to the rendered component's refs
-            this.extensions[fnName] = function (...args) {
+            this.extensions[fnName] = function extendedFn(...args) {
                 const baseRef = this.refs[baseRefName];
 
                 if (!baseRef) {

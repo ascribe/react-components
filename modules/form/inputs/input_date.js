@@ -5,7 +5,8 @@ import DatePicker from 'react-datepicker';
 
 import { safeInvoke } from '../../utils/general';
 
-import styles from './input_date.scss';
+// Import the stylesheet (applied globally)
+import './input_date.scss';
 
 
 const { bool, func, object, oneOfType, string } = React.PropTypes;
@@ -28,6 +29,7 @@ const InputDate = React.createClass({
         value: string,
 
         // Only used to signal for validation in Property
+        // eslint-disable-next-line react/sort-prop-types
         required: bool
 
         // Any other props are passed through to the backing DatePicker component.
@@ -44,7 +46,7 @@ const InputDate = React.createClass({
     getInitialState() {
         return {
             edited: false
-        }
+        };
     },
 
     focus() {
@@ -98,14 +100,14 @@ const InputDate = React.createClass({
 
     render() {
         const {
-            defaultValue, // ignore
-            onChange, // ignore
+            defaultValue: ignoredDefaultValue, // ignore
+            onChange: ignoredOnChange, // ignore
 
             // Ignore, to avoid overriding DatePickers's styles with this component's styles (in
             // case they ever use react-css-modules or expose a `style` prop)
-            styles, // eslint-disable-line react/prop-types
+            styles: ignoredStyles, // eslint-disable-line react/prop-types
 
-            value, // ignore
+            value: ignoredValue, // ignore
             ...datePickerProps
         } = this.props;
 
