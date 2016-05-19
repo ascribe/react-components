@@ -21,7 +21,8 @@ const PropertyCheckboxHeading = CssModules(({ disabled, expanded, handleExpandTo
             disabled={disabled}
             label={label}
             name={`${name}-checkbox`}
-            onChange={handleExpandToggle} />
+            onChange={handleExpandToggle}
+            tabIndex={-1} />
     </button>
 ), styles);
 
