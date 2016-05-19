@@ -103,22 +103,6 @@ export function intersectLists(a, b) {
 }
 
 /**
- * Takes a list of object and merges their keys to one object.
- * Uses mergeOptions for two objects.
- * @param  {[type]} l [description]
- * @return {[type]}   [description]
- */
-export function mergeOptions(...l) {
-    // If the objects submitted in the list have duplicates,in their key names,
-    // abort the merge and tell the function's user to check his objects.
-    if (_doesObjectListHaveDuplicates(l)) {
-        throw new Error('The objects you submitted for merging have duplicates. Merge aborted.');
-    }
-
-    return Object.assign({}, ...l);
-}
-
-/**
  * Noop function that can be stuffed into required callback props
  */
 export function noop() {}
@@ -181,38 +165,42 @@ export function safeInvoke(fnOrConfig, ...paramsForFn) {
 }
 
 /**
- * Takes an object and returns a shallow copy without any keys
- * that fail the passed in filter function.
- * Does not modify the passed in object.
- *
- * @param  {object} obj regular javascript object
- * @return {object}     regular javascript object without null values or empty strings
+ * Takes a list of object and safely merges their properties into a new object.
+ * Throws if any of the objects contain a duplicate key that is also in another object.
+ * Does not modify the given objects.
+ * @param  {...Object} l Any number of objects to merge
+ * @return {Object}      Merged object
  */
-export function sanitize(obj, filterFn) {
-    if (!filterFn) {
-        // By matching null with a double equal, we can match undefined and null
-        // http://stackoverflow.com/a/15992131
-        filterFn = (val) => val == null || val === '';
+export function safeMerge(...l) {
+    // If the objects submitted in the list have duplicates in their key names,
+    // abort the merge and tell the function's user to check his objects.
+    if (doesObjectListHaveDuplicates(l)) {
+        throw new Error('The objects you submitted for merging have duplicates. Merge aborted.');
     }
 
-    return omitFromObject(obj, filterFn);
+    return Object.assign({}, ...l);
 }
 
 /**
- * Removes all falsy values (undefined, null, false, ...) from a list/array
- * @param  {array} l the array to sanitize
- * @return {array}   the sanitized array
+ * Glorified omitFromObject. Takes an object and returns a filtered shallow copy that strips out
+ * any properties that are falsy (including coercions, ie. undefined, null, '', 0, ...).
+ * Does not modify the passed in object.
+ *
+ * @param  {object} obj      Javascript object
+ * @return {object}          Sanitized Javascript object
+ */
+export function sanitize(obj) {
+    return omitFromObject(obj, (val) => !val);
+}
+
+/**
+ * Removes all falsy values (including coercions, ie. undefined, null, '', 0, ...) from an array.
+ * Does not modify the passed in array.
+ * @param  {array} l Array to sanitize
+ * @return {array}   Sanitized array
  */
 export function sanitizeList(l) {
-    let sanitizedList = [];
-
-    for(let i = 0; i < l.length; i++) {
-        if(l[i]) {
-            sanitizedList.push(l[i]);
-        }
-    }
-
-    return sanitizedList;
+    return l.filter((val) => !!val);
 }
 
 /**
@@ -244,42 +232,32 @@ export function truncateTextAtCharIndex(text, truncIndex, replacement = '...') {
 /**
  * Checks a list of objects for key duplicates and returns a boolean
  */
-function _doesObjectListHaveDuplicates(l) {
-    let mergedList = [];
-
-    l = l.map((obj) => {
-        if(!obj) {
-            throw new Error('The object you are trying to merge is null instead of an empty object');
-        }
-
-        return Object.keys(obj);
-    });
-
-    // Taken from: http://stackoverflow.com/a/10865042
-    // How to flatten an array of arrays in javascript.
-    // If two objects contain the same key, then these two keys
-    // will actually be represented in the merged array
-    mergedList = mergedList.concat.apply(mergedList, l);
+function doesObjectListHaveDuplicates(l) {
+    const mergedList = l.reduce((merged, obj) => (
+        obj ? merged.concat(Object.keys(obj)) : merged
+    ), []);
 
     // Taken from: http://stackoverflow.com/a/7376645/1263876
-    // By casting the array to a set, and then checking if the size of the array
+    // By casting the array to a Set, and then checking if the size of the array
     // shrunk in the process of casting, we can check if there were any duplicates
     return new Set(mergedList).size !== mergedList.length;
 }
 
 /**
- * Returns a copy of the given object's own and inherited enumerable
- * properties, keeping any keys that pass the given filter function.
+ * Returns a filtered copy of the given object's own enumerable properties (no inherited
+ * properties), keeping any keys that pass the given filter function.
  */
 function applyFilterOnObject(obj, filterFn) {
-    const filteredObj = {};
+    if (filterFn == null) {
+        return Object.assign({}, obj);
+    }
 
-    for (let key in obj) {
-        const val = obj[key];
-        if (filterFn == null || filterFn(val, key)) {
+    const filteredObj = {};
+    Object.entries(obj).forEach(([key, val]) => {
+        if (filterFn(val, key)) {
             filteredObj[key] = val;
         }
-    }
+    });
 
     return filteredObj;
 }
