@@ -7,7 +7,7 @@ import { noop, safeInvoke } from '../utils/general';
 
 import styles from './checkbox.scss';
 
-const { bool, func, node, string } = React.PropTypes;
+const { bool, func, node, number, string } = React.PropTypes;
 
 const Checkbox = React.createClass({
     propTypes: {
@@ -15,9 +15,16 @@ const Checkbox = React.createClass({
         className: string,
         disabled: bool,
         label: node,
-        onChange: func
+        onChange: func,
+        tabIndex: number
 
         // All other props are passed down to the backing input element
+    },
+
+    getDefaultProps() {
+        return {
+            tabIndex: 0
+        };
     },
 
     getInitialState() {
