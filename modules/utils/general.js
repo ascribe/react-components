@@ -317,7 +317,12 @@ function safeInvokeForConfig({ fn, context, params, error }) {
 
         // Make sure params is still an array even after any lazy computation
         if (!Array.isArray(params)) {
-            console.warn("Params to pass to safeInvoke's fn is not an array. Ignoring...", params);
+            if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
+                console.warn("Params to pass to safeInvoke's fn is not an array. Ignoring...",
+                             params);
+            }
+
             params = [];
         }
 
@@ -329,7 +334,8 @@ function safeInvokeForConfig({ fn, context, params, error }) {
         if (error) {
             if (error instanceof Error) {
                 throw error;
-            } else {
+            } else if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
                 console.warn('Error given to safeInvoke was not a JS Error. Ignoring...', error);
             }
         }

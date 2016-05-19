@@ -45,7 +45,9 @@ const CreateBlobUploader = (Uploader) => (
                                                                             FileStatus.CREATED_BLOB,
                                                                             blobCreationChangeSet))
                 .catch((err) => {
-                    console.warn(err);
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.warn(err); // eslint-disable-line no-console
+                    }
                     return uploader.setStatusOfFile(file.id, FileStatus.FAILED_BLOB);
                 })
                 // Act as a .finally() clause to resolve the promises returned from the .then()
