@@ -9,7 +9,7 @@
   "homepage": "https://github.com/ascribe/react-components#readme",
   "bugs": "https://github.com/ascribe/react-components/issues",
   "main": "dist/bundle.js",
-  "jsnext:main": "es6/index.js",
+  "jsnext:main": "modules/index.js",
   "scripts": {
     "lint": "eslint ./",
     "postinstall": "npm run build",
