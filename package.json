@@ -10,6 +10,9 @@
   "bugs": "https://github.com/ascribe/react-components/issues",
   "main": "dist/bundle.js",
   "jsnext:main": "modules/index.js",
+  "directories": {
+    "lib": "modules/"
+  },
   "scripts": {
     "lint": "eslint ./",
     "postinstall": "npm run build",
