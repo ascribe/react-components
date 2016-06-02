@@ -42,6 +42,7 @@ const extractPlugins = [
 
 const prodPlugins = [
     ...extractPlugins,
+    new webpack.optimize.DedupePlugin(),
     new webpack.optimize.UglifyJsPlugin({
         compress: {
             warnings: false
