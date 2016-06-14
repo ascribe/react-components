@@ -32,8 +32,9 @@ const FileInput = React.createClass({
         } catch (e) {
             // For browsers that do not support the new MouseEvent syntax
             evt = document.createEvent('MouseEvents');
-            evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80, 20, false, false, false,
-                               false, 0, null);
+            evt.initMouseEvent(
+                'click', true, true, window, 0, 0, 0, 80, 20, false, false, false, false, 0, null
+            );
         }
 
         evt.stopPropagation();
