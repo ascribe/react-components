@@ -1,7 +1,20 @@
 @import '../../../styles/mixins/properties';
 
 .header {
+    background: none;
+    border: none;
     padding: 1.5em;
+    text-align: left;
+    width: 100%;
+
+    // Only hide the focus outline for mouse users
+    &:active {
+        outline: none;
+    }
+
+    &:focus {
+        outline-width: 2px;
+    }
 
     &::selection {
         background-color: transparent;

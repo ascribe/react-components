@@ -27,7 +27,7 @@ const PropertyLabel = CssModules((props) => (<label {...props} styleName="label"
 // The default layout component acts as both the Property container and its body
 const PropertyLayout = CssModules(({ children, handleFocus, status }) => (
     <div
-        onClick={handleFocus}
+        onFocus={handleFocus}
         styleName={classNames('body', status ? `property-${status}` : 'property')}>
         {children}
     </div>
@@ -320,6 +320,7 @@ const Property = React.createClass({
 
             disabled,
             name,
+            id: name,
 
             // Similar to how the child input's value is controlled using this Property's `value`
             // state, the input's defaultValue is also controlled with the `initialValue` state.

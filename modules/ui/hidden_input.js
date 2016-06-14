@@ -1,8 +1,22 @@
 import React from 'react';
 
+
+const { number } = React.PropTypes;
+
 // Although simple, this component needs to be created with createClass rather than a stateless
 // function so parents can attach refs to it.
 const HiddenInput = React.createClass({
+    propTypes: {
+        tabIndex: number
+    },
+
+    getDefaultProps() {
+        return {
+            // By default ignore this input from tabbing
+            tabIndex: -1
+        };
+    },
+
     render() {
         // Inputs cannot be focused when they are hidden with display: none and visibility: hidden,
         // so we have to use opacity and positioning instead. Opera also doesn't trigger simulated
