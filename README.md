@@ -110,6 +110,11 @@ the components aren't able to import them directly. See the component's
 documentation, as well as [.bootstraprc](/.bootstraprc) for the necessary
 bootstrap stylesheets.
 
+**NOTE**: You will have to make sure that `process.env.NODE_ENV` is
+injected into your global environment, specifying if your environment is
+for development (`NODE_ENV = development`) or production (`NODE_ENV =
+production`).
+
 ##### Example
 
 Components (with their styles):
@@ -233,6 +238,8 @@ bootstrap's buttons).
 TODO
 ====
 * [ ] Unit tests
+* [ ] Create builds that seperate each of the modules into their own
+      chunk so users can just import the modules they want to use.
 * [ ] Add themable extensions, maybe forking [rethemable](https://github.com/andreypopp/rethemeable)
 * [ ] Upgrade FineUploader, and don't use the commonJS hack
 * [ ] Phase out [bootstrap overrides](./modules/styles/_bootstrap_defaults.scss)

@@ -7,8 +7,8 @@ import { safeInvoke } from '../../utils/general';
 
 const { func } = React.PropTypes;
 
-const CustomHeaderOnChangeUploader = (Uploader) => {
-    return React.createClass(uploaderSpecExtender({
+const CustomHeaderOnChangeUploader = (Uploader) => (
+    React.createClass(uploaderSpecExtender({
         displayName: 'CustomHeaderOnChangeUploader',
 
         propTypes: {
@@ -38,8 +38,8 @@ const CustomHeaderOnChangeUploader = (Uploader) => {
 
         componentWillMount() {
             const {
-                deleteFile: { customHeaders: deleteCustomHeaders } = {}, //eslint-disable-line react/prop-types
-                request: { customHeaders: requestCustomHeaders } = {}, //eslint-disable-line react/prop-types
+                deleteFile: { customHeaders: deleteCustomHeaders } = {}, // eslint-disable-line react/prop-types
+                request: { customHeaders: requestCustomHeaders } = {}, // eslint-disable-line react/prop-types
             } = this.props;
 
             // Keep track of the uploader's current custom headers.
@@ -85,18 +85,18 @@ const CustomHeaderOnChangeUploader = (Uploader) => {
         onDelete(...args) {
             this.handleCustomHeaderMayChange();
 
-            safeInvoke(this.props.onDelete, ...args); //eslint-disable-line react/prop-types
+            safeInvoke(this.props.onDelete, ...args); // eslint-disable-line react/prop-types
         },
 
         onSubmitFiles(...args) {
             this.handleCustomHeaderMayChange();
 
-            return this.props.onSubmitFiles(...args); //eslint-disable-line react/prop-types
+            return this.props.onSubmitFiles(...args); // eslint-disable-line react/prop-types
         },
 
         render() {
             const {
-                shouldCustomHeaderChange, // ignore
+                shouldCustomHeaderChange: ignoredShouldCustomHeaderChange, // ignore
                 ...uploaderProps
             } = this.props;
 
@@ -108,7 +108,7 @@ const CustomHeaderOnChangeUploader = (Uploader) => {
                     onSubmitFiles={this.onSubmitFiles} />
             );
         }
-    }));
-};
+    }))
+);
 
 export default CustomHeaderOnChangeUploader;

@@ -21,10 +21,10 @@ const FileLabel = CssModules(({ files, handleRemoveFiles }) => {
         const labelText = files.length > 1 ? `${files.length} files`
                                            : truncateTextAtCharIndex(files[0].name, 40);
 
-       label = [
-           labelText,
-           (<a key="remove-link" onClick={handleRemoveFiles}>remove</a>)
-       ];
+        label = [
+            labelText,
+            (<a key="remove-link" onClick={handleRemoveFiles}>remove</a>)
+        ];
     }
 
     return (<span styleName="file-label">{label}</span>);
@@ -36,6 +36,7 @@ const UploadButton = React.createClass({
         children: node,
         className: string,
         disabled: bool,
+        fileLabelType: func,
 
         /**
          * Get the button's label (ie. children). By default, if you provide children to this
@@ -49,8 +50,6 @@ const UploadButton = React.createClass({
          *
         */
         getButtonLabel: func,
-
-        fileLabelType: func,
 
         // Provided by ReactS3FineUploader
         uploaderFiles: arrayOf(object)
@@ -67,10 +66,9 @@ const UploadButton = React.createClass({
     getDefaultProps() {
         return {
             buttonType: Button,
-            getButtonLabel: (uploading, uploaderFiles, progress) => {
-                return uploading ? `Upload progress: ${progress}`
-                                 : 'file';
-            },
+            getButtonLabel: (uploading, uploaderFiles, progress) => (
+                uploading ? `Upload progress: ${progress}` : 'file'
+            ),
             fileLabelType: FileLabel
         };
     },
@@ -92,7 +90,8 @@ const UploadButton = React.createClass({
 
             // Filter invalid files that might have been deleted or canceled before calculating progress
             const progressFiles = uploaderFiles.filter(validProgressFilesFilter);
-            const progress = progressFiles.reduce((sum, file) => sum + file.progress, 0) / progressFiles.length;
+            progress = progressFiles
+                           .reduce((sum, file) => sum + file.progress, 0) / progressFiles.length;
         }
 
         return getButtonLabel(uploading, uploaderFiles, progress);
@@ -133,12 +132,14 @@ const UploadButton = React.createClass({
             uploaderFiles,
             buttonType: ButtonType,
             fileLabelType: FileLabelType,
-            children, // ignore
-            getButtonLabel, // ignore
+
+            children: ignoredChildren, // ignore
+            getButtonLabel: ignoredGetButtonLabel, // ignore
             // eslint-disable-next-line react/prop-types
-            styles, // ignore, to avoid overriding ButtonType's styles with this component's styles
+            styles: ignoredStyles, // ignore, to avoid overriding ButtonType's styles with this component's styles
+
             ...buttonProps
-        } = this.props
+        } = this.props;
         const buttonChildren = this.getButtonLabel();
         const validFiles = uploaderFiles.filter(validFilesFilter);
 

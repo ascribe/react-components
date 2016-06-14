@@ -13,7 +13,7 @@ const { bool, func, node, string } = React.PropTypes;
 // Initially based off of https://github.com/fedosejev/react-file-drag-and-drop
 // We don't need something as heavy as react-dnd (https://github.com/gaearon/react-dnd) for this,
 // as we just need to take care of the drop and drag events
-let UploadDragAndDropArea = React.createClass({
+const UploadDragAndDropArea = React.createClass({
     propTypes: {
         children: node,
         className: string,
@@ -76,8 +76,8 @@ let UploadDragAndDropArea = React.createClass({
         const {
             children,
             className,
-            onDragOver, // ignore
-            onDrop, // ignore
+            onDragOver: ignoredOnDragOver, // ignore
+            onDrop: ignoredOnDrop, // ignore
             ...childProps
         } = this.props;
 

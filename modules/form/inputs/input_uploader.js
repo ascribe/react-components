@@ -69,7 +69,7 @@ const InputUploader = React.createClass({
         };
     },
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps) {
         // Completely ignore state when determining updates as we don't use it in render
         return isShallowEqual(this.props, nextProps);
     },
@@ -90,7 +90,7 @@ const InputUploader = React.createClass({
     },
 
     onChange(files) {
-        const { getFileValue, filesValidation, onChange, onFilesValidationChange } = this.props;
+        const { filesValidation, onChange, onFilesValidationChange } = this.props;
         const { filesValidation: prevFilesValidation } = this.state;
 
         const { invoked, result: nextFilesValidation } = safeInvoke(filesValidation, files);
@@ -131,13 +131,13 @@ const InputUploader = React.createClass({
             }
         };
 
-        const handleFilesChanged = (childHandler) => {
-            return (files) => {
+        const handleFilesChanged = (childHandler) => (
+            (files) => {
                 safeInvoke(childHandler, files);
 
                 this.onChange(files);
-            };
-        };
+            }
+        );
 
         if (child.type.displayName === 'Uploadify') {
             // If the child uploader is composed with Uploadify, we need to inject our change

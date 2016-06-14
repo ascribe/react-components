@@ -26,7 +26,7 @@ const Button = React.createClass({
         return {
             classType: 'primary',
             size: 'md'
-        }
+        };
     },
 
     render() {

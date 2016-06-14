@@ -11,7 +11,7 @@ import { noop, safeInvoke } from '../../utils/general';
 import styles from './property.scss';
 
 
-const { bool, element, func, node, shape, string } = React.PropTypes;
+const { bool, element, func, node, string } = React.PropTypes;
 
 // Default layouts
 const PropertyErrorLabel = CssModules(({ children }) => (
@@ -22,7 +22,9 @@ const PropertyFooter = CssModules(({ children }) => (
     <div styleName="footer">{children}</div>
 ), styles);
 
-const PropertyLabel = CssModules((props) => (<label {...props} styleName="label" />), styles);
+const PropertyLabel = CssModules(({ htmlFor, ...props }) => (
+    <label {...props} htmlFor={htmlFor} styleName="label" />
+), styles);
 
 // The default layout component acts as both the Property container and its body
 const PropertyLayout = CssModules(({ children, handleFocus, status }) => (
@@ -78,14 +80,14 @@ const Property = React.createClass({
         return {
             createErrorMessage: (errorProp) => {
                 switch (errorProp) {
-                  case 'min' || 'max':
-                    return 'The value you defined is not in the valid range';
-                  case 'pattern':
-                    return 'The value you defined is not matching the valid pattern';
-                  case 'required':
-                    return 'This field is required';
-                  default:
-                    return null;
+                    case 'min' || 'max':
+                        return 'The value you defined is not in the valid range';
+                    case 'pattern':
+                        return 'The value you defined is not matching the valid pattern';
+                    case 'required':
+                        return 'This field is required';
+                    default:
+                        return null;
                 }
             },
             errorLabelType: PropertyErrorLabel,
@@ -222,15 +224,15 @@ const Property = React.createClass({
         const { defaultChecked, defaultValue } = child.props;
 
         switch (this.getInputTypeOfChild(child)) {
-          case 'checkbox':
-            return defaultChecked;
-          default:
-            return defaultValue;
+            case 'checkbox':
+                return defaultChecked;
+            default:
+                return defaultValue;
         }
     },
 
-    getInputTypeOfChild(child) {
-        child = child || this.getChild();
+    getInputTypeOfChild(givenChild) {
+        const child = givenChild || this.getChild();
 
         if (child.type === InputCheckbox) {
             // Although InputCheckbox is a custom input, its API follows the native checkbox API
@@ -272,11 +274,13 @@ const Property = React.createClass({
             return 'focused';
         } else if (highlighted) {
             return 'highlighted';
+        } else {
+            return '';
         }
     },
 
     renderChildren() {
-        const { children, disabled, ignoreFocus, name } = this.props;
+        const { disabled, ignoreFocus, name } = this.props;
         const { initialValue, value } = this.state;
 
         const child = this.getChild();
@@ -292,15 +296,15 @@ const Property = React.createClass({
         let defaultValueProp;
         let valueProp;
 
-        switch(this.getInputTypeOfChild(child)) {
-          case 'checkbox':
-            defaultValueProp = 'defaultChecked';
-            valueProp = 'checked';
-            break;
-          default:
-            defaultValueProp = 'defaultValue';
-            valueProp = 'value';
-            break;
+        switch (this.getInputTypeOfChild(child)) {
+            case 'checkbox':
+                defaultValueProp = 'defaultChecked';
+                valueProp = 'checked';
+                break;
+            default:
+                defaultValueProp = 'defaultValue';
+                valueProp = 'value';
+                break;
         }
 
         return React.cloneElement(child, {
@@ -352,7 +356,10 @@ const Property = React.createClass({
         const newState = { errorMessage: null };
 
         if (errorProp) {
-            const { invoked, result: errorMessage } = safeInvoke(this.props.createErrorMessage, errorProp);
+            const {
+                invoked,
+                result: errorMessage
+            } = safeInvoke(this.props.createErrorMessage, errorProp);
 
             if (invoked && errorMessage) {
                 newState.errorMessage = errorMessage;

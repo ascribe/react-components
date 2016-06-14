@@ -8,7 +8,7 @@ import { safeInvoke } from '../../utils/general';
 import styles from './input_textarea.scss';
 
 
-//FIXME: add anchorization back in after splitting off as a seperate package
+// FIXME: add anchorization back in after splitting off as a seperate package
 function anchorize(str) {
     return str;
 }
@@ -28,6 +28,7 @@ const InputTextarea = React.createClass({
         value: string,
 
         // Only used to signal for validation in Property
+        // eslint-disable-next-line react/sort-prop-types
         required: bool
 
         // All other props are passed to the backing TextareaAutosize or pre element
@@ -93,7 +94,7 @@ const InputTextarea = React.createClass({
         if (!disabled) {
             return (
                 <TextareaAutosize
-                    ref='textarea'
+                    ref="textarea"
                     {...textareaProps}
                     maxRows={maxRows}
                     onChange={this.onTextChange}

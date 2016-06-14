@@ -46,7 +46,7 @@ export function removedFilesFilter(file) {
 export function uploadedFilesFilter(file) {
     return file.progress === 100 &&
            (file.status === FileStatus.UPLOAD_SUCCESSFUL ||
-            file.status === Filestatus.ONLINE);
+            file.status === FileStatus.ONLINE);
 }
 
 /**
