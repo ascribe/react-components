@@ -172,9 +172,11 @@ const CollapsibleProperty = React.createClass(propertySpecExtender({
 
         // Cache these layouts on the component to avoid recreating a new type on each render
         // as it removes focus from any child input elements.
-        this.collapsedLayout = PropStuffer(CollapsibleLayout,
-                                           additionalProps,
-                                           'CollapsedPropertyLayout');
+        this.collapsedLayout = PropStuffer(
+            CollapsibleLayout,
+            additionalProps,
+            'CollapsedPropertyLayout'
+        );
 
         this.expandedLayout = PropStuffer(CollapsibleLayout, {
             ...additionalProps,

@@ -41,9 +41,9 @@ const CreateBlobUploader = (Uploader) => (
             createBlobPromise
                 // Grab the value resolved from handleBlobCreation and use it to add any additional
                 // changes to the file
-                .then(([blobCreationChangeSet]) => uploader.setStatusOfFile(file.id,
-                                                                            FileStatus.CREATED_BLOB,
-                                                                            blobCreationChangeSet))
+                .then(([blobCreationChangeSet]) => (
+                    uploader.setStatusOfFile(file.id, FileStatus.CREATED_BLOB, blobCreationChangeSet)
+                ))
                 .catch((err) => {
                     if (process.env.NODE_ENV !== 'production') {
                         console.warn(err); // eslint-disable-line no-console
