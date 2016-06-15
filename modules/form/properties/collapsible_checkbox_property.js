@@ -1,12 +1,13 @@
 import React from 'react';
 import CssModules from 'react-css-modules';
 
+import { safeInvoke } from 'js-utility-belt/es6';
+
 import CollapsibleProperty from './collapsible_property';
 import propertySpecExtender from '../utils/property_spec_extender';
 
 import Checkbox from '../../ui/checkbox';
 
-import { safeInvoke } from '../../utils/general';
 import { PropStuffer } from '../../utils/react';
 
 import styles from './collapsible_checkbox_property.scss';

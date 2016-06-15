@@ -1,9 +1,10 @@
 import React from 'react';
 
+import { safeInvoke } from 'js-utility-belt/es6';
+
 import FileStatus from '../constants/file_status';
 
 import uploaderSpecExtender from '../utils/uploader_spec_extender';
-import { safeInvoke } from '../../utils/general';
 
 
 const { func } = React.PropTypes;

@@ -3,7 +3,7 @@ import CssModules from 'react-css-modules';
 
 import TextareaAutosize from 'react-textarea-autosize';
 
-import { safeInvoke } from '../../utils/general';
+import { safeInvoke } from 'js-utility-belt';
 
 import styles from './input_textarea.scss';
 

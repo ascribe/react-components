@@ -1,8 +1,8 @@
 import React from 'react';
 
-import uploaderSpecExtender from '../utils/uploader_spec_extender';
+import { safeInvoke } from 'js-utility-belt/es6';
 
-import { safeInvoke } from '../../utils/general';
+import uploaderSpecExtender from '../utils/uploader_spec_extender';
 
 
 const { func } = React.PropTypes;

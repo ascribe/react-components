@@ -1,9 +1,9 @@
 import React from 'react';
 import CssModules from 'react-css-modules';
 
-import Checkbox from '../../ui/checkbox';
+import { safeInvoke } from 'js-utility-belt/es6';
 
-import { safeInvoke } from '../../utils/general';
+import Checkbox from '../../ui/checkbox';
 
 import styles from './input_checkbox.scss';
 

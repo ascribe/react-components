@@ -2,6 +2,8 @@ import coreIncludes from 'core-js/library/fn/array/includes';
 
 import React from 'react';
 
+import { safeInvoke } from 'js-utility-belt/es6';
+
 import CollapsibleCheckboxProperty from './properties/collapsible_checkbox_property';
 import CollapsibleProperty from './properties/collapsible_property';
 import Property from './properties/property';
@@ -11,8 +13,6 @@ import FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
 import Button from '../buttons/button';
 
 import Grouping from '../ui/grouping';
-
-import { safeInvoke } from '../utils/general';
 
 
 const { arrayOf, bool, func, node, object, oneOf, shape, string } = React.PropTypes;
