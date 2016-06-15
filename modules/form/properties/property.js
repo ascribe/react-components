@@ -49,9 +49,15 @@ const Property = React.createClass({
 
         /**
          * As the child input is controlled by this Property, the default value should be set using
-         * this `defaultValue` prop rather than on the child input. See
-         * http://facebook.github.io/react/docs/forms.html#controlled-components
-        */
+         * the `defaultValue` (or, if using a checkbox, the `defaultChecked`) prop rather than on
+         * the child input.
+         *
+         * If both `defaultChecked` and `defaultValue` are provided for checkbox inputs,
+         * `defaultChecked` will be used.
+         *
+         * See http://facebook.github.io/react/docs/forms.html#controlled-components.
+         */
+        defaultChecked: oneOfType([bool, string]),
         defaultValue: oneOfType([bool, string]),
 
         disabled: bool,
@@ -111,16 +117,20 @@ const Property = React.createClass({
     },
 
     getInitialState() {
-        const { defaultValue } = this.props;
+        const { defaultChecked, defaultValue } = this.props;
+        const childType = this.getInputTypeOfChild();
+        const initialValue = (childType === 'checkbox' && defaultChecked !== undefined)
+            ? defaultChecked : defaultValue;
 
         return {
             /**
              * initialValue is used to reset the child input to its initial state. We initially use
-             * the property's defaultValue as this value, but this can change later on as the form
-             * gets submitted and further changes are made (if the form has already been submitted,
-             * resetting the form afterwards should restore it to its last submission state).
+             * the property's defaultValue / defaultChecked as this value, but this can change later
+             * on as the form gets submitted and further changes are made (if the form has already
+             * been submitted, resetting the form afterwards should restore it to its last
+             * submission state).
              */
-            initialValue: defaultValue,
+            initialValue,
 
             errorMessage: null,
             isFocused: false,
@@ -130,11 +140,11 @@ const Property = React.createClass({
              * the input (ie. handle its edited value); any time we need to use the input's value,
              * we request it directly using its value property (on native inputs) or `getValue()`.
              *
-             * As we control the child input, we can only control it using the `value` (and not the
-             * `defaultValue`) prop; hence, we initially set the value to be this Property's given
-             * `defaultValue`
+             * As the child input is controlled, we can only set its value using the `value` (and
+             * not the `defaultValue`) prop; hence, we initially set the value to be this
+             * Property's initial value (defaultValue / defaultChecked).
              */
-            value: defaultValue
+            value: initialValue
         };
     },
 

@@ -159,7 +159,7 @@ const App = () => {
                         <input placeholder="footer property placeholder" type="text" />
                     </Property>
                     <Property
-                        defaultValue={true}
+                        defaultChecked
                         label="Plain checkbox label"
                         name="checkbox">
                         <input type="checkbox" />
@@ -322,8 +322,8 @@ const App = () => {
                         <InputCheckbox label="checkbox" />
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
+                        defaultChecked
                         checkboxLabel="default checkbox"
-                        defaultValue={true}
                         label="default checkbox label"
                         name="defaultCheckbox">
                         <InputCheckbox label="defaultCheckbox" />
