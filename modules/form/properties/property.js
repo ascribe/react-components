@@ -154,23 +154,6 @@ const Property = React.createClass({
         }
     },
 
-    reset() {
-        const { initialValue } = this.state;
-
-        this.setState({
-            value: initialValue
-        });
-
-        // In case the input element needs more than just the value changed to the initial
-        // value to reset it, it can expose a reset method
-        safeInvoke({
-            fn: this.inputElement.reset,
-            context: this.inputElement
-        });
-
-        return initialValue;
-    },
-
     focus() {
         if (this.props.ignoreFocus) {
             return;
@@ -183,64 +166,10 @@ const Property = React.createClass({
         });
     },
 
-    onInputChange(event) {
-        const { name, onChange } = this.props;
-        let value;
-
-        if (event && event.target) {
-            const { target } = event;
-
-            if (target.type === 'checkbox') {
-                value = target.checked;
-            } else {
-                value = target.value;
-            }
-        }
-
-        this.setState({ value }, () => safeInvoke(onChange, value, name));
-    },
-
-    onBlur(event) {
-        this.setState({ isFocused: false }, () => safeInvoke(this.props.onBlur, event));
-    },
-
-    onFocus(event) {
-        this.setState({ isFocused: true }, () => safeInvoke(this.props.onFocus, event));
-    },
-
-    // Required by Form API
-    onSubmitError() {
-        // If submission failed, just unfocus any properties in the form
-        this.setState({
-            isFocused: false
-        });
-    },
-
-    // Required by Form API
-    onSubmitSuccess() {
-        const newState = {
-            isFocused: false
-        };
-
-        // Also update initialValue in case of the user updating and canceling their actions again.
-        // We avoid doing this if we're already removing our child input's value as the "removed"
-        // value isn't really representative of the input's default or last submitted value.
-        if (!this.getChild().props.removeValue) {
-            newState.initialValue = this.getValueOfInputElement();
-        }
-
-        this.setState(newState);
-    },
-
     getChild() {
         // Ensure that only one child is used per property; if there is more than one child,
         // React.Children.only() will throw
         return React.Children.only(this.props.children);
-    },
-
-    // Required by Form API
-    getValue() {
-        return this.getValueOfInputElement();
     },
 
     getInputTypeOfChild(child = this.getChild()) {
@@ -253,6 +182,11 @@ const Property = React.createClass({
             // All other custom inputs should follow the default input API
             return 'normal';
         }
+    },
+
+    // Required by Form API
+    getValue() {
+        return this.getValueOfInputElement();
     },
 
     getValueOfInputElement() {
@@ -286,6 +220,92 @@ const Property = React.createClass({
         } else {
             return '';
         }
+    },
+
+    reset() {
+        const { initialValue } = this.state;
+
+        this.setState({
+            value: initialValue
+        });
+
+        // In case the input element needs more than just the value changed to the initial
+        // value to reset it, it can expose a reset method
+        safeInvoke({
+            fn: this.inputElement.reset,
+            context: this.inputElement
+        });
+
+        return initialValue;
+    },
+
+    // Required by Form API
+    validate() {
+        const errorProp = validateInput(this.inputElement, this.getValueOfInputElement());
+        const newState = { errorMessage: null };
+
+        if (errorProp) {
+            const {
+                invoked,
+                result: errorMessage
+            } = safeInvoke(this.props.createErrorMessage, errorProp);
+
+            if (invoked && errorMessage) {
+                newState.errorMessage = errorMessage;
+            }
+        }
+
+        this.setState(newState);
+        return errorProp;
+    },
+
+    onBlur(event) {
+        this.setState({ isFocused: false }, () => safeInvoke(this.props.onBlur, event));
+    },
+
+    onFocus(event) {
+        this.setState({ isFocused: true }, () => safeInvoke(this.props.onFocus, event));
+    },
+
+    onInputChange(event) {
+        const { name, onChange } = this.props;
+        let value;
+
+        if (event && event.target) {
+            const { target } = event;
+
+            if (target.type === 'checkbox') {
+                value = target.checked;
+            } else {
+                value = target.value;
+            }
+        }
+
+        this.setState({ value }, () => safeInvoke(onChange, value, name));
+    },
+
+    // Required by Form API
+    onSubmitError() {
+        // If submission failed, just unfocus any properties in the form
+        this.setState({
+            isFocused: false
+        });
+    },
+
+    // Required by Form API
+    onSubmitSuccess() {
+        const newState = {
+            isFocused: false
+        };
+
+        // Also update initialValue in case of the user updating and canceling their actions again.
+        // We avoid doing this if we're already removing our child input's value as the "removed"
+        // value isn't really representative of the input's default or last submitted value.
+        if (!this.getChild().props.removeValue) {
+            newState.initialValue = this.getValueOfInputElement();
+        }
+
+        this.setState(newState);
     },
 
     renderChildren() {
@@ -345,26 +365,6 @@ const Property = React.createClass({
                 this.onFocus();
             }
         });
-    },
-
-    // Required by Form API
-    validate() {
-        const errorProp = validateInput(this.inputElement, this.getValueOfInputElement());
-        const newState = { errorMessage: null };
-
-        if (errorProp) {
-            const {
-                invoked,
-                result: errorMessage
-            } = safeInvoke(this.props.createErrorMessage, errorProp);
-
-            if (invoked && errorMessage) {
-                newState.errorMessage = errorMessage;
-            }
-        }
-
-        this.setState(newState);
-        return errorProp;
     },
 
     render() {

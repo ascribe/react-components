@@ -99,6 +99,13 @@ const Form = React.createClass({
         this._refs = {};
     },
 
+    getFormData() {
+        return Object.entries(this._refs).reduce((formData, [name, propertyRef]) => {
+            formData[name] = propertyRef.getValue();
+            return formData;
+        }, {});
+    },
+
     reset() {
         // Reset child Properties too
         Object.values(this._refs).forEach((propertyRef) => propertyRef.reset());
@@ -107,6 +114,19 @@ const Form = React.createClass({
             edited: false,
             submitting: false
         });
+    },
+
+    // Validate all child Properties we're keeping track of
+    validate() {
+        return Object.entries(this._refs).reduce((errors, [name, propertyRef]) => {
+            const error = propertyRef.validate();
+
+            if (error) {
+                errors[name] = error;
+            }
+
+            return errors;
+        }, {});
     },
 
     onPropertyChange() {
@@ -135,13 +155,6 @@ const Form = React.createClass({
         }
     },
 
-    getFormData() {
-        return Object.entries(this._refs).reduce((formData, [name, propertyRef]) => {
-            formData[name] = propertyRef.getValue();
-            return formData;
-        }, {});
-    },
-
     onSubmitComplete(propertyFn) {
         return () => {
             Object.values(this._refs).forEach(propertyFn);
@@ -150,7 +163,7 @@ const Form = React.createClass({
         };
     },
 
-    getButtons() {
+    renderButtons() {
         const { buttonDefault, buttonEdited, buttonSubmitting, disabled } = this.props;
         const { edited, submitting } = this.state;
 
@@ -217,19 +230,6 @@ const Form = React.createClass({
         });
     },
 
-    // Validate all child Properties we're keeping track of
-    validate() {
-        return Object.entries(this._refs).reduce((errors, [name, propertyRef]) => {
-            const error = propertyRef.validate();
-
-            if (error) {
-                errors[name] = error;
-            }
-
-            return errors;
-        }, {});
-    },
-
     render() {
         const {
             autoComplete,
@@ -247,7 +247,7 @@ const Form = React.createClass({
                 style={style}>
                 {autoComplete === 'off' ? fakeAutoCompleteInputs : null}
                 {this.renderChildren()}
-                {this.getButtons()}
+                {this.renderButtons()}
             </form>
         );
     }
