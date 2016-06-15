@@ -1,3 +1,5 @@
+/* eslint-disable strict, no-console, object-shorthand */
+/* eslint-disable import/no-extraneous-dependencies, import/newline-after-import */
 'use strict';
 
 const path = require('path');
@@ -17,9 +19,6 @@ const PATHS = {
     nodeModules: path.resolve(__dirname, 'node_modules')
 };
 
-// Browsers to target when prefixing CSS.
-const COMPATIBILITY = ['Chrome >= 30', 'Safari >= 6.1', 'Firefox >= 35', 'Opera >= 32', 'iOS >= 8', 'Android >= 2.3', 'ie >= 10'];
-
 // External libraries
 // Catch all react lib related imports
 const externals = [
@@ -31,7 +30,7 @@ const plugins = [
     new webpack.DefinePlugin({
         'process.env': { NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development') }
     }),
-    new webpack.NoErrorsPlugin(),
+    new webpack.NoErrorsPlugin()
 ];
 
 const extractPlugins = [
@@ -42,6 +41,7 @@ const extractPlugins = [
 
 const prodPlugins = [
     ...extractPlugins,
+    new webpack.optimize.DedupePlugin(),
     new webpack.optimize.UglifyJsPlugin({
         compress: {
             warnings: false
@@ -71,7 +71,7 @@ const CSS_LOADER = combineLoaders([
         loader: 'css',
         query: {
             modules: true,
-            importLoaders: 1,
+            importLoaders: 2,
             localIdentName: '[path]__[name]__[local]_[hash:base64:5]',
             sourceMap: true
         }
@@ -100,8 +100,7 @@ const config = {
         filename: PRODUCTION ? 'bundle.min.js' : 'bundle.js',
         library: 'ascribe-react-components',
         libraryTarget: 'umd',
-        path: PRODUCTION ? PATHS.dist : PATHS.build,
-        publicPath: PRODUCTION ? null :'/assets/'
+        path: PRODUCTION ? PATHS.dist : PATHS.build
     },
 
     externals: PRODUCTION ? externals : null,
@@ -124,8 +123,7 @@ const config = {
                 exclude: [PATHS.nodeModules],
                 loader: 'babel',
                 query: {
-                    cacheDirectory: true,
-                    presets: ['react', 'es2015-no-commonjs']
+                    cacheDirectory: true
                 }
             },
             {
@@ -137,7 +135,7 @@ const config = {
         ]
     },
 
-    postcss: [autoPrefixer({ browsers: COMPATIBILITY })]
+    postcss: [autoPrefixer()]
 };
 
 module.exports = config;

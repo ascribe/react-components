@@ -1,3 +1,5 @@
+import coreIncludes from 'core-js/library/fn/array/includes';
+
 /**
  * Checks shallow equality
  * Re-export of shallow from shallow-equals
@@ -18,11 +20,6 @@ export function arrayFrom(arrayLike) {
 
     return array;
 }
-
-/**
- * Noop function that can be stuffed into required callback props
- */
-export function noop() {}
 
 /**
  * Recursively tests an object against a "match" object to see if the
@@ -102,7 +99,7 @@ export function formatText() {
  * @return {Array} Intersected list of a and b
  */
 export function intersectLists(a, b) {
-    return a.filter((val) => b.includes(val));
+    return a.filter((val) => coreIncludes(b, val));
 }
 
 /**
@@ -122,6 +119,11 @@ export function mergeOptions(...l) {
 }
 
 /**
+ * Noop function that can be stuffed into required callback props
+ */
+export function noop() {}
+
+/**
  * Similar to lodash's _.omit(), this returns a copy of the given object's
  * own and inherited enumerable properties, omitting any keys that are
  * in the given array or whose value pass the given filter function.
@@ -139,9 +141,10 @@ export function omitFromObject(obj, filter) {
  *
  * Has two call signatures:
  *   1. safeInvoke({
- *          fn: function,
- *          params: array of params or function for lazily computing parameters,
- *          error: Error to throw if function not invoked
+ *          fn:      Function to invoke,
+ *          context: Context to invoke function with
+ *          params:  Array of params or function for lazily computing parameters,
+ *          error:   Error to throw if function not invoked
  *      });
  *   2. safeInvoke(fn, param1, param2, param3, ...);
  *
@@ -149,14 +152,15 @@ export function omitFromObject(obj, filter) {
  * function if it exists with the given params.
  *
  * @param  {object}         options
- * @param  {any}            options.fn     Function to invoke
- * @param  {array|function} options.params Arguments to be passed into the function.
- *                                         If this is a function, the resulting array of the function
- *                                         will be passed as params into the function.
- * @param  {Error}          options.error  Error to be thrown if the function is not invoked.
- * @return {object}                        Return object specifying:
- *                                           result - the result of the function (if invoked)
- *                                           invoked - whether or not the function was invoked
+ * @param  {any}            options.fn      Function to invoke
+ * @param  {any}            options.context Context to invoke function with
+ * @param  {array|function} options.params  Arguments to be passed into the function.
+ *                                          If this is a function, the resulting array of the function
+ *                                          will be passed as params into the function.
+ * @param  {Error}          options.error   Error to be thrown if the function is not invoked.
+ * @return {object}                         Return object specifying:
+ *                                            result - the result of the function (if invoked)
+ *                                            invoked - whether or not the function was invoked
  */
 export function safeInvoke(fnOrConfig, ...paramsForFn) {
     let config;
@@ -292,8 +296,8 @@ function applyFilterOnObject(obj, filterFn) {
  */
 function filterFromObject(obj, filter, { isInclusion = true } = {}) {
     if (filter && Array.isArray(filter)) {
-        return applyFilterOnObject(obj, isInclusion ? ((_, key) => filter.includes(key))
-                                                    : ((_, key) => !filter.includes(key)));
+        return applyFilterOnObject(obj, isInclusion ? ((_, key) => coreIncludes(filter, key))
+                                                    : ((_, key) => !coreIncludes(filter, key)));
     } else if (filter && typeof filter === 'function') {
         // Flip the filter fn's return if it's for inclusion
         return applyFilterOnObject(obj, isInclusion ? filter
@@ -303,7 +307,7 @@ function filterFromObject(obj, filter, { isInclusion = true } = {}) {
     }
 }
 
-function safeInvokeForConfig({ fn, params, error }) {
+function safeInvokeForConfig({ fn, context, params, error }) {
     if (typeof fn === 'function') {
         if (typeof params === 'function') {
             params = params();
@@ -313,19 +317,25 @@ function safeInvokeForConfig({ fn, params, error }) {
 
         // Make sure params is still an array even after any lazy computation
         if (!Array.isArray(params)) {
-            console.warn("Params to pass to safeInvoke's fn is not an array. Ignoring...", params);
+            if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
+                console.warn("Params to pass to safeInvoke's fn is not an array. Ignoring...",
+                             params);
+            }
+
             params = [];
         }
 
         return {
             invoked: true,
-            result: fn(...params)
+            result: fn.apply(context, params)
         };
     } else {
         if (error) {
             if (error instanceof Error) {
                 throw error;
-            } else {
+            } else if (process.env.NODE_ENV !== 'production') {
+                // eslint-disable-next-line no-console
                 console.warn('Error given to safeInvoke was not a JS Error. Ignoring...', error);
             }
         }

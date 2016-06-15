@@ -7,10 +7,15 @@ styleLoaders:
     - postcss
     - sass?sourceMap&output=expanded&precision=8
 
-preBootstrapCustomizations: ./modules/styles/bootstrap_defaults.scss
-
 styles:
-    buttons: true
+    # Always needs to be included
     mixins: true
+
+    # Utilities
+    utilities: true
+
+    # Selected stylesheets
+    buttons: true
+    forms: true
 
 scripts: false

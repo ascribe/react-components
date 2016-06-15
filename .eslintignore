@@ -1,8 +1,5 @@
 build/*
 dist/*
-es6/*
-lib/*
 node_modules/*
 
-**/__test__
 **/vendor

@@ -1,0 +1,52 @@
+@import '../../styles/colors';
+
+// Adapted from http://www.htmllion.com/css3-checkbox.html
+.base {
+    color: $ascribe-colors--gray;
+    cursor: pointer;
+    font-weight: 300;
+    margin: 0;
+    user-select: none;
+
+    &:before {
+        background-color: white;
+        border: 1px solid rgba(0, 0, 0, 0.5); /* Use alpha to make the border look thinner */
+        border-radius: 1px;
+        color: $ascribe-colors--primary-fg;
+        content: "";
+        display: inline-block;
+        font-size: 20px;
+        height: 17px;
+        margin-right: 5px;
+        text-align: center;
+        vertical-align: middle;
+        width: 17px;
+    }
+
+    /* Use vertical-align to try and align any inline labels with the checkbox */
+    > * {
+        vertical-align: middle;
+    }
+}
+
+.checked {
+    composes: base;
+
+    &:before {
+        content: "\2713";
+        line-height: 0.8;
+    }
+}
+
+.disabled {
+    color: lighten($ascribe-colors--gray, 20%);
+    cursor: not-allowed;
+}
+
+.base-disabled {
+    composes: base disabled;
+}
+
+.checked-disabled {
+    composes: checked disabled;
+}
