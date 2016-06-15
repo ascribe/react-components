@@ -1,13 +1,13 @@
 import React from 'react';
 import CssModules from 'react-css-modules';
 
+import { truncateText } from 'js-utility-belt/es6/text';
+
 import Uploadify from './utils/uploadify';
 
 import Button from '../buttons/button';
 
 import { uploadedFilesFilter, uploadingFilesFilter, validFilesFilter, validProgressFilesFilter } from './utils/file_filters';
-
-import { truncateTextAtCharIndex } from '../utils/general';
 
 import styles from './upload_button.scss';
 
@@ -19,11 +19,11 @@ const FileLabel = CssModules(({ files, handleRemoveFiles }) => {
 
     if (files.length) {
         const labelText = files.length > 1 ? `${files.length} files`
-                                           : truncateTextAtCharIndex(files[0].name, 40);
+                                           : truncateText(files[0].name, 40);
 
         label = [
             labelText,
-            (<a key="remove-link" onClick={handleRemoveFiles}>remove</a>)
+            (<a key="remove-link" onClick={handleRemoveFiles} tabIndex={0}>remove</a>)
         ];
     }
 

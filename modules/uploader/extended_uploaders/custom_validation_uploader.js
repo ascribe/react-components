@@ -2,14 +2,15 @@ import coreIncludes from 'core-js/library/fn/array/includes';
 
 import React from 'react';
 
+import { extractFileExtensionFromString } from 'js-utility-belt/es6/file';
+
 import ValidationErrors from '../constants/validation_errors';
 
-import { extractFileExtensionFromString } from '../../utils/file';
 import { validFilesFilter } from '../utils/file_filters';
 import uploaderSpecExtender from '../utils/uploader_spec_extender';
 
 
-const { arrayOf, bool, func, number, object, shape, string } = React.PropTypes;
+const { arrayOf, bool, func, number, shape, string } = React.PropTypes;
 
 const BASE_VALIDATORS = [
     // Is within max size

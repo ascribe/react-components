@@ -2,10 +2,11 @@ import React from 'react';
 import classNames from 'classnames';
 import CssModules from 'react-css-modules';
 
+import { safeInvoke } from 'js-utility-belt/es6';
+
 import Property from './property';
 import propertySpecExtender from '../utils/property_spec_extender';
 
-import { safeInvoke } from '../../utils/general';
 import { PropStuffer } from '../../utils/react';
 
 import styles from './collapsible_property.scss';

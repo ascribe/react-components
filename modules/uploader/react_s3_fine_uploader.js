@@ -1,6 +1,9 @@
 import React from 'react';
 import update from 'react-addons-update';
+
 import fineUploader from './vendor/s3.fine-uploader';
+
+import { arrayFrom, isShallowEqual, noop, omitFromObject, safeInvoke } from 'js-utility-belt/es6';
 
 import FileStatus from './constants/file_status';
 
@@ -9,8 +12,6 @@ import MimeTypeMapping from './utils/mime_type_mapping';
 import { transformAllowedExtensionsToInputAcceptProp } from './utils/private/dom_utils';
 
 import FileSelector from '../file_handlers/file_selector';
-
-import { arrayFrom, isShallowEqual, noop, omitFromObject, safeInvoke } from '../utils/general';
 
 
 const { func, node, object } = React.PropTypes;

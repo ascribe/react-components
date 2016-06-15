@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { isShallowEqual, safeInvoke, sanitize } from '../../utils/general';
+import { isShallowEqual, safeInvoke, sanitize } from 'js-utility-belt/es6';
 
 
 const { bool, element, func } = React.PropTypes;

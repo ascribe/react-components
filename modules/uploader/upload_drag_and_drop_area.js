@@ -1,9 +1,9 @@
 import React from 'react';
 import CssModules from 'react-css-modules';
 
-import Uploadify from './utils/uploadify';
+import { safeInvoke } from 'js-utility-belt/es6';
 
-import { safeInvoke } from '../utils/general';
+import Uploadify from './utils/uploadify';
 
 import styles from './upload_drag_and_drop_area.scss';
 

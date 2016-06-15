@@ -3,7 +3,7 @@ import moment from 'moment';
 
 import DatePicker from 'react-datepicker';
 
-import { safeInvoke } from '../../utils/general';
+import { safeInvoke } from 'js-utility-belt/es6';
 
 // Import the stylesheet (applied globally)
 import './input_date.scss';

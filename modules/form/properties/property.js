@@ -2,9 +2,9 @@ import React from 'react';
 import classNames from 'classnames';
 import CssModules from 'react-css-modules';
 
-import { validateInput } from '../utils/private/validation_utils';
+import { noop, safeInvoke } from 'js-utility-belt/es6';
 
-import { noop, safeInvoke } from '../../utils/general';
+import { validateInput } from '../utils/private/validation_utils';
 
 import styles from './property.scss';
 

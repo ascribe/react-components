@@ -6,6 +6,8 @@ import 'bootstrap-loader';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { arrayFrom } from 'js-utility-belt/es6';
+
 import { Button } from '../modules/buttons';
 import {
     CollapsibleCheckboxProperty,
@@ -20,8 +22,6 @@ import {
 } from '../modules/form';
 import { Checkbox, Grouping } from '../modules/ui';
 import { UploadButton, UploadDragAndDropArea } from '../modules/uploader';
-
-import { arrayFrom } from '../modules/utils/general';
 
 import './app.scss';
 
