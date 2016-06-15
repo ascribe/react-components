@@ -37,6 +37,12 @@ const InputCheckbox = React.createClass({
         // All other props are passed to the backing Checkbox
     },
 
+    getDefaultProps() {
+        return {
+            type: 'checkbox'
+        };
+    },
+
     componentWillMount() {
         // Developers are used to defining values for inputs via `value`, but since this is a input
         // of type checkbox, which instead uses `checked`, we warn the dev not to do that when in
