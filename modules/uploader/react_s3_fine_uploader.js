@@ -826,8 +826,8 @@ const ReactS3FineUploader = React.createClass({
         // We set the files state to 'deleted' immediately, so that the user is not confused with
         // the unresponsiveness of the UI
         //
-        // If there is an error during the deletion, we will just change the status back to FileStatus.ONLINE
-        // and display an error message
+        // If there is an error during the deletion, we will just change the status back to
+        // FileStatus.ONLINE and display an error message
         this.setStatusOfFile(file.id, FileStatus.DELETED);
     },
 
@@ -869,19 +869,24 @@ const ReactS3FineUploader = React.createClass({
     handleRetryFile(file) {
         if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
             // eslint-disable-next-line no-console
-            console.warn('Ignoring attempt to manually retry file not tracked by this uploader', file);
+            console.warn(
+                'Ignoring attempt to manually retry file not tracked by this uploader',
+                file
+            );
+
             return;
         }
 
-        // Our onManualRetry handler for FineUploader will take care of setting the status of our tracked file
+        // Our onManualRetry handler for FineUploader will take care of setting the status of our
+        // tracked file
         this.state.uploader.retry(file.id);
     },
 
     handleSubmitFiles(files) {
         this.props.onSubmitFiles(arrayFrom(files))
-            .then((files) => {
-                if (Array.isArray(files) && files.length) {
-                    this.state.uploader.addFiles(files);
+            .then((submitFiles) => {
+                if (Array.isArray(submitFiles) && submitFiles.length) {
+                    this.state.uploader.addFiles(submitFiles);
                 }
             })
             // Bit of a hack, but use this .catch() to let the next .then() become a .finally().

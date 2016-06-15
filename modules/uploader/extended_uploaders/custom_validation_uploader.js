@@ -58,8 +58,8 @@ const BASE_VALIDATORS = [
     }
 ];
 
-const CustomValidationUploader = (Uploader) => {
-    return React.createClass(uploaderSpecExtender({
+const CustomValidationUploader = (Uploader) => (
+    React.createClass(uploaderSpecExtender({
         displayName: 'CustomValidationUploader',
 
         propTypes: {
@@ -112,6 +112,7 @@ const CustomValidationUploader = (Uploader) => {
 
             // All other props will be passed through to Uploader, the following are just listed for
             // convenience they're used in this component
+            /* eslint-disable react/sort-prop-types */
             multiple: bool,
             validation: shape({
                 allowedExtensions: arrayOf(string),
@@ -119,12 +120,13 @@ const CustomValidationUploader = (Uploader) => {
                 minSizeLimit: number,
                 sizeLimit: number
             })
+            /* eslint-enable react/sort-prop-types */
         },
 
         getDefaultProps() {
             return {
                 onSubmitFiles: (files) => Promise.resolve(files),
-                onValidationError: (errors, passed, files) => Promise.resolve(passed)
+                onValidationError: (errors, passed) => Promise.resolve(passed)
             };
         },
 
@@ -166,9 +168,9 @@ const CustomValidationUploader = (Uploader) => {
                 const validators = [...BASE_VALIDATORS, ...customValidators];
 
                 files.forEach((file) => {
-                    const error = validators.reduce((error, validator) => {
-                        if (error) {
-                            return error;
+                    const error = validators.reduce((foundError, validator) => {
+                        if (foundError) {
+                            return foundError;
                         }
 
                         const validatorResult = validator(file, validationSpec);
@@ -191,14 +193,16 @@ const CustomValidationUploader = (Uploader) => {
             const { onSubmitFiles } = this.props;
 
             return this.validateFiles(files)
-                .then((files) => Array.isArray(files) && files.length ? onSubmitFiles(files)
-                                                                      : Promise.reject());
+                .then((validatedFiles) => (
+                    Array.isArray(validatedFiles) && validatedFiles.length
+                        ? onSubmitFiles(validatedFiles) : Promise.reject()
+                ));
         },
 
         render() {
             const {
-                customValidators, // ignore
-                onValidationError, // ignore
+                customValidators: ignoredCustomValidators, // ignore
+                onValidationError: ignoredOnValidationError, // ignore
                 ...uploaderProps
             } = this.props;
 
@@ -209,7 +213,7 @@ const CustomValidationUploader = (Uploader) => {
                     onSubmitFiles={this.onSubmitFiles} />
             );
         }
-    }));
-};
+    }))
+);
 
 export default CustomValidationUploader;

@@ -16,5 +16,7 @@ export function validateInput(inputElement, value) {
                    !InputValidator[validationProp](value, props[validationProp], props.type)) {
             return validationProp;
         }
+
+        return null;
     }, null);
 }
