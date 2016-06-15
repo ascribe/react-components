@@ -2,8 +2,6 @@ import React from 'react';
 import classNames from 'classnames';
 import CssModules from 'react-css-modules';
 
-import InputCheckbox from '../inputs/input_checkbox';
-
 import { validateInput } from '../utils/private/validation_utils';
 
 import { noop, safeInvoke } from '../../utils/general';
@@ -236,11 +234,10 @@ const Property = React.createClass({
     },
 
     getInputTypeOfChild(child = this.getChild()) {
-        if (child.type === InputCheckbox) {
-            // Although InputCheckbox is a custom input, its API follows the native checkbox API
-            return 'checkbox';
-        } else if (child.props.hasOwnProperty('type')) {
-            // Just reutrn the native input's type
+        if (child.props.hasOwnProperty('type')) {
+            // If the child has a type defined, return that. Custom inputs can define their type, or
+            // have their type passed down through props. Native inputs expose their DOM properties
+            // through the `props` as well.
             return child.props.type;
         } else {
             // All other custom inputs should follow the default input API
