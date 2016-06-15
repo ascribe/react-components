@@ -165,9 +165,10 @@ const App = () => {
                         <input type="checkbox" />
                     </Property>
                     <Property
+                        defaultChecked
                         label="Custom checkbox property label"
                         name="customCheckbox">
-                        <InputCheckbox defaultChecked label="checkbox" />
+                        <InputCheckbox label="checkbox" />
                     </Property>
                     <Property
                         label="Select prop label"
