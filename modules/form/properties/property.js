@@ -283,7 +283,7 @@ const Property = React.createClass({
 
     renderChildren() {
         const { disabled, ignoreFocus, name } = this.props;
-        const { initialValue, value } = this.state;
+        const { value } = this.state;
 
         const child = this.getChild();
         const {
@@ -294,7 +294,7 @@ const Property = React.createClass({
         } = child.props;
 
         let valueProp;
-        switch(this.getInputTypeOfChild(child)) {
+        switch (this.getInputTypeOfChild(child)) {
             case 'checkbox':
                 valueProp = 'checked';
                 break;
