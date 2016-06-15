@@ -61,7 +61,7 @@ const InputCheckbox = React.createClass({
 
     // Required Property API
     getValue() {
-        return this.props.checked;
+        return !!this.props.checked;
     },
 
     onCheckboxChange(checked) {
