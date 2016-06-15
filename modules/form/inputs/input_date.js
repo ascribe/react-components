@@ -1,12 +1,12 @@
 import React from 'react';
-import CssModules from 'react-css-modules';
 import moment from 'moment';
 
 import DatePicker from 'react-datepicker';
 
 import { safeInvoke } from '../../utils/general';
 
-import styles from './input_date.scss';
+// Import the stylesheet (applied globally)
+import './input_date.scss';
 
 
 const { bool, func, object, oneOfType, string } = React.PropTypes;
@@ -18,17 +18,16 @@ const { bool, func, object, oneOfType, string } = React.PropTypes;
 const InputDate = React.createClass({
     propTypes: {
         /**
-         * Before using any dates given as props (ie. defaultValue and value), we'll convert them
-         * into moment dates by using this format string.
-         * This will also specify the DatePicker's dateFormat.
+         * Before using any dates given as props (ie. value), we'll convert them into moment dates
+         * by using this format string. This will also specify the DatePicker's dateFormat.
          */
         dateFormat: string,
 
-        defaultValue: oneOfType([object, string]),
         onChange: func,
-        value: string,
+        value: oneOfType([object, string]),
 
         // Only used to signal for validation in Property
+        // eslint-disable-next-line react/sort-prop-types
         required: bool
 
         // Any other props are passed through to the backing DatePicker component.
@@ -45,7 +44,7 @@ const InputDate = React.createClass({
     getInitialState() {
         return {
             edited: false
-        }
+        };
     },
 
     focus() {
@@ -69,13 +68,9 @@ const InputDate = React.createClass({
     },
 
     getValueMoment() {
-        const { dateFormat, defaultValue, value } = this.props;
+        const { dateFormat, value } = this.props;
 
-        // If this input's been user edited, we should use the value passed from the controlling
-        // parent component as its the one that managing this input component's values.
-        const currentValue = this.state.edited ? value : defaultValue;
-
-        return currentValue ? moment(currentValue, dateFormat, true) : null;
+        return value ? moment(value, dateFormat, true) : null;
     },
 
     reset() {
@@ -99,14 +94,13 @@ const InputDate = React.createClass({
 
     render() {
         const {
-            defaultValue, // ignore
-            onChange, // ignore
+            onChange: ignoredOnChange, // ignore
 
             // Ignore, to avoid overriding DatePickers's styles with this component's styles (in
             // case they ever use react-css-modules or expose a `style` prop)
-            styles, // eslint-disable-line react/prop-types
+            styles: ignoredStyles, // eslint-disable-line react/prop-types
 
-            value, // ignore
+            value: ignoredValue, // ignore
             ...datePickerProps
         } = this.props;
 
@@ -120,4 +114,4 @@ const InputDate = React.createClass({
     }
 });
 
-export default CssModules(InputDate, styles);
+export default InputDate;

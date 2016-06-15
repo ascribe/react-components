@@ -2,8 +2,6 @@ import React from 'react';
 import classNames from 'classnames';
 import CssModules from 'react-css-modules';
 
-import InputCheckbox from '../inputs/input_checkbox';
-
 import { validateInput } from '../utils/private/validation_utils';
 
 import { noop, safeInvoke } from '../../utils/general';
@@ -11,7 +9,7 @@ import { noop, safeInvoke } from '../../utils/general';
 import styles from './property.scss';
 
 
-const { bool, element, func, node, shape, string } = React.PropTypes;
+const { bool, element, func, node, oneOfType, string } = React.PropTypes;
 
 // Default layouts
 const PropertyErrorLabel = CssModules(({ children }) => (
@@ -22,7 +20,9 @@ const PropertyFooter = CssModules(({ children }) => (
     <div styleName="footer">{children}</div>
 ), styles);
 
-const PropertyLabel = CssModules((props) => (<label {...props} styleName="label" />), styles);
+const PropertyLabel = CssModules(({ htmlFor, ...props }) => (
+    <label {...props} htmlFor={htmlFor} styleName="label" />
+), styles);
 
 // The default layout component acts as both the Property container and its body
 const PropertyLayout = CssModules(({ children, handleFocus, status }) => (
@@ -46,6 +46,20 @@ const Property = React.createClass({
         autoFocus: bool,
         className: string,
         createErrorMessage: func,
+
+        /**
+         * As the child input is controlled by this Property, the default value should be set using
+         * the `defaultValue` (or, if using a checkbox, the `defaultChecked`) prop rather than on
+         * the child input.
+         *
+         * If both `defaultChecked` and `defaultValue` are provided for checkbox inputs,
+         * `defaultChecked` will be used.
+         *
+         * See http://facebook.github.io/react/docs/forms.html#controlled-components.
+         */
+        defaultChecked: oneOfType([bool, string]),
+        defaultValue: oneOfType([bool, string]),
+
         disabled: bool,
         errorLabelType: func,
         footer: node,
@@ -78,16 +92,23 @@ const Property = React.createClass({
         return {
             createErrorMessage: (errorProp) => {
                 switch (errorProp) {
-                  case 'min' || 'max':
-                    return 'The value you defined is not in the valid range';
-                  case 'pattern':
-                    return 'The value you defined is not matching the valid pattern';
-                  case 'required':
-                    return 'This field is required';
-                  default:
-                    return null;
+                    case 'min' || 'max':
+                        return 'The value you defined is not in the valid range';
+                    case 'pattern':
+                        return 'The value you defined is not matching the valid pattern';
+                    case 'required':
+                        return 'This field is required';
+                    default:
+                        return null;
                 }
             },
+
+            /**
+             * With react 15.0, we have to make sure that valueless controlled inputs should use
+             * value="" instead of value={null}.
+             */
+            defaultValue: '',
+
             errorLabelType: PropertyErrorLabel,
             footerType: PropertyFooter,
             labelType: PropertyLabel,
@@ -96,16 +117,20 @@ const Property = React.createClass({
     },
 
     getInitialState() {
-        const defaultValue = this.getDefaultValuePropOfChild();
+        const { defaultChecked, defaultValue } = this.props;
+        const childType = this.getInputTypeOfChild();
+        const initialValue = (childType === 'checkbox' && defaultChecked !== undefined)
+            ? defaultChecked : defaultValue;
 
         return {
             /**
              * initialValue is used to reset the child input to its initial state. We initially use
-             * the child's defaultValue as this value, but this can change later on as the form gets
-             * submitted and further changes are made (if the form has already been submitted,
-             * resetting the form afterwards should restore it to its last submission state).
+             * the property's defaultValue / defaultChecked as this value, but this can change later
+             * on as the form gets submitted and further changes are made (if the form has already
+             * been submitted, resetting the form afterwards should restore it to its last
+             * submission state).
              */
-            initialValue: defaultValue,
+            initialValue,
 
             errorMessage: null,
             isFocused: false,
@@ -115,10 +140,11 @@ const Property = React.createClass({
              * the input (ie. handle its edited value); any time we need to use the input's value,
              * we request it directly using its value property (on native inputs) or `getValue()`.
              *
-             * With react 15.0, we have to make sure that valueless controlled inputs should use
-             * value="" instead of value={null}.
+             * As the child input is controlled, we can only set its value using the `value` (and
+             * not the `defaultValue`) prop; hence, we initially set the value to be this
+             * Property's initial value (defaultValue / defaultChecked).
              */
-            value: defaultValue || ''
+            value: initialValue
         };
     },
 
@@ -217,26 +243,11 @@ const Property = React.createClass({
         return this.getValueOfInputElement();
     },
 
-    getDefaultValuePropOfChild() {
-        const child = this.getChild();
-        const { defaultChecked, defaultValue } = child.props;
-
-        switch (this.getInputTypeOfChild(child)) {
-          case 'checkbox':
-            return defaultChecked;
-          default:
-            return defaultValue;
-        }
-    },
-
-    getInputTypeOfChild(child) {
-        child = child || this.getChild();
-
-        if (child.type === InputCheckbox) {
-            // Although InputCheckbox is a custom input, its API follows the native checkbox API
-            return 'checkbox';
-        } else if (child.props.hasOwnProperty('type')) {
-            // Just reutrn the native input's type
+    getInputTypeOfChild(child = this.getChild()) {
+        if (child.props.hasOwnProperty('type')) {
+            // If the child has a type defined, return that. Custom inputs can define their type, or
+            // have their type passed down through props. Native inputs expose their DOM properties
+            // through the `props` as well.
             return child.props.type;
         } else {
             // All other custom inputs should follow the default input API
@@ -272,35 +283,31 @@ const Property = React.createClass({
             return 'focused';
         } else if (highlighted) {
             return 'highlighted';
+        } else {
+            return '';
         }
     },
 
     renderChildren() {
-        const { children, disabled, ignoreFocus, name } = this.props;
-        const { initialValue, value } = this.state;
+        const { disabled, ignoreFocus, name } = this.props;
+        const { value } = this.state;
 
         const child = this.getChild();
         const {
             onBlur,
             onChange,
             onFocus,
-            removeValue // If set on the child, reset this child input's defaultValue and value
-                        // to ''
+            removeValue // If set on the child, set this child input's value to '' to reset it
         } = child.props;
 
-        // Change the defaultValue and value props based on different input types (ie. checkboxes)
-        let defaultValueProp;
         let valueProp;
-
-        switch(this.getInputTypeOfChild(child)) {
-          case 'checkbox':
-            defaultValueProp = 'defaultChecked';
-            valueProp = 'checked';
-            break;
-          default:
-            defaultValueProp = 'defaultValue';
-            valueProp = 'value';
-            break;
+        switch (this.getInputTypeOfChild(child)) {
+            case 'checkbox':
+                valueProp = 'checked';
+                break;
+            default:
+                valueProp = 'value';
+                break;
         }
 
         return React.cloneElement(child, {
@@ -321,13 +328,6 @@ const Property = React.createClass({
             disabled,
             name,
             id: name,
-
-            // Similar to how the child input's value is controlled using this Property's `value`
-            // state, the input's defaultValue is also controlled with the `initialValue` state.
-            // This allows a reset to return the input's value to its last submitted value rather
-            // than the initial value it had upon its initial render (although if no changes have
-            // been made, these two will be the same).
-            [defaultValueProp]: removeValue ? '' : initialValue,
 
             // Control the child input's with this Property
             [valueProp]: removeValue ? '' : value,
@@ -353,7 +353,10 @@ const Property = React.createClass({
         const newState = { errorMessage: null };
 
         if (errorProp) {
-            const { invoked, result: errorMessage } = safeInvoke(this.props.createErrorMessage, errorProp);
+            const {
+                invoked,
+                result: errorMessage
+            } = safeInvoke(this.props.createErrorMessage, errorProp);
 
             if (invoked && errorMessage) {
                 newState.errorMessage = errorMessage;

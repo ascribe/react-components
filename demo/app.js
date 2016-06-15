@@ -1,3 +1,6 @@
+/* eslint-disable no-alert, no-console */
+/* eslint-disable import/no-extraneous-dependencies */
+
 import 'bootstrap-loader';
 
 import React from 'react';
@@ -23,7 +26,7 @@ import { arrayFrom } from '../modules/utils/general';
 import './app.scss';
 
 
-//TODO: turn this into a nicely formatted styleguide
+// TODO: turn this into a nicely formatted styleguide
 const App = () => {
     const dummyUploaderProps = {
         objectProperties: {
@@ -37,7 +40,8 @@ const App = () => {
     return (
         <div>
             <marquee direction="right">
-                Well, this could certainly be made better, ideally we'd have an auto-generated styleguide or something... but for now you can enjoy this
+                Well, this could certainly be made better, ideally we'd have an auto-generated
+                styleguide or something... but for now you can enjoy this
             </marquee>
             <h2>Buttons</h2>
             <h3>Primary Button</h3>
@@ -56,27 +60,27 @@ const App = () => {
             <h3>Secondary Button</h3>
             <div>
                 <Button classType="secondary">Secondary</Button>
-                <Button classType="secondary" className="active focus">Secondary Active</Button>
-                <Button classType="secondary" disabled>Secondary Disabled</Button>
+                <Button className="active focus" classType="secondary">Secondary Active</Button>
+                <Button disabled classType="secondary">Secondary Disabled</Button>
                 <Button classType="secondary" size="xs">Secondary XS</Button>
                 <Button classType="secondary" size="sm">Secondary SM</Button>
                 <Button classType="secondary" size="lg">Secondary LG</Button>
                 <Button classType="secondary" href="http://www.google.com" size="lg">Primary LG Anchor</Button>
                 <div>
-                    <Button classType="secondary" wide>Secondary Wide</Button>
+                    <Button wide classType="secondary">Secondary Wide</Button>
                 </div>
             </div>
             <h3>Tertiary Button</h3>
             <div>
                 <Button classType="tertiary">Tertiary</Button>
-                <Button classType="tertiary" className="active focus">Tertiary Active</Button>
-                <Button classType="tertiary" disabled>Tertiary Disabled</Button>
+                <Button className="active focus" classType="tertiary">Tertiary Active</Button>
+                <Button disabled classType="tertiary">Tertiary Disabled</Button>
                 <Button classType="tertiary" size="xs">Tertiary XS</Button>
                 <Button classType="tertiary" size="sm">Tertiary SM</Button>
                 <Button classType="tertiary" size="lg">Tertiary LG</Button>
                 <Button classType="tertiary" href="http://www.google.com" size="lg">Primary LG Anchor</Button>
                 <div>
-                    <Button classType="tertiary" wide>Tertiary Wide</Button>
+                    <Button wide classType="tertiary">Tertiary Wide</Button>
                 </div>
             </div>
             <h3>Button Grouping</h3>
@@ -108,7 +112,7 @@ const App = () => {
             <h4>Vertical pulled right</h4>
             <div>
                 <div className="clearfix">
-                    <Grouping className="pull-right" vertical>
+                    <Grouping vertical className="pull-right">
                         <Button>Button 1</Button>
                         <Button classType="secondary">Button 2</Button>
                         <Button classType="tertiary">Button 3</Button>
@@ -138,14 +142,15 @@ const App = () => {
                         <input placeholder="basic placeholder" type="text" />
                     </Property>
                     <Property
+                        defaultValue="default"
                         label="Default value label"
                         name="default">
-                        <input placeholder="default value placeholder" type="text" defaultValue="default" />
+                        <input placeholder="default value placeholder" type="text" />
                     </Property>
                     <Property
                         label="Required property label"
                         name="required">
-                        <input placeholder="required property placeholder" required type="text" />
+                        <input required placeholder="required property placeholder" type="text" />
                     </Property>
                     <Property
                         footer="footer"
@@ -154,14 +159,16 @@ const App = () => {
                         <input placeholder="footer property placeholder" type="text" />
                     </Property>
                     <Property
-                        label="Plain checkbox property label"
+                        defaultChecked
+                        label="Plain checkbox label"
                         name="checkbox">
-                        <input type="checkbox" defaultChecked />
+                        <input type="checkbox" />
                     </Property>
                     <Property
+                        defaultChecked
                         label="Custom checkbox property label"
                         name="customCheckbox">
-                        <InputCheckbox defaultChecked label="checkbox" />
+                        <InputCheckbox label="checkbox" />
                     </Property>
                     <Property
                         label="Select prop label"
@@ -174,27 +181,31 @@ const App = () => {
                     </Property>
                     <Property
                         highlighted
+                        defaultValue="higlighted"
                         label="Highlighted label"
                         name="highlighted">
-                        <input placeholder="highlighted placeholder" type="text" defaultValue="higlighted" />
+                        <input placeholder="highlighted placeholder" type="text" />
                     </Property>
                     <Property
                         ignoreFocus
+                        defaultValue="ignore focus"
                         label="Ignore focus label"
                         name="ignorefocus">
-                        <input placeholder="ignore focus placeholder" type="text" defaultValue="ignore focus" />
+                        <input placeholder="ignore focus placeholder" type="text" />
                     </Property>
                     <Property
                         disabled
+                        defaultValue="disabled"
                         label="Disabled property label"
                         name="disabled">
-                        <input placeholder="disabled property placeholder" type="text" defaultValue="disabled" />
+                        <input placeholder="disabled property placeholder" type="text" />
                     </Property>
                     <Property
                         hidden
+                        defaultValue="hidden"
                         label="Hidden property label"
                         name="hidden">
-                        <input placeholder="hidden property placeholder" type="text" defaultValue="hidden" />
+                        <input placeholder="hidden property placeholder" type="text" />
                     </Property>
                 </Form>
             </div>
@@ -228,7 +239,7 @@ const App = () => {
                         console.log('Wait 10s for submission to end...');
                         return new Promise((resolve) => {
                             setTimeout(resolve, 10000);
-                        });;
+                        });
                     }}>
                     <Property
                         label="Custom buttons label"
@@ -240,7 +251,9 @@ const App = () => {
             <h3>Custom fake autocomplete form</h3>
             <div>
                 <Form
-                    fakeAutoCompleteInputs={(<FakeAutoCompleteInputs fields={[{ name: 'name', type: 'password' }]} />)}
+                    fakeAutoCompleteInputs={
+                        (<FakeAutoCompleteInputs fields={[{ name: 'name', type: 'password' }]} />)
+                    }
                     onSubmit={(data) => {
                         console.log(data);
                         return Promise.resolve();
@@ -286,12 +299,13 @@ const App = () => {
                         <input placeholder="unchecked placeholder" type="text" />
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
-                        checkboxLabel="disabled prop"
                         checked
                         disabled
+                        checkboxLabel="disabled prop"
+                        defaultValue="disabled"
                         label="disabled prop label"
                         name="disabled">
-                        <input placeholder="disabled placeholder" type="text" defaultValue="disabled" />
+                        <input placeholder="disabled placeholder" type="text" />
                     </CollapsibleCheckboxProperty>
                 </Form>
             </div>
@@ -309,16 +323,17 @@ const App = () => {
                         <InputCheckbox label="checkbox" />
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
+                        defaultChecked
                         checkboxLabel="default checkbox"
                         label="default checkbox label"
                         name="defaultCheckbox">
-                        <InputCheckbox defaultChecked label="defaultCheckbox" />
+                        <InputCheckbox label="defaultCheckbox" />
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="required checkbox"
                         label="required checkbox label"
                         name="requiredCheckbox">
-                        <InputCheckbox label="required checkbox" required />
+                        <InputCheckbox required label="required checkbox" />
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="date"
@@ -328,9 +343,10 @@ const App = () => {
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="default date"
+                        defaultValue="2010-01-01"
                         label="default date label"
                         name="default Date">
-                        <InputDate defaultValue="2010-01-01" />
+                        <InputDate />
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="textarea"
@@ -340,16 +356,18 @@ const App = () => {
                     </CollapsibleCheckboxProperty>
                     <CollapsibleCheckboxProperty
                         checkboxLabel="default textarea"
+                        defaultValue="default"
                         label="default textarea label"
                         name="defaulttextarea">
-                        <InputTextarea defaultValue="default" rows={2} />
+                        <InputTextarea rows={2} />
                     </CollapsibleCheckboxProperty>
                     <Property
-                        checkboxLabel="disabled textarea"
                         disabled
+                        checkboxLabel="disabled textarea"
+                        defaultValue="disabled"
                         label="disabled textarea label"
                         name="disabledtextarea">
-                        <InputTextarea defaultValue="disabled" rows={2} />
+                        <InputTextarea rows={2} />
                     </Property>
                 </Form>
             </div>
@@ -370,9 +388,9 @@ const App = () => {
             <h4>Custom upload button</h4>
             <div>
                 <UploadButton
+                    wide
                     classType="secondary"
-                    uploaderProps={dummyUploaderProps}
-                    wide />
+                    uploaderProps={dummyUploaderProps} />
             </div>
             <h4>Disabled upload button</h4>
             <div>
@@ -381,7 +399,7 @@ const App = () => {
             <h3>Drag and drop</h3>
             <div>
                 <UploadDragAndDropArea uploaderProps={dummyUploaderProps}>
-                    <div style={{'width': 100, 'height': 100, 'backgroundColor': 'green'}} />
+                    <div style={{ 'width': 100, 'height': 100, 'backgroundColor': 'green' }} />
                 </UploadDragAndDropArea>
             </div>
             <h3>Drag and drop ignore files</h3>
@@ -389,11 +407,14 @@ const App = () => {
                 <UploadDragAndDropArea
                     onDrop={(event) => {
                         if (event && event.dataTransfer && event.dataTransfer.files.length > 0) {
-                            alert('Ignoring dropped files: ' + arrayFrom(event.dataTransfer.files).reduce((names, file) => `${names} ${file.name}`, ''));
+                            const droppedFiles = arrayFrom(event.dataTransfer.files)
+                                .reduce((names, file) => `${names} ${file.name}`, '');
+
+                            alert(`Ignoring dropped files: ${droppedFiles}`);
                         }
                     }}
                     uploaderProps={dummyUploaderProps}>
-                    <div style={{'width': 100, 'height': 100, 'backgroundColor': 'red'}} />
+                    <div style={{ 'width': 100, 'height': 100, 'backgroundColor': 'red' }} />
                 </UploadDragAndDropArea>
             </div>
             <h3>Form Uploader</h3>
@@ -409,9 +430,10 @@ const App = () => {
                         name="inputuploader">
                         <InputUploader
                             filesValidation={(files) => files.length > 1}
-                            onFilesValidationChange={(prevResult, nextResult) => {
-                                alert(`file validation toggled with prev: ${prevResult} and next: ${nextResult}`);
-                            }}>
+                            onFilesValidationChange={(prevResult, nextResult) => (
+                                alert(`file validation toggled with prev: ${prevResult} ` +
+                                      `and next: ${nextResult}`)
+                            )}>
                             <UploadButton className="upload-input" uploaderProps={dummyUploaderProps} />
                         </InputUploader>
                     </Property>

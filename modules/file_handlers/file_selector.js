@@ -55,7 +55,7 @@ const FileSelector = React.createClass({
     render() {
         const {
             children,
-            disabled, // ignore
+            disabled: ignoredDisabled, // ignore
             ...fileInputProps
         } = this.props;
 

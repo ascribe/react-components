@@ -7,8 +7,8 @@ import ReactS3FineUploader from '../react_s3_fine_uploader';
 
 const { func, object } = React.PropTypes;
 
-const Uploadify = (Component) => {
-    return React.createClass(uploaderSpecExtender({
+const Uploadify = (Component) => (
+    React.createClass(uploaderSpecExtender({
         displayName: 'Uploadify',
 
         propTypes: {
@@ -34,7 +34,7 @@ const Uploadify = (Component) => {
                 </UploaderType>
             );
         }
-    }));
-};
+    }))
+);
 
 export default Uploadify;
