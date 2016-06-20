@@ -10,6 +10,7 @@
   "bugs": "https://github.com/ascribe/react-components/issues",
   "main": "dist/bundle.js",
   "jsnext:main": "modules/index.js",
+  "license": "Apache-2.0",
   "directories": {
     "lib": "modules/"
   },
@@ -23,7 +24,6 @@
     "start": "NODE_ENV=demo node server.demo.js"
   },
   "author": "Ascribe",
-  "license": "Copyright",
   "private": true,
   "devDependencies": {
     "autoprefixer": "^6.3.6",
