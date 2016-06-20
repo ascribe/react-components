@@ -13,10 +13,10 @@ const PRODUCTION = process.env.NODE_ENV === 'production';
 const EXTRACT = process.env.NODE_ENV === 'extract';
 
 const PATHS = {
-    build: path.resolve(__dirname, 'build'),
-    dist: path.resolve(__dirname, 'dist'),
-    modules: path.resolve(__dirname, 'modules'),
-    nodeModules: path.resolve(__dirname, 'node_modules')
+    BUILD: path.resolve(__dirname, 'build'),
+    BUNDLE: path.resolve(__dirname, 'bundle'),
+    MODULES: path.resolve(__dirname, 'modules'),
+    NODE_MODULES: path.resolve(__dirname, 'node_modules')
 };
 
 // External libraries
@@ -95,14 +95,14 @@ const CSS_LOADER = combineLoaders([
 const config = {
     entry: [
         PRODUCTION || EXTRACT ? 'bootstrap-loader/extractStyles' : 'bootstrap-loader',
-        PATHS.modules
+        PATHS.MODULES
     ],
 
     output: {
         filename: PRODUCTION ? 'bundle.min.js' : 'bundle.js',
         library: 'ascribe-react-components',
         libraryTarget: 'umd',
-        path: PRODUCTION ? PATHS.dist : PATHS.build
+        path: PRODUCTION ? PATHS.BUNDLE : PATHS.BUILD
     },
 
     externals: PRODUCTION ? externals : null,
@@ -122,7 +122,7 @@ const config = {
         loaders: [
             {
                 test: /\.js$/,
-                exclude: [PATHS.nodeModules],
+                exclude: [PATHS.NODE_MODULES],
                 loader: 'babel',
                 query: {
                     cacheDirectory: true
@@ -130,7 +130,7 @@ const config = {
             },
             {
                 test: /\.s[ac]ss$/,
-                exclude: [PATHS.nodeModules],
+                exclude: [PATHS.NODE_MODULES],
                 loader: PRODUCTION || EXTRACT ? ExtractTextPlugin.extract('style', CSS_LOADER)
                                               : `style!${CSS_LOADER}`
             }

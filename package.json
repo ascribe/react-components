@@ -8,19 +8,29 @@
   },
   "homepage": "https://github.com/ascribe/react-components#readme",
   "bugs": "https://github.com/ascribe/react-components/issues",
-  "main": "dist/bundle.js",
-  "jsnext:main": "modules/index.js",
   "license": "Apache-2.0",
+  "files": [
+    "*.md",
+    "bundle",
+    "es6",
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "jsnext:main": "es6/index.js",
   "directories": {
-    "lib": "modules/"
+    "lib": "lib/"
   },
   "scripts": {
     "lint": "eslint ./",
     "postinstall": "npm run build",
-    "build": "npm run build:dist",
-    "build:dist": "rimraf ./dist && NODE_ENV=production webpack -p",
-    "build:extract": "NODE_ENV=extract webpack",
-    "clean": "rimraf ./build ./dist",
+    "build": "npm run build:bundle && npm run build:cjs && npm run build:es6",
+    "build:bundle": "rimraf ./bundle && NODE_ENV=production webpack -p",
+    "build:dev-extract": "NODE_ENV=extract webpack",
+    "build:cjs": "npm run babel:cjs",
+    "build:es6": "npm run babel:es6",
+    "babel:cjs": "rimraf ./lib && NODE_ENV=production BABEL_ENV=cjs babel ./modules -d lib",
+    "babel:es6": "rimraf ./es6 && NODE_ENV=production babel ./modules -d es6",
+    "clean": "rimraf ./build ./bundle ./es6 ./lib",
     "start": "NODE_ENV=demo node server.demo.js"
   },
   "author": "Ascribe",
@@ -31,7 +41,9 @@
     "babel-eslint": "^6.0.4",
     "babel-loader": "^6.2.4",
     "babel-plugin-react-transform": "^2.0.2",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.10.3",
     "babel-plugin-transform-export-extensions": "^6.8.0",
+    "babel-plugin-transform-inline-environment-variables": "^6.8.0",
     "babel-plugin-transform-object-assign": "^6.8.0",
     "babel-plugin-transform-object-rest-spread": "^6.8.0",
     "babel-plugin-transform-react-display-name": "^6.8.0",

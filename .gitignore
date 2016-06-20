@@ -13,7 +13,9 @@
 
 .env
 
+bundle/*
 build/*
-dist/*
+es6/*
+lib/*
 
 node_modules/*
