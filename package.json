@@ -26,14 +26,14 @@
     "lint": "eslint ./",
     "postinstall": "npm run build",
     "build": "npm run build:bundle && npm run build:cjs && npm run build:es6",
-    "build:bundle": "rimraf ./bundle && NODE_ENV=production webpack -p",
-    "build:dev-extract": "NODE_ENV=extract webpack",
+    "build:bundle": "rimraf ./bundle && cross-env NODE_ENV=production webpack -p",
+    "build:dev-extract": "cross-env NODE_ENV=extract webpack",
     "build:cjs": "npm run babel:cjs",
     "build:es6": "npm run babel:es6",
-    "babel:cjs": "rimraf ./lib && NODE_ENV=production BABEL_ENV=cjs babel ./modules -d lib",
-    "babel:es6": "rimraf ./es6 && NODE_ENV=production babel ./modules -d es6",
+    "babel:cjs": "rimraf ./lib && cross-env NODE_ENV=production BABEL_ENV=cjs babel ./modules -d lib",
+    "babel:es6": "rimraf ./es6 && cross-env NODE_ENV=production babel ./modules -d es6",
     "clean": "rimraf ./build ./bundle ./es6 ./lib",
-    "start": "NODE_ENV=demo node server.demo.js"
+    "start": "cross-env NODE_ENV=demo node server.demo.js"
   },
   "devDependencies": {
     "autoprefixer": "^6.3.6",
@@ -51,6 +51,7 @@
     "babel-preset-es2015-no-commonjs": "0.0.2",
     "babel-preset-react": "^6.5.0",
     "bootstrap-loader": "^1.0.10",
+    "cross-env": "^1.0.8",
     "css-loader": "^0.23.1",
     "dotenv": "^2.0.0",
     "eslint": "^2.12.0",
