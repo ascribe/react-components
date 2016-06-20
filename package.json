@@ -2,13 +2,10 @@
   "name": "ascribe-react-components",
   "version": "0.0.1",
   "description": "Grab bag of useful react components when building react apps",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ascribe/react-components.git"
-  },
   "homepage": "https://github.com/ascribe/react-components#readme",
   "bugs": "https://github.com/ascribe/react-components/issues",
   "license": "Apache-2.0",
+  "author": "Ascribe",
   "files": [
     "*.md",
     "bundle",
@@ -20,6 +17,11 @@
   "directories": {
     "lib": "lib/"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ascribe/react-components.git"
+  },
+  "private": true,
   "scripts": {
     "lint": "eslint ./",
     "postinstall": "npm run build",
@@ -33,8 +35,6 @@
     "clean": "rimraf ./build ./bundle ./es6 ./lib",
     "start": "NODE_ENV=demo node server.demo.js"
   },
-  "author": "Ascribe",
-  "private": true,
   "devDependencies": {
     "autoprefixer": "^6.3.6",
     "babel-cli": "^6.10.1",
@@ -94,6 +94,11 @@
     "react",
     "components",
     "fineuploader",
+    "file",
+    "files",
+    "form",
+    "input",
+    "inputs",
     "uploader"
   ]
 }
