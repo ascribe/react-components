@@ -19,7 +19,13 @@
             ]
         },
         'cjs': {
-            'plugins': ['transform-es2015-modules-commonjs']
+            'plugins': [
+                'transform-es2015-modules-commonjs',
+                'import-styles-down-processor'
+            ]
+        },
+        'es6': {
+            'plugins': ['import-styles-down-processor']
         },
         'demo': {
             'plugins': [
