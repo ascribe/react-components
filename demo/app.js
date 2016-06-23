@@ -7,6 +7,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { arrayFrom } from 'js-utility-belt/es6';
+import { createTextFile, computeFileHash } from 'js-utility-belt/es6/file';
 
 import {
     FakeAutoCompleteInputs,
@@ -376,6 +377,30 @@ const App = () => {
                     wide
                     classType="secondary"
                     uploaderProps={dummyUploaderProps} />
+            </div>
+            <h4>Hashing upload button</h4>
+            <div>
+                <UploadButton
+                    uploaderProps={{
+                        ...dummyUploaderProps,
+                        onSubmitFiles: (files) => {
+                            const fileToHash = files[0];
+
+                            return computeFileHash(fileToHash)
+                                .then((hash) => {
+                                    const hashedFile = createTextFile(
+                                        hash,
+                                        `hash-of-${fileToHash.name}`,
+                                        fileToHash
+                                    );
+
+                                    console.log(`Hash: ${hash}`);
+                                    console.log('Hashed file: ', hashedFile);
+
+                                    return [hashedFile];
+                                });
+                        }
+                    }} />
             </div>
             <h4>Disabled upload button</h4>
             <div>

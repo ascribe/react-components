@@ -46,7 +46,7 @@ const UploadButton = React.createClass({
          * @param  {number}   progress      Total progress on set of valid files tracked by uploader
          * @return {node}                   Button label
          *
-        */
+         */
         getButtonLabel: func,
 
         // Provided by ReactS3FineUploader
