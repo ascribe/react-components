@@ -11,7 +11,7 @@
     composes: form-control from global;
     composes: base;
 
-    margin-bottom: 1em;
+    padding-bottom: 1em;
 }
 
 textarea.textarea::placeholder {
