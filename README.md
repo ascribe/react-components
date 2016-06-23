@@ -76,7 +76,7 @@ Styles:
 
 ```sass
 // In your main stylesheet
-@import 'node_modules/ascribe-react-components/dist/styles.css
+@import 'node_modules/ascribe-react-components/dist/styles
 ```
 
 ### Import specific components

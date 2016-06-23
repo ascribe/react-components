@@ -66,8 +66,8 @@ if (EXTRACT) {
     plugins.push(...extractPlugins);
 }
 
-// Modules
-// CSS loader
+// Loaders
+// CSS
 const CSS_LOADER = combineLoaders([
     {
         loader: 'css',
@@ -100,7 +100,7 @@ const config = {
 
     output: {
         filename: PRODUCTION ? 'bundle.min.js' : 'bundle.js',
-        library: 'ascribe-react-components',
+        library: 'react-utility-belt',
         libraryTarget: 'umd',
         path: PRODUCTION ? PATHS.BUNDLE : PATHS.BUILD
     },
