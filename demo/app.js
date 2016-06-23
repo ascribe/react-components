@@ -374,8 +374,11 @@ const App = () => {
             <h4>Custom upload button</h4>
             <div>
                 <UploadButton
-                    wide
-                    classType="secondary"
+                    buttonType={() => (
+                        <button style={{ backgroundColor: 'lightblue' }}>
+                            Custom upload button
+                        </button>
+                    )}
                     uploaderProps={dummyUploaderProps} />
             </div>
             <h4>Hashing upload button</h4>
