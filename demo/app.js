@@ -18,7 +18,7 @@ import {
     Property,
     SimpleProperty
 } from '../modules/form';
-import { Checkbox, Grouping } from '../modules/ui';
+import { Checkbox, Grouping, Spinner } from '../modules/ui';
 import { UploadButton, UploadDragAndDropArea } from '../modules/uploader';
 
 import './app.scss';
@@ -332,6 +332,38 @@ const App = () => {
             <h3>Disabled checkbox</h3>
             <div>
                 <Checkbox disabled label="disabled checkbox" />
+            </div>
+            <h3>Spinners</h3>
+            <div>
+                <Spinner size={50} />
+                <Spinner color="pink" size={50} />
+                <Spinner loop size={50} />
+                <Spinner size={100} />
+            </div>
+            <div>
+                <Spinner loop size={50}>
+                    <span
+                        style={{
+                            fontSize: '20px',
+                            left: '18px',
+                            position: 'absolute',
+                            top: '10.5px'
+                        }}>
+                        A
+                    </span>
+                </Spinner>
+            </div>
+            <div style={{ position: 'relative' }}>
+                <Spinner loop size={50} />
+                <span
+                    style={{
+                        fontSize: '20px',
+                        left: '18px',
+                        position: 'absolute',
+                        top: '10.5px'
+                    }}>
+                    A
+                </span>
             </div>
             <h2>Uploader</h2>
             <h3>Upload button</h3>

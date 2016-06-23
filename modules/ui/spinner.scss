@@ -1,14 +1,52 @@
+@import "../../styles/colors";
+
 @keyframes spin {
     from { transform: rotate(0deg); }
     to   { transform: rotate(359deg); }
 }
 
+@keyframes color-loop {
+    0%  {
+        border-color: $rubelt-colors--black;
+        color: $rubelt-colors--black;
+    }
+    20% {
+        border-color: $rubelt-colors--dark-blue;
+        color: $rubelt-colors--dark-blue;
+    }
+    40% {
+        border-color: $rubelt-colors--blue;
+        color: $rubelt-colors--blue;
+    }
+    60% {
+        border-color: $rubelt-colors--light-blue;
+        color: $rubelt-colors--light-blue;
+    }
+    80% {
+        border-color: $rubelt-colors--pink;
+        color: $rubelt-colors--pink;
+    }
+}
+
 .spinner {
     animation: spin 1s infinite linear;
-    border-color: $onionboarding-colors--text-highlight;
     border-radius: 50%;
     border-style: solid;
     border-width: 1px 1px 1px 0;
     display: inline-block;
+    position: relative;
     vertical-align: middle;
+}
+
+@each $color in black, blue, dark-blue, light-blue, pink, white {
+    .spinner-#{$color} {
+        composes: spinner;
+
+        border-color: map-get($rubelt-colors-map, $color);
+        color: map-get($rubelt-colors-map, $color);
+    }
+}
+
+.loop-color {
+    animation: color-loop 20s infinite linear;
 }

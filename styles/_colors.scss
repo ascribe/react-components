@@ -1,13 +1,33 @@
+$rubelt-colors--black: #1E1E1E;
 $rubelt-colors--blue: #65CFE9;
 $rubelt-colors--dark-blue: #003C69;
 $rubelt-colors--gray: #7F7F7F; /* Roughly equivalent to rgba(0, 0, 0, 0.5) */
 $rubelt-colors--grey: #7F7F7F;
+$rubelt-colors--light-blue: #D3DEE4;
 $rubelt-colors--off-white: #CCC;
 $rubelt-colors--pink: #D10074;
 $rubelt-colors--red: rgb(169, 68, 66);
+$rubelt-colors--white: #F8F8F8;
 
 $rubelt-colors--primary-bg: white;
 $rubelt-colors--primary-fg: $rubelt-colors--dark-blue;
 
 $rubelt-colors--text-primary: $rubelt-colors--dark-blue;
 $rubelt-colors--text-danger: $rubelt-colors--red;
+
+// Map for easy look-up
+$rubelt-colors-map: (
+    black: $rubelt-colors--black,
+    blue: $rubelt-colors--blue,
+    dark-blue: $rubelt-colors--dark-blue,
+    gray: $rubelt-colors--gray,
+    light-blue: $rubelt-colors--light-blue,
+    off-white: $rubelt-colors--off-white,
+    pink: $rubelt-colors--pink,
+    red: $rubelt-colors--red,
+    white: $rubelt-colors--white,
+    primary-bg: $rubelt-colors--primary-bg,
+    primary-fg: $rubelt-colors--primary-fg,
+    text-primary: $rubelt-colors--text-primary,
+    text-danger: $rubelt-colors--text-danger
+);
