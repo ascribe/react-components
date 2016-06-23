@@ -1,4 +1,4 @@
-export Form from './form';
+export { default as Form, createFormForPropertyTypes } from './form';
 
 // Properties
 export Property from './properties/property';
