@@ -5,7 +5,7 @@
  * trying to find and apply composition onto multiply nested or global classes is impossible
  * at compile time).
  */
-@mixin ascribe-property--input-base {
+@mixin rubelt-property--input-base {
     background-color: transparent;
     border: 0;
     box-shadow: none;
@@ -29,7 +29,7 @@
  * @param from      File to compose statuses from (use null if from same file)
  * @param $statuses Statuses of property
  */
-@mixin ascribe-property--status-exploder($base, $from, $statuses...) {
+@mixin rubelt-property--status-exploder($base, $from, $statuses...) {
     @each $status in $statuses {
         .#{$base}-#{$status} {
             composes: $base;

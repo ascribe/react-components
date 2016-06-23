@@ -2,7 +2,7 @@
 
 // Adapted from http://www.htmllion.com/css3-checkbox.html
 .base {
-    color: $ascribe-colors--gray;
+    color: $rubelt-colors--gray;
     cursor: pointer;
     font-weight: 300;
     margin: 0;
@@ -12,7 +12,7 @@
         background-color: white;
         border: 1px solid rgba(0, 0, 0, 0.5); /* Use alpha to make the border look thinner */
         border-radius: 1px;
-        color: $ascribe-colors--primary-fg;
+        color: $rubelt-colors--primary-fg;
         content: "";
         display: inline-block;
         font-size: 20px;
@@ -39,7 +39,7 @@
 }
 
 .disabled {
-    color: lighten($ascribe-colors--gray, 20%);
+    color: lighten($rubelt-colors--gray, 20%);
     cursor: not-allowed;
 }
 

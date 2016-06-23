@@ -1,23 +1,13 @@
-$ascribe-colors--off-black: #333333;
-$ascribe-colors--black: #1E1E1E;
-$ascribe-colors--gray: #7F7F7F; /* Roughly equivalent to rgba(0, 0, 0, 0.5) */
-$ascribe-colors--grey: #7F7F7F;
-$ascribe-colors--strong-gray: #616161;
-$ascribe-colors--strong-grey: #616161;
-$ascribe-colors--off-white: #CCC;
-$ascribe-colors--white: #F8F8F8;
-$ascribe-colors--blue: #65CFE9;
-$ascribe-colors--light-blue: #D3DEE4;
-$ascribe-colors--dark-blue: #003C69;
-$ascribe-colors--pink: #D10074;
-$ascribe-colors--red: rgb(169, 68, 66);
+$rubelt-colors--blue: #65CFE9;
+$rubelt-colors--dark-blue: #003C69;
+$rubelt-colors--gray: #7F7F7F; /* Roughly equivalent to rgba(0, 0, 0, 0.5) */
+$rubelt-colors--grey: #7F7F7F;
+$rubelt-colors--off-white: #CCC;
+$rubelt-colors--pink: #D10074;
+$rubelt-colors--red: rgb(169, 68, 66);
 
-$ascribe-colors--primary-bg: white;
-$ascribe-colors--primary-fg: $ascribe-colors--dark-blue;
+$rubelt-colors--primary-bg: white;
+$rubelt-colors--primary-fg: $rubelt-colors--dark-blue;
 
-$ascribe-colors--error: $ascribe-colors--red;
-
-$ascribe-colors--text-base: $ascribe-colors--off-black;
-$ascribe-colors--text-primary: $ascribe-colors--dark-blue;
-$ascribe-colors--text-secondary: $ascribe-colors--strong-gray;
-$ascribe-colors--text-danger: $ascribe-colors--red;
+$rubelt-colors--text-primary: $rubelt-colors--dark-blue;
+$rubelt-colors--text-danger: $rubelt-colors--red;

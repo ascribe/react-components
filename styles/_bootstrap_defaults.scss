@@ -11,28 +11,25 @@
  * components shouldn't import this file as well.
  */
 
-@import "./colors.scss";
+@import "./colors";
 
-$brand-warning:                   $ascribe-colors--off-white;
-$brand-danger:                    $ascribe-colors--error;
+$brand-warning:                   $rubelt-colors--off-white;
+$brand-danger:                    $rubelt-colors--red;
 
 $border-radius-base:              0;
 $border-radius-large:             0;
 $border-radius-small:             0;
 
 /* Other buttons have been moved over to their component's styles */
-$btn-danger-color:               $ascribe-colors--error;
+$btn-danger-color:                $rubelt-colors--red;
 
-$input-group-addon-bg:            $ascribe-colors--dark-blue;
+$input-group-addon-bg:            $rubelt-colors--dark-blue;
 $input-group-addon-border-color:  transparent;
 
-$zindex-navbar-fixed:             1000;
-$navbar-default-brand-color:      black;
-
 $pager-border-radius:             0;
-$pager-hover-bg:                  darken($ascribe-colors--dark-blue, 10%);
-$pager-disabled-color:            $ascribe-colors--off-white;
-$pager-disabled-border:           1px solid $ascribe-colors--off-white;
+$pager-hover-bg:                  darken($rubelt-colors--dark-blue, 10%);
+$pager-disabled-color:            $rubelt-colors--off-white;
+$pager-disabled-border:           1px solid $rubelt-colors--off-white;
 $pager-disabled-bg:               black;
 
 $modal-md:                        500px;

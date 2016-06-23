@@ -2,7 +2,7 @@
 @import '../../../styles/mixins/properties';
 
 .base {
-    @include ascribe-property--input-base;
+    @include rubelt-property--input-base;
 
     padding: 0;
 }
@@ -15,7 +15,7 @@
 }
 
 textarea.textarea::placeholder {
-    color: rgba($ascribe-colors--dark-blue, 0.5);
+    color: rgba($rubelt-colors--dark-blue, 0.5);
     font-style: normal;
 }
 

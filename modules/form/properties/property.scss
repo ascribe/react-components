@@ -4,12 +4,12 @@
 .property {
     background-color: white;
     border-left: 3px solid transparent;
-    color: $ascribe-colors--text-primary;
+    color: $rubelt-colors--text-primary;
     cursor: pointer;
     text-align: left;
 
     &:hover {
-        border-left-color: rgba($ascribe-colors--blue, 0.5);
+        border-left-color: rgba($rubelt-colors--blue, 0.5);
     }
 
     /* Sibling Properties have a small divider between them */
@@ -18,7 +18,7 @@
     }
 
     :global(.form-control) {
-        color: $ascribe-colors--text-primary;
+        color: $rubelt-colors--text-primary;
 
         &:focus {
             box-shadow: none;
@@ -27,21 +27,21 @@
 
     input,
     select {
-        @include ascribe-property--input-base;
+        @include rubelt-property--input-base;
     }
 
     input::placeholder {
-        color: rgba($ascribe-colors--text-primary, 0.5);
+        color: rgba($rubelt-colors--text-primary, 0.5);
         font-style: normal;
     }
 }
 
 .error {
-    background-color: rgba($ascribe-colors--red, 0.03);
-    border-left-color: $ascribe-colors--red;
+    background-color: rgba($rubelt-colors--red, 0.03);
+    border-left-color: $rubelt-colors--red;
 
     &:hover {
-        border-left-color: rgba($ascribe-colors--red, 0.5);
+        border-left-color: rgba($rubelt-colors--red, 0.5);
     }
 }
 
@@ -50,11 +50,11 @@
 }
 
 .focused {
-    background-color: rgba($ascribe-colors--primary-fg, 0.05);
-    border-left-color: $ascribe-colors--primary-fg;
+    background-color: rgba($rubelt-colors--primary-fg, 0.05);
+    border-left-color: $rubelt-colors--primary-fg;
 
     &:hover {
-        border-left-color: $ascribe-colors--primary-fg;
+        border-left-color: $rubelt-colors--primary-fg;
     }
 }
 
@@ -63,11 +63,11 @@
 }
 
 .highlighted {
-    border-left-color: $ascribe-colors--pink;
+    border-left-color: $rubelt-colors--pink;
 }
 
 // Statuses
-@include ascribe-property--status-exploder(property, null, error, fixed, focused, hidden, highlighted);
+@include rubelt-property--status-exploder(property, null, error, fixed, focused, hidden, highlighted);
 
 // Helper components
 .body {
@@ -85,7 +85,7 @@
 .label-error {
     composes: label;
 
-    color: $ascribe-colors--text-danger;
+    color: $rubelt-colors--text-danger;
     float: right;
 }
 
