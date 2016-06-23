@@ -15,7 +15,8 @@ import {
     InputDate,
     InputTextarea,
     InputUploader,
-    Property
+    Property,
+    SimpleProperty
 } from '../modules/form';
 import { Checkbox, Grouping } from '../modules/ui';
 import { UploadButton, UploadDragAndDropArea } from '../modules/uploader';
@@ -216,48 +217,56 @@ const App = () => {
                     </Property>
                 </Form>
             </div>
-            <h3>Collapsible Properties</h3>
+            <h3>Simple Properties</h3>
             <div>
                 <Form
                     onSubmit={(data) => {
                         console.log(data);
                         return Promise.resolve();
                     }}>
-                    <CollapsibleProperty
-                        headerLabel="expanded prop"
-                        label="Expanded label"
-                        name="expanded">
-                        <input placeholder="expanded placeholder" type="text" />
-                    </CollapsibleProperty>
-                    <CollapsibleProperty
-                        expanded={false}
-                        headerLabel="collapsed prop"
-                        label="Collapsed label"
-                        name="collapsed">
-                        <input placeholder="collapsed placeholder" type="text" />
-                    </CollapsibleProperty>
-                    <CollapsibleCheckboxProperty
-                        checked
-                        checkboxLabel="checked prop"
-                        label="Checked prop label"
-                        name="checked">
-                        <input placeholder="checked placeholder" type="text" />
-                    </CollapsibleCheckboxProperty>
-                    <CollapsibleCheckboxProperty
-                        checkboxLabel="unchecked prop"
-                        label="Unchecked prop label"
-                        name="unchecked">
-                        <input placeholder="unchecked placeholder" type="text" />
-                    </CollapsibleCheckboxProperty>
-                    <CollapsibleCheckboxProperty
-                        checked
-                        disabled
-                        checkboxLabel="disabled prop"
-                        defaultValue="disabled"
-                        label="disabled prop label"
-                        name="disabled">
-                        <input placeholder="disabled placeholder" type="text" />
-                    </CollapsibleCheckboxProperty>
+                    <SimpleProperty
+                        label="Simple property"
+                        name="simple">
+                        <input placeholder="simple placeholder" type="text" />
+                    </SimpleProperty>
+                    <SimpleProperty
+                        defaultValue="default"
+                        label="Default simple property value label"
+                        name="default">
+                        <input placeholder="default simple property value placeholder" type="text" />
+                    </SimpleProperty>
+                    <SimpleProperty
+                        label="Required simple property label"
+                        name="required">
+                        <input required placeholder="required simple property placeholder" type="text" />
+                    </SimpleProperty>
+                    <SimpleProperty
+                        footer="footer"
+                        label="Footer simple property label"
+                        name="footer">
+                        <input placeholder="footer simple property placeholder" type="text" />
+                    </SimpleProperty>
+                    <SimpleProperty
+                        defaultChecked
+                        label="Plain checkbox simple property label"
+                        name="checkbox">
+                        <input type="checkbox" />
+                    </SimpleProperty>
+                    <SimpleProperty
+                        defaultChecked
+                        label="Custom checkbox simple property label"
+                        name="customCheckbox">
+                        <InputCheckbox label="checkbox" />
+                    </SimpleProperty>
+                    <SimpleProperty
+                        label="Select simple property label"
+                        name="select">
+                        <select>
+                            <option value="value1">Value 1</option>
+                            <option value="value2">Value 2</option>
+                            <option value="value3">Value 3</option>
+                        </select>
+                    </SimpleProperty>
                 </Form>
             </div>
             <h3>Custom Inputs</h3>
@@ -274,7 +283,6 @@ const App = () => {
                     </Property>
                     <Property
                         defaultChecked
-                        checkboxLabel="default checkbox"
                         label="default checkbox label"
                         name="defaultCheckbox">
                         <InputCheckbox label="defaultCheckbox" />

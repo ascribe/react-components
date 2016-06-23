@@ -2,6 +2,7 @@ export Form from './form';
 
 // Properties
 export Property from './properties/property';
+export SimpleProperty from './properties/simple_property';
 
 // Custom inputs
 export InputCheckbox from './inputs/input_checkbox';
