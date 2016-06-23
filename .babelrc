@@ -29,6 +29,10 @@
         },
         'demo': {
             'plugins': [
+                ['transform-runtime', {
+                    'polyfill': true,
+                    'regenerator': false
+                }],
                 ['react-transform', {
                     'transforms': [{
                         'transform': 'react-transform-hmr',
