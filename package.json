@@ -74,6 +74,7 @@
     "react-dom": "^15.1.0",
     "react-transform-hmr": "^1.0.4",
     "remove-trailing-slash": "^0.1.0",
+    "resolve-url-loader": "^1.4.4",
     "rimraf": "^2.5.2",
     "sass-loader": "^3.2.0",
     "style-loader": "^0.13.1",
