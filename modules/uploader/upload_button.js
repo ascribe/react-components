@@ -5,14 +5,12 @@ import { truncateText } from 'js-utility-belt/es6/text';
 
 import Uploadify from './utils/uploadify';
 
-import Button from '../buttons/button';
-
 import { uploadedFilesFilter, uploadingFilesFilter, validFilesFilter, validProgressFilesFilter } from './utils/file_filters';
 
 import styles from './upload_button.scss';
 
 
-const { arrayOf, bool, func, node, object, string } = React.PropTypes;
+const { arrayOf, bool, func, node, object, oneOfType, string } = React.PropTypes;
 
 const FileLabel = CssModules(({ files, handleRemoveFiles }) => {
     let label = 'No file selected';
@@ -32,7 +30,7 @@ const FileLabel = CssModules(({ files, handleRemoveFiles }) => {
 
 const UploadButton = React.createClass({
     propTypes: {
-        buttonType: func,
+        buttonType: oneOfType([func, string]),
         children: node,
         className: string,
         disabled: bool,
@@ -65,7 +63,7 @@ const UploadButton = React.createClass({
 
     getDefaultProps() {
         return {
-            buttonType: Button,
+            buttonType: 'button',
             getButtonLabel: (uploading, uploaderFiles, progress) => (
                 uploading ? `Upload progress: ${progress}` : 'file'
             ),

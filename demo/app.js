@@ -8,10 +8,7 @@ import ReactDOM from 'react-dom';
 
 import { arrayFrom } from 'js-utility-belt/es6';
 
-import { Button } from '../modules/buttons';
 import {
-    CollapsibleCheckboxProperty,
-    CollapsibleProperty,
     FakeAutoCompleteInputs,
     Form,
     InputCheckbox,
@@ -43,89 +40,42 @@ const App = () => {
                 Well, this could certainly be made better, ideally we'd have an auto-generated
                 styleguide or something... but for now you can enjoy this
             </marquee>
-            <h2>Buttons</h2>
-            <h3>Primary Button</h3>
-            <div>
-                <Button>Primary</Button>
-                <Button className="active focus">Primary Active</Button>
-                <Button disabled>Primary Disabled</Button>
-                <Button size="xs">Primary XS</Button>
-                <Button size="sm">Primary SM</Button>
-                <Button size="lg">Primary LG</Button>
-                <Button href="http://www.google.com" size="lg">Primary LG Anchor</Button>
-                <div>
-                    <Button wide>Primary Wide</Button>
-                </div>
-            </div>
-            <h3>Secondary Button</h3>
-            <div>
-                <Button classType="secondary">Secondary</Button>
-                <Button className="active focus" classType="secondary">Secondary Active</Button>
-                <Button disabled classType="secondary">Secondary Disabled</Button>
-                <Button classType="secondary" size="xs">Secondary XS</Button>
-                <Button classType="secondary" size="sm">Secondary SM</Button>
-                <Button classType="secondary" size="lg">Secondary LG</Button>
-                <Button classType="secondary" href="http://www.google.com" size="lg">Primary LG Anchor</Button>
-                <div>
-                    <Button wide classType="secondary">Secondary Wide</Button>
-                </div>
-            </div>
-            <h3>Tertiary Button</h3>
-            <div>
-                <Button classType="tertiary">Tertiary</Button>
-                <Button className="active focus" classType="tertiary">Tertiary Active</Button>
-                <Button disabled classType="tertiary">Tertiary Disabled</Button>
-                <Button classType="tertiary" size="xs">Tertiary XS</Button>
-                <Button classType="tertiary" size="sm">Tertiary SM</Button>
-                <Button classType="tertiary" size="lg">Tertiary LG</Button>
-                <Button classType="tertiary" href="http://www.google.com" size="lg">Primary LG Anchor</Button>
-                <div>
-                    <Button wide classType="tertiary">Tertiary Wide</Button>
-                </div>
-            </div>
+            <h2>Groupings</h2>
             <h3>Button Grouping</h3>
             <div>
                 <Grouping>
-                    <Button>Button 1</Button>
-                    <Button classType="secondary">Button 2</Button>
-                    <Button classType="tertiary">Button 3</Button>
+                    <button>Button 1</button>
+                    <button>Button 2</button>
+                    <button>Button 3</button>
                 </Grouping>
             </div>
             <h4>Pulled right</h4>
             <div>
                 <div className="clearfix">
                     <Grouping className="pull-right">
-                        <Button>Button 1</Button>
-                        <Button classType="secondary">Button 2</Button>
-                        <Button classType="tertiary">Button 3</Button>
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
                     </Grouping>
                 </div>
             </div>
             <h4>Vertical</h4>
             <div>
                 <Grouping vertical>
-                    <Button>Button 1</Button>
-                    <Button classType="secondary">Button 2</Button>
-                    <Button classType="tertiary">Button 3</Button>
+                    <button>Button 1</button>
+                    <button>Button 2</button>
+                    <button>Button 3</button>
                 </Grouping>
             </div>
             <h4>Vertical pulled right</h4>
             <div>
                 <div className="clearfix">
                     <Grouping vertical className="pull-right">
-                        <Button>Button 1</Button>
-                        <Button classType="secondary">Button 2</Button>
-                        <Button classType="tertiary">Button 3</Button>
+                        <button>Button 1</button>
+                        <button>Button 2</button>
+                        <button>Button 3</button>
                     </Grouping>
                 </div>
-            </div>
-            <h4>Anchor buttons</h4>
-            <div>
-                <Grouping>
-                    <Button href="http://www.google.com">Button 1</Button>
-                    <Button classType="secondary" href="http://www.google.com">Button 2</Button>
-                    <Button classType="tertiary" href="http://www.google.com">Button 3</Button>
-                </Grouping>
             </div>
             <h2>Forms</h2>
             <h3>Basic Form</h3>
@@ -166,12 +116,12 @@ const App = () => {
                     </Property>
                     <Property
                         defaultChecked
-                        label="Custom checkbox property label"
+                        label="Custom checkbox label"
                         name="customCheckbox">
                         <InputCheckbox label="checkbox" />
                     </Property>
                     <Property
-                        label="Select prop label"
+                        label="Select property label"
                         name="select">
                         <select>
                             <option value="value1">Value 1</option>
@@ -209,6 +159,7 @@ const App = () => {
                     </Property>
                 </Form>
             </div>
+            <h3>Autocomplete form</h3>
             <div>
                 <Form
                     autoComplete="on"
@@ -231,9 +182,9 @@ const App = () => {
             <h3>Custom buttons form</h3>
             <div>
                 <Form
-                    buttonDefault={<Button>Custom default button</Button>}
-                    buttonEdited={<Button>Custom edited button</Button>}
-                    buttonSubmitting={<Button>Custom submitting button</Button>}
+                    buttonDefault={<button>Custom default button</button>}
+                    buttonEdited={<button>Custom edited button</button>}
+                    buttonSubmitting={<button>Custom submitting button</button>}
                     onSubmit={(data) => {
                         console.log(data);
                         console.log('Wait 10s for submission to end...');
@@ -316,51 +267,45 @@ const App = () => {
                         console.log(data);
                         return Promise.resolve();
                     }}>
-                    <CollapsibleCheckboxProperty
-                        checkboxLabel="checkbox"
+                    <Property
                         label="checkbox label"
                         name="checkbox">
                         <InputCheckbox label="checkbox" />
-                    </CollapsibleCheckboxProperty>
-                    <CollapsibleCheckboxProperty
+                    </Property>
+                    <Property
                         defaultChecked
                         checkboxLabel="default checkbox"
                         label="default checkbox label"
                         name="defaultCheckbox">
                         <InputCheckbox label="defaultCheckbox" />
-                    </CollapsibleCheckboxProperty>
-                    <CollapsibleCheckboxProperty
-                        checkboxLabel="required checkbox"
+                    </Property>
+                    <Property
                         label="required checkbox label"
                         name="requiredCheckbox">
                         <InputCheckbox required label="required checkbox" />
-                    </CollapsibleCheckboxProperty>
-                    <CollapsibleCheckboxProperty
-                        checkboxLabel="date"
+                    </Property>
+                    <Property
                         label="date label"
                         name="date">
                         <InputDate />
-                    </CollapsibleCheckboxProperty>
-                    <CollapsibleCheckboxProperty
-                        checkboxLabel="default date"
+                    </Property>
+                    <Property
                         defaultValue="2010-01-01"
                         label="default date label"
                         name="default Date">
                         <InputDate />
-                    </CollapsibleCheckboxProperty>
-                    <CollapsibleCheckboxProperty
-                        checkboxLabel="textarea"
+                    </Property>
+                    <Property
                         label="textarea label"
                         name="textarea">
                         <InputTextarea placeholder="textarea" rows={2} />
-                    </CollapsibleCheckboxProperty>
-                    <CollapsibleCheckboxProperty
-                        checkboxLabel="default textarea"
+                    </Property>
+                    <Property
                         defaultValue="default"
                         label="default textarea label"
                         name="defaulttextarea">
-                        <InputTextarea rows={2} />
-                    </CollapsibleCheckboxProperty>
+                        <InputTextarea rows={1} />
+                    </Property>
                     <Property
                         disabled
                         checkboxLabel="disabled textarea"

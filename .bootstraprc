@@ -15,7 +15,6 @@ styles:
     utilities: true
 
     # Selected stylesheets
-    buttons: true
     forms: true
 
 scripts: false

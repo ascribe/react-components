@@ -4,13 +4,9 @@ import React from 'react';
 
 import { safeInvoke } from 'js-utility-belt/es6';
 
-import CollapsibleCheckboxProperty from './properties/collapsible_checkbox_property';
-import CollapsibleProperty from './properties/collapsible_property';
 import Property from './properties/property';
 
 import FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
-
-import Button from '../buttons/button';
 
 import Grouping from '../ui/grouping';
 
@@ -18,18 +14,17 @@ import Grouping from '../ui/grouping';
 const { arrayOf, bool, func, node, object, oneOf, shape, string } = React.PropTypes;
 
 // Property types that Form will always recognize and track
-const TRACKED_PROPERTY_TYPES = [CollapsibleCheckboxProperty, CollapsibleProperty, Property];
 
 // eslint-disable-next-line react/prop-types
 const EditedButtonList = ({ handleCancel }) => (
     <div className="clearfix">
         <Grouping className="pull-right">
-            <Button type="submit">
+            <button type="submit">
                 SAVE
-            </Button>
-            <Button classType="tertiary" onClick={handleCancel} type="button">
+            </button>
+            <button onClick={handleCancel} type="button">
                 CANCEL
-            </Button>
+            </button>
         </Grouping>
     </div>
 );

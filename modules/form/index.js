@@ -1,8 +1,6 @@
 export Form from './form';
 
 // Properties
-export CollapsibleProperty from './properties/collapsible_property';
-export CollapsibleCheckboxProperty from './properties/collapsible_checkbox_property';
 export Property from './properties/property';
 
 // Custom inputs
