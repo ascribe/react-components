@@ -1,13 +1,11 @@
 import React from 'react';
 
+import { fakeAutoCompleteFieldShape } from '../../prop_types';
 
-const { arrayOf, shape, string } = React.PropTypes;
+const { arrayOf } = React.PropTypes;
 
 const propTypes = {
-    fields: arrayOf(shape({
-        name: string,
-        type: string
-    }))
+    fields: arrayOf(fakeAutoCompleteFieldShape)
 };
 
 /**

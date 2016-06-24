@@ -9,8 +9,10 @@ import ValidationErrors from '../constants/validation_errors';
 import { validFilesFilter } from '../utils/file_filters';
 import uploaderSpecExtender from '../utils/uploader_spec_extender';
 
+import { uploaderValidationShape } from '../../prop_types';
 
-const { arrayOf, bool, func, number, shape, string } = React.PropTypes;
+
+const { arrayOf, bool, func } = React.PropTypes;
 
 const BASE_VALIDATORS = [
     // Is within max size
@@ -114,12 +116,7 @@ const CustomValidationUploader = (Uploader) => (
             // convenience they're used in this component
             /* eslint-disable react/sort-prop-types */
             multiple: bool,
-            validation: shape({
-                allowedExtensions: arrayOf(string),
-                itemLimit: number,
-                minSizeLimit: number,
-                sizeLimit: number
-            })
+            validation: uploaderValidationShape
             /* eslint-enable react/sort-prop-types */
         },
 
