@@ -250,14 +250,14 @@ const ReactS3FineUploader = React.createClass({
          * you want with the files a user has selected for uploading just before they're added to
          * the upload queue (for example, change all the file names, do client side encoding, etc).
          *
-         * It is expected that `onSubmitFiles` will return a promise that resolves with an array
-         * of files to be added to the upload queue. Rejecting the promise will ignore the files
-         * and add nothing to the queue. Resolving with an empty array or something that is not
-         * an array is the same as rejecting.
+         * It is expected that `onSubmitFiles` will return an array of files (or a promise that
+         * resolves with an array of files) to be added to the upload queue. Returning or resolving
+         * with an empty array or something that is not an array will ignore any submitted files and
+         * add nothing to the queue. Rejecting the promise will also do this.
          *
-         * @param  {File[]} files Files to be uploaded
-         * @return {Promise}      Promise that resolves with an array of files to be added to the
-         *                        upload queue
+         * @param  {File[]} files   Files to be uploaded
+         * @return {File[]|Promise} Either a promise that resolves with an array of files or an
+         *                          actual array of files to be added to the upload queue
          */
         onSubmitFiles: func,
 
@@ -359,7 +359,7 @@ const ReactS3FineUploader = React.createClass({
     getDefaultProps() {
         return {
             mimeTypeMapping: MimeTypeMapping,
-            onSubmitFiles: (files) => Promise.resolve(files),
+            onSubmitFiles: (files) => files,
 
             // Default FineUploader options that we use in this component and are true by default
             multiple: true
@@ -883,7 +883,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleSubmitFiles(files) {
-        this.props.onSubmitFiles(arrayFrom(files))
+        Promise.resolve(this.props.onSubmitFiles(arrayFrom(files)))
             .then((submitFiles) => {
                 if (Array.isArray(submitFiles) && submitFiles.length) {
                     this.state.uploader.addFiles(submitFiles);

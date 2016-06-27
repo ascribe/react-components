@@ -32,7 +32,7 @@ const CustomHeaderOnChangeUploader = (Uploader) => (
 
         getDefaultProps() {
             return {
-                onSubmitFiles: (files) => Promise.resolve(files)
+                onSubmitFiles: (files) => files
             };
         },
 
