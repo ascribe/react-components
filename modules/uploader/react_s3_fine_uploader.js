@@ -218,8 +218,9 @@ const ReactS3FineUploader = React.createClass({
          * (http://docs.fineuploader.com/branch/master/features/session.html) feature is used.
          *
          * It is expected that `onSessionRequestComplete` will return an array of files that
-         * will be tracked by this uploader. All files obtained through `onSessionRequestComplete`
-         * will automatically have their status set to FileStatus.ONLINE and progress set to 100.
+         * will be tracked by this uploader, otherwise, no previous session state will be saved.
+         * All files obtained through `onSessionRequestComplete` will automatically have their
+         * status set to FileStatus.ONLINE and progress set to 100.
          *
          * @param  {object[]} response Response from session request
          * @param  {boolean}  success  If the session request was successful or not
@@ -681,8 +682,7 @@ const ReactS3FineUploader = React.createClass({
         });
 
         if (!Array.isArray(sessionFiles)) {
-            throw new Error("ReactS3FineUploader's onSessionRequestComplete() did not return an " +
-                            'array of files.');
+            return;
         }
 
         sessionFiles.forEach((file) => {
