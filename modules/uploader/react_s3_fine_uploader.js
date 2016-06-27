@@ -359,6 +359,12 @@ const ReactS3FineUploader = React.createClass({
     getDefaultProps() {
         return {
             mimeTypeMapping: MimeTypeMapping,
+            onFileError: (errDesc) => {
+                if (process.env.NODE_ENV !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.warn(errDesc);
+                }
+            },
             onSubmitFiles: (files) => files,
 
             // Default FineUploader options that we use in this component and are true by default
