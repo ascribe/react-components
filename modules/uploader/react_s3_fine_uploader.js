@@ -139,15 +139,22 @@ const ReactS3FineUploader = React.createClass({
         onError: func,
 
         /**
-         * Called when an error occurs with the internal files tracked by this component
-         * (**NOT** FineUploader's), such as trying to set the status of a nonexisting
-         * (or for example, filtered out) file.
+         * Called when an error occurs with the internally tracked files by this component
+         * (**NOT** FineUploader's), such as trying to set the status of a nonexisting (or for
+         * example, filtered out) file. Usually there's not much you can do besides logging it to
+         * your bug tracker and investigating later.
          *
-         * Errors:
-         *   'Delete completed for unfound file with id: ${id}'
-         *   'Failed to set status of unfound file with id: {id} to: {status}'
+         * Possible error descriptions (may be extended by uploader extensions):
+         *   'Delete completed for an untracked file'
+         *   'Cancel attempted for an untracked file'
+         *   'Delete attempted for an untracked file' (with file)
+         *   'Pause attempted for an untracked file' (with file)
+         *   'Resume attempted for an untracked file' (with file)
+         *   'Manually retry attempted for untracked file' (with file)
+         *   'Failed to change upload status of untracked file to: ${status}'
          *
-         * @param {string} desc  Description of error
+         * @param {string} desc   Description of error
+         * @param {File}   [file] File that caused the error, if available
          */
         onFileError: func,
 
@@ -362,7 +369,7 @@ const ReactS3FineUploader = React.createClass({
             onFileError: (errDesc) => {
                 if (process.env.NODE_ENV !== 'production') {
                     // eslint-disable-next-line no-console
-                    console.warn(errDesc);
+                    console.warn(`ReactS3FineUploader - ${errDesc}`);
                 }
             },
             onSubmitFiles: (files) => files,
@@ -455,8 +462,7 @@ const ReactS3FineUploader = React.createClass({
                     resolve(updatedFile);
                 });
             } else {
-                safeInvoke(onFileError, 'Failed to change status of unfound file with ' +
-                                        `id: ${fileId} to: ${status}`);
+                onFileError(`Failed to change upload status of untracked file to: ${status}`);
                 reject();
             }
         });
@@ -623,7 +629,7 @@ const ReactS3FineUploader = React.createClass({
             if (file) {
                 safeInvoke(onDeleteComplete, file, xhr, isError);
             } else {
-                safeInvoke(onFileError, `Delete completed for unfound file with id: ${fileId}`);
+                onFileError('Delete completed for an untracked file');
             }
         };
 
@@ -780,9 +786,10 @@ const ReactS3FineUploader = React.createClass({
 
     /** HANDLERS FOR ACTIONS **/
     handleCancelFile(file) {
-        if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
-            // eslint-disable-next-line no-console
-            console.warn('Ignoring attempt to cancel file not tracked by this uploader', file);
+        if (!this.isFileTrackedByUploader(file)) {
+            const { onFileError } = this.props;
+            onFileError('Cancel attempted for an untracked file', file);
+
             return;
         }
 
@@ -790,12 +797,12 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleDeleteFile(file) {
-        const { handleDeleteOnlineFile } = this.props;
+        const { handleDeleteOnlineFile, onFileError } = this.props;
         const { uploader } = this.state;
 
-        if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
-            // eslint-disable-next-line no-console
-            console.warn('Ignoring attempt to delete file not tracked by this uploader', file);
+        if (!this.isFileTrackedByUploader(file)) {
+            onFileError('Delete attempted for an untracked file', file);
+
             return;
         }
 
@@ -841,9 +848,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handlePauseFile(file) {
-        if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
-            // eslint-disable-next-line no-console
-            console.warn('Ignoring attempt to pause file not tracked by this uploader', file);
+        if (!this.isFileTrackedByUploader(file)) {
+            const { onFileError } = this.props;
+            onFileError('Pause attempted for an untracked file', file);
+
             return;
         }
 
@@ -856,9 +864,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleResumeFile(file) {
-        if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
-            // eslint-disable-next-line no-console
-            console.warn('Ignoring attempt to resume file not tracked by this uploader', file);
+        if (!this.isFileTrackedByUploader(file)) {
+            const { onFileError } = this.props;
+            onFileError('Resume attempted for an untracked file', file);
+
             return;
         }
 
@@ -876,12 +885,9 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleRetryFile(file) {
-        if (process.env.NODE_ENV !== 'production' && !this.isFileTrackedByUploader(file)) {
-            // eslint-disable-next-line no-console
-            console.warn(
-                'Ignoring attempt to manually retry file not tracked by this uploader',
-                file
-            );
+        if (!this.isFileTrackedByUploader(file)) {
+            const { onFileError } = this.props;
+            onFileError('Manually retry attempted for untracked file', file);
 
             return;
         }
