@@ -105,8 +105,8 @@ const CustomValidationUploader = (Uploader) => (
              *   @param  {object}   error  Each error object contains:
              *     @param  {File}     error.file            File that failed validation
              *     @param  {object}   error.validationError Error object describing the validation error:
-             *       @param  {object}           validationError.error Description of the error
-             *       @param  {ValidationErrors} validationError.type  Type of the error
+             *       @param  {object}           validationError.description Description of the error
+             *       @param  {ValidationErrors} validationError.type        Type of the error
              * @param  {object[]} passed All files passing validation
              * @param  {object[]} files  All selected files
              * @return {File[]|Promise}  Either a promise that resolves with an array of files or
@@ -156,7 +156,7 @@ const CustomValidationUploader = (Uploader) => (
                 // select more than one file using the file selector, he could always drag multiple
                 // files into the dropzone.
                 const validationError = {
-                    error: {
+                    description: {
                         limit: itemLimit,
                         numSelected: files.length,
                         remaining: itemLimit - numCurrentFiles
