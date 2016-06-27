@@ -31,10 +31,10 @@ const ReactS3FineUploader = React.createClass({
          * Uploading functionality of ReactS3FineUploader is disconnected from its UI layer.
          * Children are cloned with these additional props to help them render uploader
          * specific states:
-         *   @param {boolean}  disabled         Whether the uploader is disabled (possibly due to
-         *                                      hitting a file limit)
-         *   @param {object[]} uploaderFiles    Files currently tracked by the uploader
-         *   @param {boolean}  uploadInProgress Whether there is an upload in progress
+         *   @param {boolean} disabled         Whether the uploader is disabled (possibly due to
+         *                                     hitting a file limit)
+         *   @param {File[]}  uploaderFiles    Files currently tracked by the uploader
+         *   @param {boolean} uploadInProgress Whether there is an upload in progress
          */
         children: node.isRequired,
 
@@ -50,7 +50,7 @@ const ReactS3FineUploader = React.createClass({
          * deletion that requires this function occurs and this is not specified, an error will
          * be thrown.
          *
-         * @param  {object}  file File to delete
+         * @param  {File}    file File to delete
          * @return {Promise}      Promise that resolves when the deletion suceeds or rejects if
          *                        an error occurred
          */
@@ -84,8 +84,8 @@ const ReactS3FineUploader = React.createClass({
          * Similar to FineUploader's onAllComplete
          * (http://docs.fineuploader.com/branch/master/api/events.html#allComplete)
          *
-         * @param {object[]} succeeded Array of succeeded file representations **(not ids)**
-         * @param {object[]} failed    Array of failed file representations **(not ids)**
+         * @param {File[]} succeeded Array of succeeded file representations **(not ids)**
+         * @param {File[]} failed    Array of failed file representations **(not ids)**
          */
         onAllComplete: func,
 
@@ -93,7 +93,7 @@ const ReactS3FineUploader = React.createClass({
          * Similar to FineUploader's onAutoRetry
          * (http://docs.fineuploader.com/branch/master/api/events.html#autoRetry).
          *
-         * @param {object} file          File that was retried
+         * @param {File}   file          File that was retried
          * @param {number} attemptNumber Number of times the file has been retried manually
          */
         onAutoRetry: func,
@@ -104,7 +104,7 @@ const ReactS3FineUploader = React.createClass({
          * allow you to return false or a promise to prevent the cancellation. The given file will
          * already have been queued to cancel.
          *
-         * @param {object} file File that was canceled
+         * @param {File} file File that was canceled
          */
         onCanceled: func,
 
@@ -112,7 +112,7 @@ const ReactS3FineUploader = React.createClass({
          * Similar to FineUploader's onDelete
          * (http://docs.fineuploader.com/branch/master/api/events.html#delete)
          *
-         * @param {object} file File that will be deleted
+         * @param {File} file File that will be deleted
          */
         onDelete: func,
 
@@ -121,8 +121,8 @@ const ReactS3FineUploader = React.createClass({
          * (http://docs.fineuploader.com/branch/master/api/events.html#deleteComplete). This is
          * also called upon resolution of `handleDeleteOnlineFile()`.
          *
-         * @param {object}  file    File that was deleted
-         * @param {xhr|xdr} xhr     The xhr used to make the request, `null` if called after
+         * @param {File}    file    File that was deleted
+         * @param {Xhr|Xdr} xhr     The xhr used to make the request, `null` if called after
          *                          `handleDeleteOnlineFile()`
          * @param {boolean} isError If the delete completed with an error or not
          */
@@ -132,9 +132,9 @@ const ReactS3FineUploader = React.createClass({
          * Similar to FineUploader's onError
          * (http://docs.fineuploader.com/branch/master/api/events.html#error)
          *
-         * @param {object}  file        File that errored
+         * @param {File}    file        File that errored
          * @param {string}  errorReason Reason for the error
-         * @param {xhr|xdr} xhr         The xhr used to make the request
+         * @param {Xhr|Xdr} xhr         The xhr used to make the request
          */
         onError: func,
 
@@ -155,7 +155,7 @@ const ReactS3FineUploader = React.createClass({
          * Called whenever any of the internal files tracked by this component changes (ie. a file
          * is added, or a file's status was changed)
          *
-         * @param {object[]} files Files tracked by this component
+         * @param {File[]} files Files tracked by this component
          */
         onFilesChanged: func,
 
@@ -164,7 +164,7 @@ const ReactS3FineUploader = React.createClass({
          * (http://docs.fineuploader.com/branch/master/api/events.html#manualRetry), except like
          * onAutoRetry, this will also give the number of previous retry attempts for the file.
          *
-         * @param {object} file          File that was retried
+         * @param {File}   file          File that was retried
          * @param {number} attemptNumber Number of times the file has been retried manually
          */
         onManualRetry: func,
@@ -172,7 +172,7 @@ const ReactS3FineUploader = React.createClass({
         /**
          * Called when a file has been paused.
          *
-         * @param {object} file File that was paused
+         * @param {File} file File that was paused
          */
         onPause: func,
 
@@ -182,7 +182,7 @@ const ReactS3FineUploader = React.createClass({
          * Files will automatically have their `progress` property updated to be a percentage
          * of the current upload progress (ie. uploadedBytes / totalBytes * 100).
          *
-         * @param {object} file          File in progress
+         * @param {File}   file          File in progress
          * @param {number} uploadedBytes Number of bytes that have been uploaded so far
          * @param {number} totalBytes    Total number of bytes that comprise this file
          */
@@ -199,7 +199,7 @@ const ReactS3FineUploader = React.createClass({
          * FineUploader's onResume seems to only be called for the resuming of persistently paused
          * files from previous sessions.
          *
-         * @param {object} file File that was resumed
+         * @param {File} file File that was resumed
          */
         onResume: func,
 
@@ -216,8 +216,8 @@ const ReactS3FineUploader = React.createClass({
          *
          * @param  {object[]} response Response from session request
          * @param  {boolean}  success  If the session request was successful or not
-         * @param  {xhr|xdr}  xhr      The xhr used to make the request
-         * @return {object[]}          Array of files to be tracked by this component
+         * @param  {Xhr|Xdr}  xhr      The xhr used to make the request
+         * @return {File[]}            Array of files to be tracked by this component
          */
         onSessionRequestComplete: func,
 
@@ -234,7 +234,7 @@ const ReactS3FineUploader = React.createClass({
          *   * FileStatus.UPLOAD_RETRYING
          *   * FileStatus.UPLOAD_SUCCESSFUL
          *
-         * @param {object}     file      File whose status changed
+         * @param {File}       file      File whose status changed
          * @param {FileStatus} oldStatus Previous status of the file
          * @param {FileStatus} newStatus New status of the file
          */
@@ -267,7 +267,7 @@ const ReactS3FineUploader = React.createClass({
          * You can use this to check that the successfully submitted files are the same as those
          * that you resolved in `onSubmitFiles`.
          *
-         * @param {object} file File that was submitted
+         * @param {File} file File that was submitted
          */
         onSubmitted: func,
 
@@ -277,9 +277,9 @@ const ReactS3FineUploader = React.createClass({
          * only gets called when the file was uploaded successfully (rather than also getting
          * called when an error occurs).
          *
-         * @param {object}  file File that was uploaded successfully
+         * @param {File}    file File that was uploaded successfully
          * @param {object}  res  The raw response from the server
-         * @param {xhr|xdr} xhr  The xhr used to make the request
+         * @param {Xhr|Xdr} xhr  The xhr used to make the request
          */
         onSuccess: func,
 
@@ -296,7 +296,7 @@ const ReactS3FineUploader = React.createClass({
          * Similar to FineUploader's onUpload
          * (http://docs.fineuploader.com/branch/master/api/events.html#upload).
          *
-         * @param {object} file File that will start uploading
+         * @param {File} file File that will start uploading
          */
         onUpload: func,
 
@@ -316,35 +316,35 @@ const ReactS3FineUploader = React.createClass({
         /**
          * Attempts to cancel the given file tracked by this uploader
          *
-         * @param {object} File File to cancel
+         * @param {File} File File to cancel
          */
         handleCancelFile: func,
 
         /**
          * Attempts to delete the given file tracked by this uploader
          *
-         * @param {object} File File to delete
+         * @param {File} File File to delete
          */
         handleDeleteFile: func,
 
         /**
          * Attempts to pause the given file tracked by this uploader
          *
-         * @param {object} File File to pause
+         * @param {File} File File to pause
          */
         handlePauseFile: func,
 
         /**
          * Attempts to resume the given file tracked by this uploader
          *
-         * @param {object} File File to resume
+         * @param {File} File File to resume
          */
         handleResumeFile: func,
 
         /**
          * Attempts to retry the given file tracked by this uploader
          *
-         * @param {object} File File to retry
+         * @param {File} File File to retry
          */
         handleRetryFile: func,
 
@@ -598,8 +598,7 @@ const ReactS3FineUploader = React.createClass({
         // onComplete is still called even if the upload failed.
         // onError will catch any errors, so we can ignore them here
         if (!res.error && res.success) {
-            // Set the state of the completed file to 'upload successful' in order to
-            // remove it from the GUI
+            // Set the state of the completed file to 'upload successful'
             this.setStatusOfFile(fileId, FileStatus.UPLOAD_SUCCESSFUL, {
                 key: { $set: this.state.uploader.getKey(fileId) }
             })

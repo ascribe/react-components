@@ -22,8 +22,8 @@ const InputUploader = React.createClass({
          * the result is different from its previous result, `onFilesValidationChange` will be
          * called with the new and previous results.
          *
-         * @param  {object[]} files Files currently in the uploader
-         * @return {any}            Result that will be compared to the previous result
+         * @param  {File[]} files Files currently in the uploader
+         * @return {any}          Result that will be compared to the previous result
          */
         filesValidation: func,
 
@@ -32,9 +32,9 @@ const InputUploader = React.createClass({
          * handler with a mocked event. Forms will use the returned value from this function during
          * form submission.
          *
-         * @param  {object} file File object
-         * @return {any}         File representation. If `null` or `undefined` is returned, the
-         *                       file won't be propagated to `onChange`.
+         * @param  {File} file File object
+         * @return {any}       File representation. If `null` or `undefined` is returned, the file
+         *                     won't be propagated to `onChange`.
          */
         getFileValue: func,
 
@@ -111,7 +111,7 @@ const InputUploader = React.createClass({
     },
 
     renderChildren() {
-        // Ensure that only one child is used per property; if there is more than one child,
+        // Ensure that only one uploader is used per InputUploader; if there is more than one child,
         // React.Children.only() will throw
         const child = React.Children.only(this.props.children);
 

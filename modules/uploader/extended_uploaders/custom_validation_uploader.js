@@ -71,17 +71,17 @@ const CustomValidationUploader = (Uploader) => (
              *
              * Expects an array of tests functions with the signature:
              * @param {object[]} tests
-             *   @param  {object}  file       File to test
-             *   @param  {object}  validation Validation spec given to the Uploader
-             *   @return {object}             Result obj:
-             *     @return {boolean}  result    Return true if the validation passes. If returns
-             *                                  false, the file that failed will be added to
-             *                                  `onValidationError`'s errors array with the
-             *                                  associated error that's passed back for this test.
+             *   @param  {File}   file       File to test
+             *   @param  {object} validation Validation spec given to the Uploader
+             *   @return {object}            Result obj:
+             *     @return {boolean} result    Return true if the validation passes. If returns
+             *                                 false, the file that failed will be added to
+             *                                 `onValidationError`'s errors array with the
+             *                                 associated error that's passed back for this test.
              *
-             *     @return {object}   error   Error object describing the error and its type:
-             *       @return {object}           description Description of the error
-             *       @return {ValidationError}  type        Type of error
+             *     @return {object}  error   Error object describing the error and its type:
+             *       @return {object}          description Description of the error
+             *       @return {ValidationError} type        Type of error
              */
             customValidators: arrayOf(func),
 
@@ -107,8 +107,8 @@ const CustomValidationUploader = (Uploader) => (
              *     @param  {object}   error.validationError Error object describing the validation error:
              *       @param  {object}           validationError.description Description of the error
              *       @param  {ValidationErrors} validationError.type        Type of the error
-             * @param  {object[]} passed All files passing validation
-             * @param  {object[]} files  All selected files
+             * @param  {File[]}   passed All files passing validation
+             * @param  {File[]}   files  All selected files
              * @return {File[]|Promise}  Either a promise that resolves with an array of files or
              *                           actual array of files that will be submitted to the
              *                           uploader. If `onSubmitFiles` is also defined, it will be

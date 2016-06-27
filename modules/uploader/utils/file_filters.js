@@ -2,7 +2,7 @@ import FileStatus from '../constants/file_status';
 
 /**
  * Filter function to filter for files that have had blobs created for them.
- * @param  {object}  file  A file from filesToUpload, that has a status property.
+ * @param  {File}    file  A file from filesToUpload, that has a status property.
  * @return {boolean}       True if file has a blob created
  */
 export function createdBlobFilesFilter(file) {
@@ -12,7 +12,7 @@ export function createdBlobFilesFilter(file) {
 /**
  * Filter function to filter for currently processing files
  * (ie. still uploading, deleting, in queue, or paused)
- * @param  {object}  file  A file from filesToUpload, that has a status property.
+ * @param  {File}    file  A file from filesToUpload, that has a status property.
  * @return {boolean}       True if file is still getting processed
  */
 export function processingFilesFilter(file) {
@@ -28,7 +28,7 @@ export function processingFilesFilter(file) {
 
 /**
  * Filter function to filter for deleted, canceled, and failed files
- * @param  {object} file A file from filesToUpload that has a status property.
+ * @param  {File}    file A file from filesToUpload that has a status property.
  * @return {boolean}
  */
 export function removedFilesFilter(file) {
@@ -40,7 +40,7 @@ export function removedFilesFilter(file) {
 
 /**
  * Filter function to filter for successfully uploaded files
- * @param  {object}  file  A file from filesToUpload, that has a status property.
+ * @param  {File}    file  A file from filesToUpload, that has a status property.
  * @return {boolean}       True if file was uploaded successfully
  */
 export function uploadedFilesFilter(file) {
@@ -51,7 +51,7 @@ export function uploadedFilesFilter(file) {
 
 /**
  * Filter function to filter for currently uploaded files
- * @param  {object}  file  A file from filesToUpload, that has a status property.
+ * @param  {File}    file  A file from filesToUpload, that has a status property.
  * @return {boolean}       True if file is still uploading
  */
 export function uploadingFilesFilter(file) {
@@ -61,7 +61,7 @@ export function uploadingFilesFilter(file) {
 
 /**
  * Filter function to filter out all deleted, canceled, failed, and failed to create blob files
- * @param  {object}  file A file from filesToUpload that has a status property.
+ * @param  {File}    file A file from filesToUpload that has a status property.
  * @return {boolean}      True if file is valid
  */
 export function validFilesFilter(file) {
@@ -71,7 +71,7 @@ export function validFilesFilter(file) {
 
 /**
  * Filter function for which files to integrate into a total progress calculation
- * @param  {object}  file A file from filesToUpload, that has a status property.
+ * @param  {File}    file A file from filesToUpload, that has a status property.
  * @return {boolean}      True if file is valid
  */
 export function validProgressFilesFilter(file) {

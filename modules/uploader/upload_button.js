@@ -41,10 +41,10 @@ const UploadButton = React.createClass({
          * component and do not provide this function, the children will be used as the label in
          * all states.
          *
-         * @param  {boolean}  uploading     Whether there are files currently uploading
-         * @param  {object[]} uploaderFiles All files tracked by uploader
-         * @param  {number}   progress      Total progress on set of valid files tracked by uploader
-         * @return {node}                   Button label
+         * @param  {boolean} uploading     Whether there are files currently uploading
+         * @param  {File[]}  uploaderFiles All files tracked by uploader
+         * @param  {number}  progress      Total progress on set of valid files tracked by uploader
+         * @return {node}                  Button label
          *
          */
         getButtonLabel: func,

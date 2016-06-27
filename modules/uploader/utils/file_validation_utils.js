@@ -3,7 +3,7 @@ import { createdBlobFilesFilter, processingFilesFilter, uploadedFilesFilter } fr
 /**
  * Returns a boolean if there has been at least one file uploaded successfully with
  * a blob being registered.
- * @param  {object[]} files Provided by react fine uploader
+ * @param  {File[]}  files Files tracked by uploader
  * @return {boolean}
  */
 export function atLeastOneCreatedBlobFile(files) {
@@ -11,9 +11,9 @@ export function atLeastOneCreatedBlobFile(files) {
 }
 
 /**
- * Returns a boolean if there has been at least one file uploaded
- * successfully without it being deleted or canceled.
- * @param  {object[]} files Provided by react fine uploader
+ * Returns a boolean if there has been at least one file uploaded successfully without it being
+ * deleted or canceled.
+ * @param  {File[]}  files Files tracked by uploader
  * @return {boolean}
  */
 export function atLeastOneUploadedFile(files) {
@@ -21,9 +21,9 @@ export function atLeastOneUploadedFile(files) {
 }
 
 /**
- * File submission for the form is optional, but if the user decides to submit a file
- * the form is not ready until there are no more files currently uploading.
- * @param  {object[]} files Provided by react fine uploader
+ * In cases where a file being uploaded is optional, we should check to make sure that there are no
+ * more files being currently uploaded.
+ * @param  {File[]}  files Files tracked by uploader
  * @return {boolean}
  */
 export function fileOptional(files) {
