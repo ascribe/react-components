@@ -662,8 +662,10 @@ const ReactS3FineUploader = React.createClass({
         const { result: sessionFiles } = safeInvoke({
             params,
             fn: onSessionRequestComplete,
-            error: new Error("FineUploader's session feature was used without providing an " +
-                             'onSessionRequestComplete() callback to ReactS3FineUploader')
+            onNotInvoked: () => {
+                throw new Error("FineUploader's session feature was used without providing an " +
+                                'onSessionRequestComplete() callback to ReactS3FineUploader');
+            }
         });
 
         if (!Array.isArray(sessionFiles)) {
@@ -815,9 +817,11 @@ const ReactS3FineUploader = React.createClass({
             safeInvoke({
                 fn: handleDeleteOnlineFile,
                 params: [file],
-                error: new Error(`ReactS3FineUploader cannot delete file (${file.name}) ` +
-                                 'originating from a previous session because ' +
-                                 'handleDeleteOnlineFile() was not was specified as a prop.')
+                onNotInvoked: () => {
+                    throw new Error(`ReactS3FineUploader cannot delete file (${file.name}) ` +
+                                    'originating from a previous session because ' +
+                                    'handleDeleteOnlineFile() was not was specified as a prop.');
+                }
             }).result.then(() => this.onDeleteComplete(file.id, null, false))
                      .catch(() => this.onDeleteComplete(file.id, null, true));
         }
