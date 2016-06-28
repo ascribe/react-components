@@ -670,31 +670,96 @@ const ReactS3FineUploader = React.createClass({
         });
     },
 
-    onSessionRequestComplete(...params) {
+    onSessionRequestComplete(response, success, ...params) {
         const { onFilesChanged, onSessionRequestComplete } = this.props;
+        const { uploader, uploaderFiles } = this.state;
 
-        const { result: sessionFiles } = safeInvoke({
-            params,
-            fn: onSessionRequestComplete,
-            onNotInvoked: () => {
-                throw new Error("FineUploader's session feature was used without providing an " +
-                                'onSessionRequestComplete() callback to ReactS3FineUploader');
-            }
-        });
+        const { invoked, result: sessionResult } = safeInvoke(
+            onSessionRequestComplete,
+            response,
+            success,
+            ...params
+        );
+
+        // If the callback is defined, use its value as the session's files, otherwise fallback to
+        // directly using the session's response as the files.
+        let sessionFiles;
+        if (invoked) {
+            sessionFiles = sessionResult;
+        } else if (success) {
+            sessionFiles = response;
+        }
 
         if (!Array.isArray(sessionFiles)) {
             return;
+        } else {
+            const baseFileFilter = {
+                // All successful session items are registered in FineUploader as UPLOAD_SUCCESSFUL
+                status: FileStatus.UPLOAD_SUCCESSFUL
+            };
+
+            // Best effort attempt at finding the id of an file by successively trying specific
+            // filter properties. Returns null if it couldn't find the file.
+            const findIdFromUploader = (file, filterProperties) => (
+                filterProperties.reduce((foundId, filterProperty) => {
+                    if (foundId == null && file.hasOwnProperty(filterProperty)) {
+                        const filteredFiles = uploader.getUploads({
+                            ...baseFileFilter,
+                            [filterProperty]: file[filterProperty]
+                        });
+
+                        if (filteredFiles) {
+                            if (Array.isArray(filteredFiles)) {
+                                // Go through each of the results to find the first one that isn't
+                                // already tracked and assume that's what the given session file
+                                // corresponds to.
+                                return filteredFiles.reduce((untrackedId, filteredFile) => {
+                                    if (untrackedId == null && !uploaderFiles[filteredFile.id]) {
+                                        return filteredFile.id;
+                                    }
+
+                                    return untrackedId;
+                                }, null);
+                            } else {
+                                // Only one match found, so we can use that single match's id
+                                return filteredFiles.id;
+                            }
+                        }
+                    }
+
+                    return foundId;
+                }, null)
+            );
+
+            sessionFiles.forEach((file, ii) => {
+                file.status = FileStatus.ONLINE;
+                file.progress = 100;
+
+                // In order to sync up with FineUploader, we need to use the file's id. FineUploader
+                // does register these session files with an internal id but it doesn't return it to
+                // us directly here, so we try our best to find it using the file's uuid and name.
+                // If we can't find it, we'll just assume these session files are at the end of
+                // FineUploader's own upload list and use those ids.
+                let id = findIdFromUploader(file, ['uuid', 'name']);
+                if (id == null) {
+                    // Calculate id from the end of the uploader's own internal list
+                    const filesInUploader = uploader.getUploads();
+                    id = filesInUploader[filesInUploader.length - sessionFiles.length + ii].id;
+                }
+
+                file.id = id;
+            });
+
+            const syncedUploaderFiles = uploaderFiles
+                .concat(sessionFiles)
+                // Sort to ensure id is same as index of file
+                .sort((fileA, fileB) => fileA.id - fileB.id);
+
+            // Update our tracked files with the ones loaded from the session
+            this.setState({ uploaderFiles: syncedUploaderFiles }, () => {
+                safeInvoke(onFilesChanged, this.state.uploaderFiles);
+            });
         }
-
-        sessionFiles.forEach((file) => {
-            file.status = FileStatus.ONLINE;
-            file.progress = 100;
-        });
-
-        // Update our tracked files with the ones loaded from the session
-        this.setState({ uploaderFiles: this.state.uploaderFiles.concat(sessionFiles) }, () => {
-            safeInvoke(onFilesChanged, this.state.uploaderFiles);
-        });
     },
 
     onStatusChange(fileId, oldStatus, newStatus) {
