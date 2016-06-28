@@ -35,26 +35,10 @@ const ReactS3FineUploader = React.createClass({
          *                                     hitting a file limit)
          *   @param {File[]}  uploaderFiles    Files currently tracked by the uploader
          *   @param {boolean} uploadInProgress Whether there is an upload in progress
+         *
+         * Note that for most use cases, you should use Uploadify rather than this prop directly.
          */
         children: node.isRequired,
-
-        /**
-         * Called if FineUploader is unable to automatically handle the deletion of a file because
-         * of the file originating from an online source requested as part of the initial session.
-         *
-         * It is expected that `handleDeleteOnlineFile` will attempt to delete the given file from
-         * the online source, returning a promise that resolves if the attempt succeeded or rejects
-         * if the attempt failed.
-         *
-         * This is not necessary unless your uploader works with an initial session. When a
-         * deletion that requires this function occurs and this is not specified, an error will
-         * be thrown.
-         *
-         * @param  {File}    file File to delete
-         * @return {Promise}      Promise that resolves when the deletion suceeds or rejects if
-         *                        an error occurred
-         */
-        handleDeleteOnlineFile: func,
 
         /**
          * Mapping used to transform file extensions to mime types for filtering file types
@@ -119,14 +103,31 @@ const ReactS3FineUploader = React.createClass({
         /**
          * Similar to FineUploader's onDeleteComplete
          * (http://docs.fineuploader.com/branch/master/api/events.html#deleteComplete). This is
-         * also called upon resolution of `handleDeleteOnlineFile()`.
+         * also called upon resolution of `onDeleteOnlineFile()`.
          *
          * @param {File}    file    File that was deleted
          * @param {Xhr|Xdr} xhr     The xhr used to make the request, `null` if called after
-         *                          `handleDeleteOnlineFile()`
+         *                          `onDeleteOnlineFile()`
          * @param {boolean} isError If the delete completed with an error or not
          */
         onDeleteComplete: func,
+
+        /**
+         * Similar to FineUploader's onDelete, but only for files originating from an online source
+         * as part of the initial session loading (see documentation for initial file lists:
+         * http://docs.fineuploader.com/branch/master/features/session.html).
+         *
+         * While FineUploader can handle most deletes from these sources out of the box, you may
+         * need additional logic, such as extra authentication or etc, to process the deletes. If
+         * provided, it is expected that `onDeleteOnlineFile` will attempt to delete the given file
+         * from the online source, returning a promise that resolves if the attempt succeeded or
+         * rejects if the attempt failed.
+         *
+         * @param  {File}    file File to delete
+         * @return {Promise}      Promise that resolves when the deletion suceeds or rejects if
+         *                        an error occurred
+         */
+        onDeleteOnlineFile: func,
 
         /**
          * Similar to FineUploader's onError
@@ -495,13 +496,13 @@ const ReactS3FineUploader = React.createClass({
         // Strip away all props intended for this component to get the config for FineUploader
         const configFromProps = omitFromObject(this.props, [
             'children',
-            'handleDeleteOnlineFile',
             'mimeTypeMapping',
             'onAllComplete',
             'onAutoRetry',
             'onCanceled',
             'onDelete',
             'onDeleteComplete',
+            'onDeleteOnlineFile',
             'onError',
             'onFileError',
             'onFilesChanged',
@@ -797,7 +798,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     handleDeleteFile(file) {
-        const { handleDeleteOnlineFile, onFileError } = this.props;
+        const { onDeleteOnlineFile, onFileError } = this.props;
         const { uploader } = this.state;
 
         if (!this.isFileTrackedByUploader(file)) {
@@ -806,44 +807,34 @@ const ReactS3FineUploader = React.createClass({
             return;
         }
 
-        // FineUploader does not register an id on the file unless it handles the upload
-        // of the file itself (however, we always do internally; don't be confused by this!).
-        // This is problematic in some instances when FineUploader fetches an already uploaded
-        // file as part of its session (ie. when the file was already uploaded to S3 and
-        // is just pulled to be displayed to the user).
-        //
-        // Since FineUploader can only handle file deletions if it can find an id associated with
-        // that file, it's not able to delete files that were loaded only as part of its session.
-        // Unfortunately, this means that you have to supply your own way of deleting these files
-        // that are already online.
-        //
-        // To check which files were uploaded from previous sessions we can check their status;
-        // If they are online, the status will be "online".
-        if (file.status !== FileStatus.ONLINE) {
-            // FineUploader handled this file and internally registered an id to it, so
-            // we can just let FineUploader handle the deletion
-            //
+        // If the file came from a previous session and was already online, a user may want to
+        // provide their own logic to delete it (if it requires additional authentication, or etc
+        // that FineUploader doesn't provide out of the box).
+        // When we know the file's from a previous state, (status is ONLINE), attempt to use the
+        // custom delete handler but fallback to using FineUploader's own `deleteFile` if the custom
+        // handler isn't defined or did not return a promise resolving the delete request.
+        let deleteRequest;
+        if (file.status === FileStatus.ONLINE) {
+            const { invoked, result } = safeInvoke(onDeleteOnlineFile, file);
+
+            if (invoked && result) {
+                deleteRequest = result
+                    // Route the custom delete handler's resolution into the callbacks used by
+                    // FineUploader for consistency
+                    .then(() => this.onDeleteComplete(file.id, null, false))
+                    .catch(() => this.onDeleteComplete(file.id, null, true));
+            }
+        }
+
+        if (!deleteRequest) {
             // To check on the status of the deletion, see onDeleteComplete as
             // FineUploader's deleteFile does not return a callback or promise
             uploader.deleteFile(file.id);
-        } else {
-            safeInvoke({
-                fn: handleDeleteOnlineFile,
-                params: [file],
-                onNotInvoked: () => {
-                    throw new Error(`ReactS3FineUploader cannot delete file (${file.name}) ` +
-                                    'originating from a previous session because ' +
-                                    'handleDeleteOnlineFile() was not was specified as a prop.');
-                }
-            }).result.then(() => this.onDeleteComplete(file.id, null, false))
-                     .catch(() => this.onDeleteComplete(file.id, null, true));
         }
 
         // We set the files state to 'deleted' immediately, so that the user is not confused with
-        // the unresponsiveness of the UI
-        //
-        // If there is an error during the deletion, we will just change the status back to
-        // FileStatus.ONLINE and display an error message
+        // the unresponsiveness of the UI. If there is an error during the deletion, we will just
+        // change the status back to FileStatus.ONLINE and display an error message.
         this.setStatusOfFile(file.id, FileStatus.DELETED);
     },
 
