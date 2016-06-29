@@ -387,7 +387,7 @@ const ReactS3FineUploader = React.createClass({
             uploaderFiles: [],
             uploadInProgress: false,
 
-            // for logging
+            // For logging
             chunks: {}
         };
     },
@@ -413,6 +413,10 @@ const ReactS3FineUploader = React.createClass({
     },
 
     /** PUBLIC EXPOSED METHODS FOR PARENTS (EVEN AFTER EXTENSION) **/
+    getChunks() {
+        return this.state.chunks;
+    },
+
     getFiles() {
         return this.state.uploaderFiles;
     },
