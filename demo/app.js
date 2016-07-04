@@ -374,8 +374,8 @@ const App = () => {
             <h4>Custom upload button</h4>
             <div>
                 <UploadButton
-                    buttonType={() => (
-                        <button style={{ backgroundColor: 'lightblue' }}>
+                    buttonType={(props) => (
+                        <button {...props} style={{ backgroundColor: 'lightblue' }}>
                             Custom upload button
                         </button>
                     )}
