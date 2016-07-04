@@ -10,6 +10,15 @@ export function createdBlobFilesFilter(file) {
 }
 
 /**
+ * Filter function to filter for files that have failed to upload.
+ * @param  {File}    file  A file from filesToUpload, that has a status property.
+ * @return {boolean}       True if file failed to upload
+ */
+export function failedFilesFilter(file) {
+    return file.status === FileStatus.UPLOAD_FAILED;
+}
+
+/**
  * Filter function to filter for currently processing files
  * (ie. still uploading, deleting, in queue, or paused)
  * @param  {File}    file  A file from filesToUpload, that has a status property.
