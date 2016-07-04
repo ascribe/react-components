@@ -1,12 +1,30 @@
 import React from 'react';
 import CssModules from 'react-css-modules';
 
-import { safeInvoke } from 'js-utility-belt/es6';
+import { omitFromObject, safeInvoke } from 'js-utility-belt/es6';
 
 import Uploadify from './utils/uploadify';
 
 import styles from './upload_drag_and_drop_area.scss';
 
+
+// Drag handlers that have no special action associated with them but should be passed through to
+// the element handling drag and drop functionality.
+const DRAG_HANDLERS = [
+    'onDrag',
+    'onDragEnd',
+    'onDragEnter',
+    'onDragExit',
+    'onDragLeave',
+    'onDragOver',
+    'onDragStart'
+];
+
+const preventEventDefaultFn = (event) => {
+    if (event) {
+        event.preventDefault();
+    }
+};
 
 const { bool, func, node, string } = React.PropTypes;
 
@@ -18,11 +36,16 @@ const UploadDragAndDropArea = React.createClass({
         children: node,
         className: string,
         disabled: bool,
-        onDragOver: func,
+
+        // Create prop types for pass-through drag and drop handlers
+        ...DRAG_HANDLERS.reduce((types, eventType) => {
+            types[eventType] = func;
+            return types;
+        }, {}),
 
         /**
-         * Called when any files are dropped into the drop zone. If this returns false, the dropped
-         * files will be discarded
+         * Special drag handler; called when any files are dropped into the drop zone. If this is
+         * invoked and returns false, the dropped files will be discarded.
          *
          * @param  {Event}   event Drop event with the files
          * @return {boolean}       Return false to prevent the dropped files from being submitted
@@ -38,14 +61,21 @@ const UploadDragAndDropArea = React.createClass({
         handleSubmitFiles: func.isRequired
     },
 
-    onDragOver(event) {
-        const { disabled, onDragOver } = this.props;
+    handleDragEvent(eventType) {
+        return (event) => {
+            preventEventDefaultFn(event);
 
-        event.preventDefault();
+            if (!this.props.disabled) {
+                const eventHandler = this.props[eventType];
+                const { invoked, result } = safeInvoke(eventHandler, event);
 
-        if (!disabled) {
-            safeInvoke(onDragOver, event);
-        }
+                if (invoked) {
+                    return result;
+                }
+            }
+
+            return undefined;
+        };
     },
 
     onDrop(event) {
@@ -73,18 +103,24 @@ const UploadDragAndDropArea = React.createClass({
     },
 
     render() {
-        const {
-            children,
-            className,
-            onDragOver: ignoredOnDragOver, // ignore
-            onDrop: ignoredOnDrop, // ignore
-            ...childProps
-        } = this.props;
+        const { children, className } = this.props;
+        const childProps = omitFromObject(this.props, [...DRAG_HANDLERS, 'onDrop']);
+
+        // Map handlers to any given callbacks
+        const dragHandlers = DRAG_HANDLERS.reduce((handlers, eventType) => {
+            handlers[eventType] = this.props[eventType] === 'function'
+                ? this.handleDragEvent(eventType)
+                // Prevent defaults of other events to avoid further event processing (see
+                // https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API#Define_a_drop_zone)
+                : preventEventDefaultFn;
+
+            return handlers;
+        }, {});
 
         return (
             <div
                 className={className}
-                onDragOver={this.onDragOver}
+                {...dragHandlers}
                 onDrop={this.onDrop}
                 styleName="drag-and-drop-area">
                 {React.Children.map(children, (child) => React.cloneElement(child, childProps))}
