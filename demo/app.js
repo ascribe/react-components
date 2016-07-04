@@ -369,7 +369,16 @@ const App = () => {
             <h2>Uploader</h2>
             <h3>Upload button</h3>
             <div>
-                <UploadButton uploaderProps={dummyUploaderProps} />
+                <UploadButton
+                    getUploadingButtonLabel={(_, progress) => `Upload progress: ${progress}%`}
+                    uploaderProps={dummyUploaderProps} />
+            </div>
+            <h3>Upload button with children</h3>
+            <div>
+                <UploadButton
+                    uploaderProps={dummyUploaderProps}>
+                    Upload button with children
+                </UploadButton>
             </div>
             <h4>Custom upload button</h4>
             <div>
@@ -379,11 +388,13 @@ const App = () => {
                             Custom upload button
                         </button>
                     )}
+                    getUploadingButtonLabel={(_, progress) => `Upload progress: ${progress}%`}
                     uploaderProps={dummyUploaderProps} />
             </div>
             <h4>Hashing upload button</h4>
             <div>
                 <UploadButton
+                    getUploadingButtonLabel={(_, progress) => `Upload progress: ${progress}%`}
                     uploaderProps={{
                         ...dummyUploaderProps,
                         onSubmitFiles: (files) => {
@@ -407,11 +418,17 @@ const App = () => {
             </div>
             <h4>Disabled upload button</h4>
             <div>
-                <UploadButton disabled uploaderProps={dummyUploaderProps} />
+                <UploadButton
+                    disabled
+                    getUploadingButtonLabel={(_, progress) => `Upload progress: ${progress}%`}
+                    uploaderProps={dummyUploaderProps} />
             </div>
             <h4>No label upload button</h4>
             <div>
-                <UploadButton showFileLabel={false} uploaderProps={dummyUploaderProps} />
+                <UploadButton
+                    getUploadingButtonLabel={(_, progress) => `Upload progress: ${progress}%`}
+                    showFileLabel={false}
+                    uploaderProps={dummyUploaderProps} />
             </div>
             <h3>Drag and drop</h3>
             <h3>Drag and drop</h3>

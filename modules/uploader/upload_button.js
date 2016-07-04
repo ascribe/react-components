@@ -28,6 +28,7 @@ const FileLabel = CssModules(({ files, handleRemoveFiles }) => {
     return (<span styleName="file-label">{label}</span>);
 }, styles);
 
+FileLabel.displayName = 'FileLabel';
 const UploadButton = React.createClass({
     propTypes: {
         buttonType: oneOfType([func, string]),
@@ -37,24 +38,22 @@ const UploadButton = React.createClass({
         fileLabelType: func,
 
         /**
-         * Get the button's label (ie. children). By default, if you provide children to this
-         * component and do not provide this function, the children will be used as the label in
-         * all states.
+         * Get the button's label (ie. children) when an upload is in progress. By default, if you
+         * provide children to this component, the children will be used as the label in all states.
          *
-         * @param  {boolean} uploading     Whether there are files currently uploading
          * @param  {File[]}  uploaderFiles All files tracked by uploader
          * @param  {number}  progress      Total progress on set of valid files tracked by uploader
          * @return {node}                  Button label
          *
          */
-        getButtonLabel: func,
+        getUploadingButtonLabel: func,
 
         showFileLabel: bool,
 
         // Provided by ReactS3FineUploader
         uploaderFiles: arrayOf(object)
 
-        // All other props and the disabled prop are passed to buttonType
+        // All other props and the disabled prop will be passed through to buttonType
     },
 
     contextTypes: {
@@ -66,36 +65,25 @@ const UploadButton = React.createClass({
     getDefaultProps() {
         return {
             buttonType: 'button',
-            getButtonLabel: (uploading, uploaderFiles, progress) => (
-                uploading ? `Upload progress: ${progress}` : 'file'
-            ),
+            children: 'upload', // Default button text to 'upload'
             fileLabelType: FileLabel,
             showFileLabel: true
         };
     },
 
-    getButtonLabel() {
-        const { children, getButtonLabel, uploaderFiles } = this.props;
+    getUploadingButtonLabel() {
+        const { children, getUploadingButtonLabel, uploaderFiles } = this.props;
 
-        if (children) {
-            // If this component already has children, use them for the button label as is
-            // consistent with other buttons.
-            return children;
-        }
-
-        let uploading = false;
-        let progress = 0;
-
-        if (this.getUploadingFiles().length) {
-            uploading = true;
-
+        if (typeof getUploadingButtonLabel === 'function' && this.getUploadingFiles().length) {
             // Filter invalid files that might have been deleted or canceled before calculating progress
             const progressFiles = uploaderFiles.filter(validProgressFilesFilter);
-            progress = progressFiles
-                           .reduce((sum, file) => sum + file.progress, 0) / progressFiles.length;
+            const progress = progressFiles
+                .reduce((sum, file) => sum + file.progress, 0) / progressFiles.length;
+
+            return getUploadingButtonLabel(uploaderFiles, progress);
         }
 
-        return getButtonLabel(uploading, uploaderFiles, progress);
+        return children;
     },
 
     getUploadingFiles() {
@@ -136,13 +124,13 @@ const UploadButton = React.createClass({
             fileLabelType: FileLabelType,
 
             children: ignoredChildren, // ignore
-            getButtonLabel: ignoredGetButtonLabel, // ignore
+            getUploadingButtonLabel: ignoredGetUploadingButtonLabel, // ignore
             // eslint-disable-next-line react/prop-types
             styles: ignoredStyles, // ignore, to avoid overriding ButtonType's styles with this component's styles
 
             ...buttonProps
         } = this.props;
-        const buttonChildren = this.getButtonLabel();
+        const buttonChildren = this.getUploadingButtonLabel();
         const validFiles = uploaderFiles.filter(validFilesFilter);
 
         const fileLabel = showFileLabel && FileLabelType ? (
