@@ -104,6 +104,17 @@ export function isReactElement(element) {
 }
 
 /**
+ * Best-effort attempt at getting a component's display name. If none can be found, 'Component' is
+ * returned. Adapted from react-router (https://github.com/reactjs/react-router/blob/master/modules/withRouter.js)
+ *
+ * @param  {function} Component React component
+ * @return {string}             Display name of component, or 'Component' if none can be found
+ */
+export function getDisplayName(Component) {
+    return Component.displayName || Component.name || 'Component';
+}
+
+/**
  * Create a new component that always has the given props added to it when invoked
  *
  * @param  {function} Component    React component to stuff with props
