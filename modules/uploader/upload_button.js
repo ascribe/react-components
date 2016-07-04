@@ -145,7 +145,11 @@ const UploadButton = React.createClass({
             <span className={className} styleName="container">
                 {/* The button needs to be of `type="button"` as it may be nested in a form that
                     should not be submitted through this button */}
-                <ButtonType {...buttonProps} onClick={this.onFileSelect} type="button">
+                <ButtonType
+                    {...buttonProps}
+                    disabled={this.isDisabled()}
+                    onClick={this.onFileSelect}
+                    type="button">
                     {buttonChildren}
                 </ButtonType>
                 <FileLabelType
