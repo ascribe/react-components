@@ -409,6 +409,11 @@ const App = () => {
             <div>
                 <UploadButton disabled uploaderProps={dummyUploaderProps} />
             </div>
+            <h4>No label upload button</h4>
+            <div>
+                <UploadButton showFileLabel={false} uploaderProps={dummyUploaderProps} />
+            </div>
+            <h3>Drag and drop</h3>
             <h3>Drag and drop</h3>
             <div>
                 <UploadDragAndDropArea uploaderProps={dummyUploaderProps}>

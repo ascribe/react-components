@@ -49,6 +49,8 @@ const UploadButton = React.createClass({
          */
         getButtonLabel: func,
 
+        showFileLabel: bool,
+
         // Provided by ReactS3FineUploader
         uploaderFiles: arrayOf(object)
 
@@ -67,7 +69,8 @@ const UploadButton = React.createClass({
             getButtonLabel: (uploading, uploaderFiles, progress) => (
                 uploading ? `Upload progress: ${progress}` : 'file'
             ),
-            fileLabelType: FileLabel
+            fileLabelType: FileLabel,
+            showFileLabel: true
         };
     },
 
@@ -127,6 +130,7 @@ const UploadButton = React.createClass({
     render() {
         const {
             className,
+            showFileLabel,
             uploaderFiles,
             buttonType: ButtonType,
             fileLabelType: FileLabelType,
@@ -141,6 +145,12 @@ const UploadButton = React.createClass({
         const buttonChildren = this.getButtonLabel();
         const validFiles = uploaderFiles.filter(validFilesFilter);
 
+        const fileLabel = showFileLabel && FileLabelType ? (
+            <FileLabelType
+                files={validFiles}
+                handleRemoveFiles={this.handleRemoveFiles} />
+        ) : null;
+
         return (
             <span className={className} styleName="container">
                 {/* The button needs to be of `type="button"` as it may be nested in a form that
@@ -152,9 +162,7 @@ const UploadButton = React.createClass({
                     type="button">
                     {buttonChildren}
                 </ButtonType>
-                <FileLabelType
-                    files={validFiles}
-                    handleRemoveFiles={this.handleRemoveFiles} />
+                {fileLabel}
             </span>
         );
     }
