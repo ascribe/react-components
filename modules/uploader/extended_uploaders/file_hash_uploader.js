@@ -52,7 +52,7 @@ const FileHashUploader = (Uploader) => (
             onFileHashProgress: func,
 
             /**
-             * Called when hashing of the submitted files succeeds.
+             * Called when hashing of the submitted files succeed.
              *
              * It is expected that `onFileHashSuccess` returns either an array of files (or a
              * promise resolving to an array of files) to be submitted to the uploader. Returning
@@ -88,9 +88,11 @@ const FileHashUploader = (Uploader) => (
             handleCancelHashing: func
         },
 
-        defaultPropTypes: {
-            // By default, hash every file
-            shouldHashFile: () => true
+        getDefaultProps() {
+            return {
+                // By default, hash every file
+                shouldHashFile: () => true
+            };
         },
 
         getChildContext() {
@@ -109,6 +111,7 @@ const FileHashUploader = (Uploader) => (
                 onFileHashError,
                 onFileHashProgress,
                 onFileHashSuccess,
+                onSubmitFiles,
                 shouldHashFile
             } = this.props;
 
@@ -145,9 +148,11 @@ const FileHashUploader = (Uploader) => (
 
             return Promise
                 .all(hashPromises)
-                // If callbacks were not provided, this will pass through any resolution onto the
-                // next .then() / .catch() clause
+                // If any of the callbacks are not provided, the promise resolution will be passed
+                // through onto the next .then() / .catch() clause that does have a defined
+                // function, letting us skip defining defaults for these callbacks.
                 .then(onFileHashSuccess)
+                .then(onSubmitFiles)
                 .catch(onFileHashError);
         },
 
