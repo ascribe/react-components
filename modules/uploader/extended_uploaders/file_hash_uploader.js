@@ -12,6 +12,9 @@ const FileHashUploader = (Uploader) => (
     React.createClass(uploaderSpecExtender({
         displayName: 'FileHashUploader',
 
+        // Component state that doesn't need to be tracked by React
+        nextHashId: 0,
+
         propTypes: {
             /**
              * Called when hashing any of the submitted files fails for any reason.
@@ -24,6 +27,21 @@ const FileHashUploader = (Uploader) => (
              * Called on every progress notification of a hashing file.
              *
              * @param  {File}    file     File being hashed
+             *
+             * @param  {number}  hashId   Unique, incrementing id between files that are being hashed.
+             *                            Starts from 0 so the id can be used as an array index.
+             *
+             *                            Useful if you need to keep track of each file's progress
+             *                            during hashing, as their uploader ids will not be
+             *                            available until they are actually submitted to the
+             *                            uploader (using the file's name is unsafe since it's not
+             *                            unique).
+             *
+             *                            Note that this is **NOT** the same as `file.id` that will
+             *                            be available on the files after they have been submitted
+             *                            to the uploader. Use this id only to keep track of files
+             *                            during the hashing step.
+             *
              * @param  {number}  progress Progress as a percentage
              * @return {boolean}          Returning `false` from `onFileHashProgress` will stop and
              *                            cancel the file from being hashed. Note that doing this
@@ -106,8 +124,10 @@ const FileHashUploader = (Uploader) => (
                     return file;
                 }
 
+                const hashId = ++this.nextHashId;
+
                 const onProgress = (...params) => {
-                    const { result } = safeInvoke(onFileHashProgress, file, ...params);
+                    const { result } = safeInvoke(onFileHashProgress, file, hashId, ...params);
 
                     // If the callback's invoked and returns `false`, we should cancel hashing
                     if (result === false) {
@@ -133,10 +153,10 @@ const FileHashUploader = (Uploader) => (
 
         render() {
             const {
-                shouldHashFile: ignoredShouldHashFile, // ignore
                 onFileHashError: ignoredOnFileHashError, // ignore
                 onFileHashProgress: ignoredOnFileHashProgress, // ignore
                 onFileHashSuccess: ignoredOnFileHashSuccess, // ignore
+                shouldHashFile: ignoredShouldHashFile, // ignore
                 ...uploaderProps
             } = this.props;
 
