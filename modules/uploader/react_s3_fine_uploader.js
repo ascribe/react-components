@@ -976,7 +976,8 @@ const ReactS3FineUploader = React.createClass({
     render() {
         const {
             children,
-            multiple // eslint-disable-line react/prop-types
+            multiple, // eslint-disable-line react/prop-types
+            validation: { allowedExtensions } = {} // eslint-disable-line react/prop-types
         } = this.props;
         const { uploaderFiles, uploadInProgress } = this.state;
         const uploaderDisabled = this.isUploaderDisabled();
@@ -990,6 +991,8 @@ const ReactS3FineUploader = React.createClass({
                 onSelectFiles={this.handleSubmitFiles}>
                 {React.Children.map(children, (child) => (
                     React.cloneElement(child, {
+                        allowedExtensions,
+                        multiple,
                         uploaderFiles,
                         uploadInProgress,
                         disabled: child.props.disabled || uploaderDisabled
