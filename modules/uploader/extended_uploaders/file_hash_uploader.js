@@ -129,8 +129,8 @@ const FileHashUploader = (Uploader) => (
 
                 const hashId = ++this.nextHashId;
 
-                const onProgress = (...params) => {
-                    const { result } = safeInvoke(onFileHashProgress, file, hashId, ...params);
+                const onProgress = (...args) => {
+                    const { result } = safeInvoke(onFileHashProgress, file, hashId, ...args);
 
                     // If the callback's invoked and returns `false`, we should cancel hashing
                     if (result === false) {

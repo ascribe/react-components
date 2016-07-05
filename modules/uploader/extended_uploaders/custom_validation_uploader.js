@@ -196,7 +196,8 @@ const CustomValidationUploader = (Uploader) => (
             return Promise.resolve(this.validateFiles(files))
                 .then((validatedFiles) => (
                     Array.isArray(validatedFiles) && validatedFiles.length
-                        ? onSubmitFiles(validatedFiles) : []
+                        ? onSubmitFiles(validatedFiles)
+                        : []
                 ));
         },
 

@@ -570,7 +570,7 @@ const ReactS3FineUploader = React.createClass({
     },
 
     /** FINEUPLOADER SPECIFIC CALLBACK FUNCTION HANDLERS **/
-    onAllComplete(succeeded, failed) {
+    onAllComplete(succeeded, failed, ...args) {
         const { uploaderFiles, uploadInProgress } = this.state;
 
         if (uploadInProgress) {
@@ -583,19 +583,20 @@ const ReactS3FineUploader = React.createClass({
             fn: this.props.onAllComplete,
             params: () => [
                 succeeded.map((succeededId) => uploaderFiles[succeededId]),
-                failed.map((failedId) => uploaderFiles[failedId])
+                failed.map((failedId) => uploaderFiles[failedId]),
+                ...args
             ]
         });
     },
 
-    onAutoRetry(fileId, name, attemptNumber) {
+    onAutoRetry(fileId, name, attemptNumber, ...args) {
         this.setStatusOfFile(fileId, FileStatus.UPLOAD_RETRYING)
-            .then((file) => safeInvoke(this.props.onAutoRetry, file, attemptNumber));
+            .then((file) => safeInvoke(this.props.onAutoRetry, file, attemptNumber, ...args));
     },
 
-    onCancel(fileId) {
+    onCancel(fileId, ...args) {
         this.setStatusOfFile(fileId, FileStatus.CANCELED)
-            .then((file) => safeInvoke(this.props.onCanceled, file));
+            .then((file) => safeInvoke(this.props.onCanceled, file, ...args));
 
         // FineUploader's onAllComplete event doesn't fire if all files are canceled
         // so we need to double check if this is the last file getting canceled.
@@ -612,7 +613,7 @@ const ReactS3FineUploader = React.createClass({
         return true;
     },
 
-    onComplete(fileId, name, res, xhr) {
+    onComplete(fileId, name, res, xhr, ...args) {
         // onComplete is still called even if the upload failed.
         // onError will catch any errors, so we can ignore them here
         if (!res.error && res.success) {
@@ -620,20 +621,20 @@ const ReactS3FineUploader = React.createClass({
             this.setStatusOfFile(fileId, FileStatus.UPLOAD_SUCCESSFUL, {
                 key: { $set: this.state.uploader.getKey(fileId) }
             })
-            .then((file) => safeInvoke(this.props.onSuccess, file, res, xhr));
+            .then((file) => safeInvoke(this.props.onSuccess, file, res, xhr, ...args));
         }
     },
 
-    onDelete(fileId) {
-        safeInvoke(this.props.onDelete, this.state.uploaderFiles[fileId]);
+    onDelete(fileId, ...args) {
+        safeInvoke(this.props.onDelete, this.state.uploaderFiles[fileId], ...args);
     },
 
-    onDeleteComplete(fileId, xhr, isError) {
+    onDeleteComplete(fileId, xhr, isError, ...args) {
         const { onDeleteComplete, onFileError } = this.props;
 
         const invokeCallback = (file = this.state.uploaderFiles[fileId]) => {
             if (file) {
-                safeInvoke(onDeleteComplete, file, xhr, isError);
+                safeInvoke(onDeleteComplete, file, xhr, isError, ...args);
             } else {
                 onFileError('Delete completed for an untracked file');
             }
@@ -647,19 +648,19 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
-    onError(fileId, name, errorReason, xhr) {
+    onError(fileId, name, errorReason, xhr, ...args) {
         this.setStatusOfFile(fileId, FileStatus.UPLOAD_FAILED)
-            .then((file) => safeInvoke(this.props.onError, file, errorReason, xhr));
+            .then((file) => safeInvoke(this.props.onError, file, errorReason, xhr, ...args));
     },
 
-    onManualRetry(fileId) {
+    onManualRetry(fileId, ...args) {
         this.setStatusOfFile(fileId, FileStatus.UPLOAD_RETRYING, {
             manualRetryAttempt: { $set: this.state.uploaderFiles[fileId].manualRetryAttempt + 1 }
         })
-        .then((file) => safeInvoke(this.props.onManualRetry, file, file.manualRetryAttempt));
+        .then((file) => safeInvoke(this.props.onManualRetry, file, file.manualRetryAttempt, ...args));
     },
 
-    onProgress(fileId, name, uploadedBytes, totalBytes) {
+    onProgress(fileId, name, uploadedBytes, totalBytes, ...args) {
         const { onFilesChanged, onProgress } = this.props;
 
         const uploaderFiles = update(this.state.uploaderFiles, {
@@ -669,12 +670,12 @@ const ReactS3FineUploader = React.createClass({
         });
 
         this.setState({ uploaderFiles }, () => {
-            safeInvoke(onProgress, this.state.uploaderFiles[fileId], uploadedBytes, totalBytes);
+            safeInvoke(onProgress, this.state.uploaderFiles[fileId], uploadedBytes, totalBytes, ...args);
             safeInvoke(onFilesChanged, this.state.uploaderFiles);
         });
     },
 
-    onSessionRequestComplete(response, success, ...params) {
+    onSessionRequestComplete(response, success, ...args) {
         const { onFilesChanged, onSessionRequestComplete } = this.props;
         const { uploader, uploaderFiles } = this.state;
 
@@ -682,7 +683,7 @@ const ReactS3FineUploader = React.createClass({
             onSessionRequestComplete,
             response,
             success,
-            ...params
+            ...args
         );
 
         // If the callback is defined, use its value as the session's files, otherwise fallback to
@@ -777,7 +778,7 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
-    onSubmitted(fileId) {
+    onSubmitted(fileId, ...args) {
         const { onFilesChanged, onSubmitted } = this.props;
         const { uploader } = this.state;
 
@@ -800,16 +801,16 @@ const ReactS3FineUploader = React.createClass({
         });
 
         this.setState({ uploaderFiles }, () => {
-            safeInvoke(onSubmitted, this.state.uploaderFiles[fileId]);
+            safeInvoke(onSubmitted, this.state.uploaderFiles[fileId], ...args);
             safeInvoke(onFilesChanged, this.state.uploaderFiles);
         });
     },
 
-    onTotalProgress(totalUploadedBytes, totalBytes) {
-        safeInvoke(this.props.onTotalProgress, totalUploadedBytes, totalBytes);
+    onTotalProgress(totalUploadedBytes, totalBytes, ...args) {
+        safeInvoke(this.props.onTotalProgress, totalUploadedBytes, totalBytes, ...args);
     },
 
-    onUpload(fileId) {
+    onUpload(fileId, ...args) {
         if (!this.state.uploadInProgress) {
             this.setState({
                 uploadInProgress: true
@@ -817,7 +818,7 @@ const ReactS3FineUploader = React.createClass({
         }
 
         this.setStatusOfFile(fileId, FileStatus.UPLOADING)
-            .then((file) => safeInvoke(this.props.onUpload, file));
+            .then((file) => safeInvoke(this.props.onUpload, file, ...args));
     },
 
     onUploadChunk(fileId, name, chunkData) {
