@@ -59,7 +59,7 @@
 }
 
 .hidden {
-    composes: hide from global;
+    composes: hidden from global;
 }
 
 .highlighted {
