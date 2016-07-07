@@ -19,6 +19,15 @@ export function failedFilesFilter(file) {
 }
 
 /**
+ * Filter function to filter for files that have been paused.
+ * @param  {File}    file  A file from filesToUpload, that has a status property.
+ * @return {boolean}       True if file is paused
+ */
+export function pausedFilesFilter(file) {
+    return file.status === FileStatus.PAUSED;
+}
+
+/**
  * Filter function to filter for currently processing files
  * (ie. still uploading, deleting, in queue, or paused)
  * @param  {File}    file  A file from filesToUpload, that has a status property.
