@@ -9,7 +9,15 @@ const uploaderSpecExtender = (uploaderComponentSpec, uploaderRefName = 'uploader
         .extendForFn('getFiles')
         .extendForFn('getUploader')
         .extendForFn('reset')
-        .extendForFn('setStatusOfFile');
+        .extendForFn('setStatusOfFile')
+
+        // Extend the handlers too
+        .extendForFn('handleCancelFile')
+        .extendForFn('handleDeleteFile')
+        .extendForFn('handlePauseFile')
+        .extendForFn('handleResumeFile')
+        .extendForFn('handleRetryFile')
+        .extendForFn('handleSubmitFiles');
 
     return builder.constructSpec();
 };

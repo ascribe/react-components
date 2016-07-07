@@ -78,7 +78,7 @@ const ReactS3FineUploader = React.createClass({
          * (http://docs.fineuploader.com/branch/master/api/events.html#autoRetry).
          *
          * @param {File}   file          File that was retried
-         * @param {number} attemptNumber Number of times the file has been retried manually
+         * @param {number} attemptNumber Number of times the file has been retried automatically
          */
         onAutoRetry: func,
 
@@ -321,6 +321,11 @@ const ReactS3FineUploader = React.createClass({
          */
     },
 
+    /**
+     * File handler API.
+     *
+     * Note that these are also passed up the component tree through the uploaderSpecExtender.
+     */
     childContextTypes: {
         /**
          * Attempts to cancel the given file tracked by this uploader
@@ -474,7 +479,127 @@ const ReactS3FineUploader = React.createClass({
         });
     },
 
-    /** PROTECTED METHODS (SHOULD ONLY BE USED BY EXTENDED UPLOADERS) **/
+
+    /** HANDLERS FOR ACTIONS (ALSO EXPOSED AFTER EXTENSION) **/
+    handleCancelFile(file) {
+        if (!this.isFileTrackedByUploader(file)) {
+            const { onFileError } = this.props;
+            onFileError('Cancel attempted for an untracked file', file);
+
+            return;
+        }
+
+        this.cancelUploads(file.id);
+    },
+
+    handleDeleteFile(file) {
+        const { onDeleteOnlineFile, onFileError } = this.props;
+        const { uploader } = this.state;
+
+        if (!this.isFileTrackedByUploader(file)) {
+            onFileError('Delete attempted for an untracked file', file);
+
+            return;
+        }
+
+        // If the file came from a previous session and was already online, a user may want to
+        // provide their own logic to delete it (if it requires additional authentication, or etc
+        // that FineUploader doesn't provide out of the box).
+        // When we know the file's from a previous state, (status is ONLINE), attempt to use the
+        // custom delete handler but fallback to using FineUploader's own `deleteFile` if the custom
+        // handler isn't defined or did not return a promise resolving the delete request.
+        let deleteRequest;
+        if (file.status === FileStatus.ONLINE) {
+            const { invoked, result } = safeInvoke(onDeleteOnlineFile, file);
+
+            if (invoked && result) {
+                deleteRequest = result
+                    // Route the custom delete handler's resolution into the callbacks used by
+                    // FineUploader for consistency
+                    .then(() => this.onDeleteComplete(file.id, null, false))
+                    .catch(() => this.onDeleteComplete(file.id, null, true));
+            }
+        }
+
+        if (!deleteRequest) {
+            // To check on the status of the deletion, see onDeleteComplete as
+            // FineUploader's deleteFile does not return a callback or promise
+            uploader.deleteFile(file.id);
+        }
+
+        // We set the files state to 'deleted' immediately, so that the user is not confused with
+        // the unresponsiveness of the UI. If there is an error during the deletion, we will just
+        // change the status back to FileStatus.ONLINE and display an error message.
+        this.setStatusOfFile(file.id, FileStatus.DELETED);
+    },
+
+    handlePauseFile(file) {
+        if (!this.isFileTrackedByUploader(file)) {
+            const { onFileError } = this.props;
+            onFileError('Pause attempted for an untracked file', file);
+
+            return;
+        }
+
+        if (this.state.uploader.pauseUpload(file.id)) {
+            this.setStatusOfFile(file.id, FileStatus.PAUSED)
+                .then((updatedFile) => safeInvoke(this.props.onPause, updatedFile));
+        } else {
+            throw new Error('File upload could not be paused.');
+        }
+    },
+
+    handleResumeFile(file) {
+        if (!this.isFileTrackedByUploader(file)) {
+            const { onFileError } = this.props;
+            onFileError('Resume attempted for an untracked file', file);
+
+            return;
+        }
+
+        const resumeSuccessful = this.state.uploader.continueUpload(file.id);
+
+        if (resumeSuccessful) {
+            // FineUploader's onResume callback is **ONLY** used for when a file is resumed from
+            // persistent storage, not when they're paused and continued, so we have to handle
+            // this callback ourselves
+            this.setStatusOfFile(file.id, FileStatus.UPLOADING)
+                .then((updatedFile) => safeInvoke(this.props.onResume, updatedFile));
+        } else {
+            throw new Error('File upload could not be resumed.');
+        }
+    },
+
+    handleRetryFile(file) {
+        if (!this.isFileTrackedByUploader(file)) {
+            const { onFileError } = this.props;
+            onFileError('Manually retry attempted for untracked file', file);
+
+            return;
+        }
+
+        // Our onManualRetry handler for FineUploader will take care of setting the status of our
+        // tracked file
+        this.state.uploader.retry(file.id);
+    },
+
+    handleSubmitFiles(files) {
+        Promise.resolve(this.props.onSubmitFiles(arrayFrom(files)))
+            .then((submitFiles) => {
+                if (Array.isArray(submitFiles) && submitFiles.length) {
+                    this.state.uploader.addFiles(submitFiles);
+                }
+            })
+            // Bit of a hack, but use this .catch() to let the next .then() become a .finally().
+            // Note that we have to give .catch() a function in order for it to resolve, otherwise
+            // it'll be ignored.
+            .catch(noop)
+            // Reset file input once we've handled the file submission
+            .then(this.clearFileSelection);
+    },
+
+
+    /** PRIVATE METHODS (ARE NOT EXTENDED AND SHOULD NOT BE RELIED UPON) **/
     // Cancel uploads and clear previously selected files on the input element
     cancelUploads(fileId) {
         if (typeof fileId !== 'undefined') {
@@ -568,6 +693,7 @@ const ReactS3FineUploader = React.createClass({
 
         return !!((!multiple && validFiles.length) || (itemLimit && validFiles.length >= itemLimit));
     },
+
 
     /** FINEUPLOADER SPECIFIC CALLBACK FUNCTION HANDLERS **/
     onAllComplete(succeeded, failed, ...args) {
@@ -854,124 +980,6 @@ const ReactS3FineUploader = React.createClass({
         }
     },
 
-
-    /** HANDLERS FOR ACTIONS **/
-    handleCancelFile(file) {
-        if (!this.isFileTrackedByUploader(file)) {
-            const { onFileError } = this.props;
-            onFileError('Cancel attempted for an untracked file', file);
-
-            return;
-        }
-
-        this.cancelUploads(file.id);
-    },
-
-    handleDeleteFile(file) {
-        const { onDeleteOnlineFile, onFileError } = this.props;
-        const { uploader } = this.state;
-
-        if (!this.isFileTrackedByUploader(file)) {
-            onFileError('Delete attempted for an untracked file', file);
-
-            return;
-        }
-
-        // If the file came from a previous session and was already online, a user may want to
-        // provide their own logic to delete it (if it requires additional authentication, or etc
-        // that FineUploader doesn't provide out of the box).
-        // When we know the file's from a previous state, (status is ONLINE), attempt to use the
-        // custom delete handler but fallback to using FineUploader's own `deleteFile` if the custom
-        // handler isn't defined or did not return a promise resolving the delete request.
-        let deleteRequest;
-        if (file.status === FileStatus.ONLINE) {
-            const { invoked, result } = safeInvoke(onDeleteOnlineFile, file);
-
-            if (invoked && result) {
-                deleteRequest = result
-                    // Route the custom delete handler's resolution into the callbacks used by
-                    // FineUploader for consistency
-                    .then(() => this.onDeleteComplete(file.id, null, false))
-                    .catch(() => this.onDeleteComplete(file.id, null, true));
-            }
-        }
-
-        if (!deleteRequest) {
-            // To check on the status of the deletion, see onDeleteComplete as
-            // FineUploader's deleteFile does not return a callback or promise
-            uploader.deleteFile(file.id);
-        }
-
-        // We set the files state to 'deleted' immediately, so that the user is not confused with
-        // the unresponsiveness of the UI. If there is an error during the deletion, we will just
-        // change the status back to FileStatus.ONLINE and display an error message.
-        this.setStatusOfFile(file.id, FileStatus.DELETED);
-    },
-
-    handlePauseFile(file) {
-        if (!this.isFileTrackedByUploader(file)) {
-            const { onFileError } = this.props;
-            onFileError('Pause attempted for an untracked file', file);
-
-            return;
-        }
-
-        if (this.state.uploader.pauseUpload(file.id)) {
-            this.setStatusOfFile(file.id, FileStatus.PAUSED)
-                .then((updatedFile) => safeInvoke(this.props.onPause, updatedFile));
-        } else {
-            throw new Error('File upload could not be paused.');
-        }
-    },
-
-    handleResumeFile(file) {
-        if (!this.isFileTrackedByUploader(file)) {
-            const { onFileError } = this.props;
-            onFileError('Resume attempted for an untracked file', file);
-
-            return;
-        }
-
-        const resumeSuccessful = this.state.uploader.continueUpload(file.id);
-
-        if (resumeSuccessful) {
-            // FineUploader's onResume callback is **ONLY** used for when a file is resumed from
-            // persistent storage, not when they're paused and continued, so we have to handle
-            // this callback ourselves
-            this.setStatusOfFile(file.id, FileStatus.UPLOADING)
-                .then((updatedFile) => safeInvoke(this.props.onResume, updatedFile));
-        } else {
-            throw new Error('File upload could not be resumed.');
-        }
-    },
-
-    handleRetryFile(file) {
-        if (!this.isFileTrackedByUploader(file)) {
-            const { onFileError } = this.props;
-            onFileError('Manually retry attempted for untracked file', file);
-
-            return;
-        }
-
-        // Our onManualRetry handler for FineUploader will take care of setting the status of our
-        // tracked file
-        this.state.uploader.retry(file.id);
-    },
-
-    handleSubmitFiles(files) {
-        Promise.resolve(this.props.onSubmitFiles(arrayFrom(files)))
-            .then((submitFiles) => {
-                if (Array.isArray(submitFiles) && submitFiles.length) {
-                    this.state.uploader.addFiles(submitFiles);
-                }
-            })
-            // Bit of a hack, but use this .catch() to let the next .then() become a .finally().
-            // Note that we have to give .catch() a function in order for it to resolve, otherwise
-            // it'll be ignored.
-            .catch(noop)
-            // Reset file input once we've handled the file submission
-            .then(this.clearFileSelection);
-    },
 
     render() {
         const {
