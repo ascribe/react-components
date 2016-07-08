@@ -20,14 +20,18 @@ const CreateBlobUploader = (Uploader) => (
              * `handleBlobCreation` can optionally return an object representing an additional
              * changeset to be applied to the file representation kept by the uploader, based on
              * react-addons/update's signature, (or a promise resolving to this changeset when blob
-             * creation is completed). Rejecting will fail blob creation but will still consider
-             * the upload to be a success (ie. the uploader's `onSuccess` callback will still be
-             * invoked).
+             * creation is completed). Rejecting the returned promise with `'skipped'` will consider
+             * the blob to be skipped while rejecting with anything else will fail blob creation.
+             * Regardless of blob creation's success, the upload will still be considered a success
+             * (ie. the uploader's `onSuccess` callback will still be invoked).
              *
              * @param  {File} file File to create blob for
              * @return {undefined|Object|Promise} Optional changeset (or promise resolving to the
              *                                    changeset) to be applied to the file
              *                                    representation kept by the uploader.
+             *                                    Reject with `'skipped'` to mark the blob creation
+             *                                    as skipped, or reject with anything else to mark
+             *                                    it as failed.
              */
             handleBlobCreation: func
 
@@ -61,10 +65,18 @@ const CreateBlobUploader = (Uploader) => (
                     uploader.setStatusOfFile(file.id, FileStatus.CREATED_BLOB, blobCreationChangeSet)
                 ))
                 .catch((err) => {
-                    if (process.env.NODE_ENV !== 'production') {
-                        console.warn(err); // eslint-disable-line no-console
+                    let status;
+                    if (err === 'skipped') {
+                        status = FileStatus.SKIPPED_BLOB;
+                    } else {
+                        if (process.env.NODE_ENV !== 'production') {
+                            console.warn(err); // eslint-disable-line no-console
+                        }
+
+                        status = FileStatus.FAILED_BLOB;
                     }
-                    return uploader.setStatusOfFile(file.id, FileStatus.FAILED_BLOB);
+
+                    return uploader.setStatusOfFile(file.id, status);
                 })
                 // Act as a .finally() clause to resolve the promises returned from the .then()
                 // and .catch() clauses above

@@ -64,7 +64,11 @@ export function removedFilesFilter(file) {
 export function uploadedFilesFilter(file) {
     return file.progress === 100 &&
            (file.status === FileStatus.UPLOAD_SUCCESSFUL ||
-            file.status === FileStatus.ONLINE);
+            file.status === FileStatus.CREATING_BLOB ||
+            file.status === FileStatus.CREATED_BLOB ||
+            file.status === FileStatus.FAILED_BLOB ||
+            file.status === FileStatus.ONLINE ||
+            file.status === FileStatus.SKIPPED_BLOB);
 }
 
 /**

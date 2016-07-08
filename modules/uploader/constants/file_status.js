@@ -10,7 +10,8 @@ const FileStatus = Object.assign({}, fineUploader.status, {
     CREATING_BLOB: 'creating_blob',
     CREATED_BLOB: 'created_blob',
     FAILED_BLOB: 'failed_blob',
-    ONLINE: 'online'
+    ONLINE: 'online',
+    SKIPPED_BLOB: 'skipped_blob'
 });
 
 export default FileStatus;
