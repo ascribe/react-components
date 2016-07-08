@@ -82,13 +82,13 @@ export function uploadingFilesFilter(file) {
 }
 
 /**
- * Filter function to filter out all deleted, canceled, failed, and failed to create blob files
+ * Filter function to filter out all deleted, canceled, failed files (ie. those that have not been
+ * uploaded successfully)
  * @param  {File}    file A file from filesToUpload that has a status property.
  * @return {boolean}      True if file is valid
  */
 export function validFilesFilter(file) {
-    return !removedFilesFilter(file) &&
-           file.status !== FileStatus.FAILED_BLOB;
+    return !removedFilesFilter(file);
 }
 
 /**
