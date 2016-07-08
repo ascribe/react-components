@@ -438,10 +438,11 @@ const ReactS3FineUploader = React.createClass({
         // then cancel all currently ongoing uploads
         this.cancelUploads();
 
-        // reset uploader
+        // reset uploader to clean up anything else
         this.state.uploader.reset();
 
-        // and finally reset internal data structures of component
+        // and finally reset internal data structures of component, which will also create a new
+        // uploader (and handle refetching the previous session state for us)
         this.setState(this.getInitialState());
     },
 

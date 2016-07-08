@@ -9,6 +9,9 @@ import React from 'react';
  * Only works when creating components with React.createClass(), as this directly adds methods to
  * the component spec.
  *
+ * Note that you cannot rely on babel-transform-react-display-names to generate a display name for
+ * components who are wrapped by a spec extender, so you should provide one yourself.
+ *
  * Usage:
  *   const componentSpecExtender = (componentSpec) => {
  *      const builder = new ComponentSpecExtensionBuilder(componentSpec);

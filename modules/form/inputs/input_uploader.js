@@ -38,6 +38,8 @@ const InputUploader = React.createClass({
          */
         getFileValue: func,
 
+        // Used by Property as the `onChange` for an Input (not to be confused with an uploader
+        // callback!).
         onChange: func,
 
         /**
