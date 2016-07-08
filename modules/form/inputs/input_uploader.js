@@ -50,6 +50,8 @@ const InputUploader = React.createClass({
          */
         onFilesValidationChange: func,
 
+        removeValue: bool,
+
         // Only used to signal for validation in Property
         required: bool
     },
@@ -84,7 +86,7 @@ const InputUploader = React.createClass({
 
     // Required by Property API
     getValue() {
-        return this.getFileValues(this.uploaderElement.getFiles());
+        return this.props.removeValue ? '' : this.getFileValues(this.uploaderElement.getFiles());
     },
 
     reset() {
