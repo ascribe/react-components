@@ -136,10 +136,10 @@ const InputUploader = React.createClass({
         };
 
         const handleFilesChanged = (childHandler) => (
-            (files) => {
-                safeInvoke(childHandler, files);
+            (...args) => {
+                safeInvoke(childHandler, ...args);
 
-                this.onChange(files);
+                this.onChange(...args);
             }
         );
 
