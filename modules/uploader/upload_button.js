@@ -29,7 +29,9 @@ const FileLabel = CssModules(({ files, handleRemoveFiles }) => {
 }, styles);
 
 FileLabel.displayName = 'FileLabel';
-const UploadButton = React.createClass({
+
+
+const UploadButton = CssModules(React.createClass({
     propTypes: {
         buttonType: oneOfType([func, string]),
         children: node,
@@ -154,6 +156,11 @@ const UploadButton = React.createClass({
             </span>
         );
     }
-});
+}), styles);
 
-export default Uploadify(CssModules(UploadButton, styles));
+export default Uploadify(UploadButton);
+
+// Also export the non-uploadify version for extension
+export {
+    UploadButton as UploadButtonBase
+};

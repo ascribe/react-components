@@ -31,7 +31,7 @@ const { bool, func, node, string } = React.PropTypes;
 // Initially based off of https://github.com/fedosejev/react-file-drag-and-drop
 // We don't need something as heavy as react-dnd (https://github.com/gaearon/react-dnd) for this,
 // as we just need to take care of the drop and drag events
-const UploadDragAndDropArea = React.createClass({
+const UploadDragAndDropArea = CssModules(React.createClass({
     propTypes: {
         children: node,
         className: string,
@@ -127,6 +127,11 @@ const UploadDragAndDropArea = React.createClass({
             </div>
         );
     }
-});
+}), styles);
 
-export default Uploadify(CssModules(UploadDragAndDropArea, styles));
+export default Uploadify(UploadDragAndDropArea);
+
+// Also export the non-uploadify version for extension
+export {
+    UploadDragAndDropArea as UploadDragAndDropAreaBase
+};

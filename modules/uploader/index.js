@@ -7,8 +7,8 @@ export CustomValidationUploader from './extended_uploaders/custom_validation_upl
 export FileHashUploader from './extended_uploaders/file_hash_uploader';
 
 // Uploader UI
-export UploadButton from './upload_button';
-export UploadDragAndDropArea from './upload_drag_and_drop_area';
+export UploadButton, { UploadButtonBase } from './upload_button';
+export UploadDragAndDropArea, { UploadDragAndDropAreaBase } from './upload_drag_and_drop_area';
 
 // Utilities and constants
 export FileStatus from './constants/file_status';
