@@ -19,6 +19,18 @@ export function failedFilesFilter(file) {
 }
 
 /**
+ * Filter function to filter for deleted, canceled, and failed files
+ * @param  {File}    file A file from filesToUpload that has a status property.
+ * @return {boolean}
+ */
+export function invalidFilesFilter(file) {
+    return file.status === FileStatus.CANCELED ||
+           file.status === FileStatus.DELETED ||
+           file.status === FileStatus.UPLOAD_FAILED ||
+           file.size === -1;
+}
+
+/**
  * Filter function to filter for files that have been paused.
  * @param  {File}    file  A file from filesToUpload, that has a status property.
  * @return {boolean}       True if file is paused
@@ -51,9 +63,7 @@ export function processingFilesFilter(file) {
  */
 export function removedFilesFilter(file) {
     return file.status === FileStatus.CANCELED ||
-           file.status === FileStatus.DELETED ||
-           file.status === FileStatus.UPLOAD_FAILED ||
-           file.size === -1;
+           file.status === FileStatus.DELETED;
 }
 
 /**
@@ -88,7 +98,7 @@ export function uploadingFilesFilter(file) {
  * @return {boolean}      True if file is valid
  */
 export function validFilesFilter(file) {
-    return !removedFilesFilter(file);
+    return !invalidFilesFilter(file);
 }
 
 /**
