@@ -2,6 +2,8 @@ import React from 'react';
 
 import { isShallowEqual, safeInvoke, sanitize } from 'js-utility-belt/es6';
 
+import { uploadedFilesFilter } from '../../uploader/utils/file_filters';
+
 
 const { bool, element, func } = React.PropTypes;
 
@@ -58,7 +60,7 @@ const InputUploader = React.createClass({
 
     getDefaultProps() {
         return {
-            getFileValue: (file) => file.name
+            getFileValue: (file) => (uploadedFilesFilter(file) ? file.name : null)
         };
     },
 
@@ -109,7 +111,7 @@ const InputUploader = React.createClass({
         // Propagate change up by faking an event's payload
         safeInvoke(onChange, {
             target: {
-                value: this.getFileValues(files)
+                value: this.getValue()
             }
         });
     },
