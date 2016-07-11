@@ -80,6 +80,10 @@ const InputUploader = React.createClass({
         return isShallowEqual(this.props, nextProps);
     },
 
+    focus() {
+        safeInvoke(this.uploaderElement.focus);
+    },
+
     getFileValues(files) {
         const fileValues = sanitize(files.map(this.props.getFileValue));
 
