@@ -13,3 +13,4 @@ export InputUploader from './inputs/input_uploader';
 // Utilities
 export FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
 export PropertySpecExtender from './utils/property_spec_extender';
+export formSpecExtender from './utils/form_spec_extender';
