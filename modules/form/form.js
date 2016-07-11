@@ -12,7 +12,7 @@ import FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
 import Grouping from '../ui/grouping';
 
 
-const { arrayOf, bool, func, node, object, oneOf, shape, string } = React.PropTypes;
+const { arrayOf, bool, func, node, oneOf, shape, string } = React.PropTypes;
 
 // Property types that Form will always recognize and track
 const DEFAULT_TRACKED_PROPERTY_TYPES = [Property, SimpleProperty];
@@ -33,6 +33,7 @@ const EditedButtonList = ({ handleCancel }) => (
 
 EditedButtonList.displayName = 'EditedButtonList';
 
+
 function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
     const Form = React.createClass({
         propTypes: {
@@ -42,7 +43,6 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
             buttonDefault: node,
             buttonEdited: node,
             buttonSubmitting: node,
-            className: string,
 
             // Any additional custom property types that the form should track.
             // Regardless of custom types given here, Form will always recognize the property types
@@ -64,7 +64,8 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
 
             onSubmit: func,
             onValidationError: func,
-            style: object
+
+            // All other props are passed to the rendered <form> element
         },
 
         getDefaultProps() {
@@ -234,18 +235,21 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
         render() {
             const {
                 autoComplete,
-                className,
                 fakeAutoCompleteInputs,
-                style
+                buttonDefault: ignoredButtonDefault, // ignored
+                buttonEdited: ignoredButtonEdited, // ignored
+                buttonSubmitting: ignoredButtonSubmitted, // ignored
+                onSubmit: ignoredOnSubmit, // ignored
+                onValidationError: ignoredOnValidationError, // ignored
+                ...props
             } = this.props;
 
             return (
                 <form
+                    {...props}
                     autoComplete={autoComplete}
-                    className={className}
                     onSubmit={this.onSubmit}
-                    role="form"
-                    style={style}>
+                    role="form">
                     {autoComplete === 'off' ? fakeAutoCompleteInputs : null}
                     {this.renderChildren()}
                     {this.renderButtons()}
