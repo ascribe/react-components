@@ -1,8 +1,8 @@
-import { ComponentSpecExtensionBuilder } from '../../utils/react';
+import { createComponentSpecExtensionBuilder } from '../../utils/react';
 
 
 const uploaderSpecExtender = (uploaderComponentSpec, uploaderRefName = 'uploader') => {
-    const builder = new ComponentSpecExtensionBuilder(uploaderComponentSpec, uploaderRefName);
+    const builder = createComponentSpecExtensionBuilder(uploaderComponentSpec, uploaderRefName);
 
     builder
         .extendForFn('getChunks')

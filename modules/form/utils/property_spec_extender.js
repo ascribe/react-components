@@ -1,8 +1,8 @@
-import { ComponentSpecExtensionBuilder } from '../../utils/react';
+import { createComponentSpecExtensionBuilder } from '../../utils/react';
 
 
 const propertySpecExtender = (propertyComponentSpec, propertyRefName = 'property') => {
-    const builder = new ComponentSpecExtensionBuilder(propertyComponentSpec, propertyRefName);
+    const builder = createComponentSpecExtensionBuilder(propertyComponentSpec, propertyRefName);
 
     builder
         .extendForFn('focus')
