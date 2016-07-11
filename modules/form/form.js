@@ -61,6 +61,9 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
                 type: oneOf([FakeAutoCompleteInputs])
             }),
 
+            // Same as <form>'s `novalidate` property
+            noValidate: bool,
+
             onSubmit: func,
             onValidationError: func,
 
@@ -133,10 +136,14 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
         },
 
         onSubmit(event) {
-            const { onSubmit, onValidationError } = this.props;
+            const { noValidate, onSubmit, onValidationError } = this.props;
 
+            let errors;
+            if (!noValidate) {
+                errors = this.validate();
+            }
 
-            const errors = this.validate();
+            if (errors && Object.keys(errors).length) {
                 safeInvoke(onValidationError, errors);
             } else {
                 this.setState({ submitting: true });
