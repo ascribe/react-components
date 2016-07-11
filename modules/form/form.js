@@ -31,12 +31,34 @@ const EditedButtonList = ({ handleCancel }) => (
 EditedButtonList.displayName = 'EditedButtonList';
 
 
+/**
+ * Forms are set up to track only a few Property types in their children; any other extraneous
+ * elements, including inputs, will be ignored by the Form (such elements may be useful for styling,
+ * for example). If you define your own custom Property types, you should use
+ * createFormForPropertyTypes() to create a custom Form type that can track those Properties.
+ *
+ * @param  {...function} propertyType Custom Property types to track on the returned Form
+ * @return {Component}                Form component that can track the given Properties
+ */
 function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
+    /**
+     * Easier-to-use Form component whose philosophy is based upon a form being a set of properties.
+     * Having properties as an abstraction layer above raw inputs provides a standard structure for
+     * styling inputs as well as a standard interface for defining new, custom inputs.
+     */
     const Form = React.createClass({
         propTypes: {
             children: node.isRequired,
 
+            // Same as <form>'s `autocomplete` property
             autoComplete: oneOf(['on', 'off']),
+
+            /* Elements to use as buttons at the bottom of the Form for different Form states:
+             *   - buttonDefault:    default; when the Form is not in an edited or submitting state
+             *   - buttonEdited:     when the Form has been edited from its last submission state
+             *   - buttonSubmitting: when the Form is being submitted (ie. when onSubmit()'s promise
+             *                       is still pending)
+             */
             buttonDefault: node,
             buttonEdited: node,
             buttonSubmitting: node,
@@ -48,7 +70,8 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
              */
             customPropertyTypes: arrayOf(func),
 
-            disabled: bool, // Can be used to freeze the whole form
+            // Can be used to freeze the whole form
+            disabled: bool,
 
             /**
              * Allows you to specify fake hidden inputs that will be inserted at the start of the form
@@ -56,15 +79,44 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
              * Webkit-based browsers, which ignore the `autoComplete="off"` attribute
              * (see http://stackoverflow.com/questions/15738259/disabling-chrome-autofill/15917221#15917221),
              * into autocompleting these fake inputs rather than the actual inputs.
+             *
+             * See FakeAutoCompleteInputs for an easy way to generate these inputs.
              */
             fakeAutoCompleteInputs: shape({
-                type: oneOf([FakeAutoCompleteInputs])
+                type: oneOf([FakeAutoCompleteInputs, node])
             }),
 
             // Same as <form>'s `novalidate` property
             noValidate: bool,
 
+            /**
+             * Called on form submission, similar to <form>'s `onSubmit` callback except no request
+             * is sent automatically.
+             *
+             * If a promise is returned, it is expected that the promise will resolve on
+             * submission success or rejects on submission failure. If only a value is returned,
+             * it's assumed to be a successful submission. Will call each of the tracked Property's
+             * onSubmitSuccess and onSubmitError callbacks and forward any success values or
+             * failure errors.
+             *
+             * Note: All onSubmit handling should be handled through this callback, including any
+             * network requests. The event handler returns false and `preventDefault` is called on
+             * the native onSubmit event so the rendered form won't make a request even if the
+             * `action` and `method` props are included.
+             *
+             * @param  {object} formData Form data dictionary, holding entires in the form of:
+             *                             [Property's name]: value
+             * @return {*}               Result of form submission, either as a Promise or a normal
+             *                           value
+             */
             onSubmit: func,
+
+            /**
+             * Called when validation of any of the tracked Properties fails.
+             *
+             * @param {object} errors Errors dictionary, holding entries in the form of:
+             *                          [Property's name]: failed validation property
+             */
             onValidationError: func,
 
             // All other props are passed to the rendered <form> element
