@@ -12,10 +12,7 @@ import FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
 import Grouping from '../ui/grouping';
 
 
-const { arrayOf, bool, func, node, oneOf, shape, string } = React.PropTypes;
-
-// Property types that Form will always recognize and track
-const DEFAULT_TRACKED_PROPERTY_TYPES = [Property, SimpleProperty];
+const { arrayOf, bool, func, node, oneOf, shape } = React.PropTypes;
 
 // eslint-disable-next-line react/prop-types
 const EditedButtonList = ({ handleCancel }) => (
@@ -44,9 +41,11 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
             buttonEdited: node,
             buttonSubmitting: node,
 
-            // Any additional custom property types that the form should track.
-            // Regardless of custom types given here, Form will always recognize the property types
-            // in TRACKED_PROPERTY_TYPES
+            /**
+             * Any additional custom property types that the form should track.
+             * Regardless of custom types given here, the Form will always recognize the property
+             * types in TRACKED_PROPERTY_TYPES
+             */
             customPropertyTypes: arrayOf(func),
 
             disabled: bool, // Can be used to freeze the whole form
@@ -180,10 +179,7 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
 
         renderChildren() {
             const { children, customPropertyTypes, disabled } = this.props;
-            const trackedPropertyTypes = customPropertyTypes.concat(
-                TRACKED_PROPERTY_TYPES,
-                DEFAULT_TRACKED_PROPERTY_TYPES
-            );
+            const trackedPropertyTypes = customPropertyTypes.concat(TRACKED_PROPERTY_TYPES);
 
             // Reset and reregister our tracked Properties to ensure we're not tracking any
             // Properties that were removed
@@ -261,5 +257,10 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
     return Form;
 }
 
-export default createFormForPropertyTypes();
+// Property types that Form will always recognize and track
+const DEFAULT_TRACKED_PROPERTY_TYPES = [Property, SimpleProperty];
+
+// Export a default Form with the default registered Property types, but allow others to build their
+// own Forms that track custom Properties.
+export default createFormForPropertyTypes(DEFAULT_TRACKED_PROPERTY_TYPES);
 export { createFormForPropertyTypes };
