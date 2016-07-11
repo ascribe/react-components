@@ -135,21 +135,43 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
         onSubmit(event) {
             const { onSubmit, onValidationError } = this.props;
 
-            event.preventDefault();
 
             const errors = this.validate();
-            if (Object.keys(errors).length) {
                 safeInvoke(onValidationError, errors);
             } else {
-                const { invoked, result } = safeInvoke(onSubmit, this.getData());
-
-                if (invoked) {
-                    result.then(this.onSubmitComplete((propertyRef) => propertyRef.onSubmitSuccess()))
-                          .catch(this.onSubmitComplete((propertyRef) => propertyRef.onSubmitError()));
-                }
-
                 this.setState({ submitting: true });
+
+                const { invoked, result } = safeInvoke(onSubmit, this.getData());
+                if (invoked) {
+                    Promise.resolve(result)
+                    .then((res) => {
+                        Object
+                            .values(this._refs)
+                            .forEach((propertyRef) => propertyRef.onSubmitSuccess(res));
+
+                        return true;
+                    })
+                    .catch((err) => {
+                        Object
+                            .values(this._refs)
+                            .forEach((propertyRef) => propertyRef.onSubmitError(err));
+
+                        // Make the following .then() clause act as a .finally() clause
+                        return false;
+                    })
+                    .then((success) => {
+                        this.setState({
+                            // Once a form has been edited, it should be reset if it's been successfully
+                            // submitted or reset; if submission fails, it should stay edited.
+                            edited: !success,
+                            submitting: false
+                        });
+                    });
+                }
             }
+
+            event.preventDefault();
+            return false;
         },
 
         onSubmitComplete(propertyFn) {
