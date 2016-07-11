@@ -96,7 +96,7 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
             this._refs = {};
         },
 
-        getFormData() {
+        getData() {
             return Object.entries(this._refs).reduce((formData, [name, propertyRef]) => {
                 formData[name] = propertyRef.getValue();
                 return formData;
@@ -141,7 +141,7 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
             if (Object.keys(errors).length) {
                 safeInvoke(onValidationError, errors);
             } else {
-                const { invoked, result } = safeInvoke(onSubmit, this.getFormData());
+                const { invoked, result } = safeInvoke(onSubmit, this.getData());
 
                 if (invoked) {
                     result.then(this.onSubmitComplete((propertyRef) => propertyRef.onSubmitSuccess()))
