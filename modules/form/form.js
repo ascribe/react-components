@@ -53,11 +53,16 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
             // Same as <form>'s `autocomplete` property
             autoComplete: oneOf(['on', 'off']),
 
-            /* Elements to use as buttons at the bottom of the Form for different Form states:
+            /**
+             * Elements to use as buttons at the bottom of the Form for different Form states:
              *   - buttonDefault:    default; when the Form is not in an edited or submitting state
              *   - buttonEdited:     when the Form has been edited from its last submission state
              *   - buttonSubmitting: when the Form is being submitted (ie. when onSubmit()'s promise
              *                       is still pending)
+             *
+             * If you'd like to place buttons somewhere else, or have more control, you can pass
+             * `null` for these buttons and use the `onEdited`, `onSubmit`, and `onValidationError`
+             * callbacks to control your buttons.
              */
             buttonDefault: node,
             buttonEdited: node,
@@ -88,6 +93,12 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
 
             // Same as <form>'s `novalidate` property
             noValidate: bool,
+
+            /**
+             * Called when the Form has been edited for the first time, either after being loaded or
+             * after a successful submission.
+             */
+            onEdited: func,
 
             /**
              * Called on form submission, similar to <form>'s `onSubmit` callback except no request
@@ -191,7 +202,7 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
         /** CALLBACK HANDLERS **/
         onPropertyChange() {
             if (!this.state.edited) {
-                this.setState({ edited: true });
+                this.setState({ edited: true }, this.props.onEdited);
             }
         },
 
