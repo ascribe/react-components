@@ -417,7 +417,8 @@ const ReactS3FineUploader = React.createClass({
         this.state.uploader.cancelAll();
     },
 
-    /** PUBLIC EXPOSED METHODS FOR PARENTS (EVEN AFTER EXTENSION) **/
+
+    /** PUBLICLY EXPOSED METHODS FOR PARENTS (EVEN AFTER EXTENSION) **/
     getChunks() {
         return this.state.chunks;
     },

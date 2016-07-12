@@ -151,11 +151,17 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
             this._refs = {};
         },
 
+
+        /** PUBLICLY EXPOSED METHODS FOR PARENTS (EVEN AFTER EXTENSION) **/
         getData() {
             return Object.entries(this._refs).reduce((formData, [name, propertyRef]) => {
                 formData[name] = propertyRef.getValue();
                 return formData;
             }, {});
+        },
+
+        getProperties() {
+            return this._refs;
         },
 
         reset() {
@@ -181,6 +187,8 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
             }, {});
         },
 
+
+        /** CALLBACK HANDLERS **/
         onPropertyChange() {
             if (!this.state.edited) {
                 this.setState({ edited: true });

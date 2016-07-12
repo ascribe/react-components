@@ -6,6 +6,7 @@ const formSpecExtender = (formComponentSpec, formRefName = 'form') => {
 
     builder
         .extendForFn('getData')
+        .extendForFn('getProperties')
         .extendForFn('reset')
         .extendForFn('validate');
 
