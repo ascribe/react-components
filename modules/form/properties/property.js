@@ -18,12 +18,14 @@ const PropertyErrorLabel = CssModules(({ errors }) => (
                             : null
 ), styles);
 
-const PropertyFooter = CssModules(({ children }) => (
-    <div styleName="footer">{children}</div>
+const PropertyFooter = CssModules(({ footer }) => (
+    footer ? (<div styleName="footer">{footer}</div>)
+           : null
 ), styles);
 
-const PropertyLabel = CssModules(({ htmlFor, ...props }) => (
-    <label {...props} htmlFor={htmlFor} styleName="label" />
+const PropertyLabel = CssModules(({ htmlFor, label, ...props }) => (
+    label ? (<label {...props} htmlFor={htmlFor} styleName="label">{label}</label>)
+          : null
 ), styles);
 
 // The default layout component acts as both the Property container and its body
@@ -352,11 +354,10 @@ const Property = React.createClass({
             labelType: LabelType,
             layoutType: LayoutType
         } = this.props;
-        const labelElement = LabelType && label ? (<LabelType htmlFor={name}>{label}</LabelType>)
-                                                : null;
 
-        const footerElement = FooterType && footer ? (<FooterType>{footer}</FooterType>) : null;
         const errorElement = ErrorLabelType ? (<ErrorLabelType errors={errors} />) : null;
+        const labelElement = LabelType ? (<LabelType htmlFor={name} label={label} />) : null;
+        const footerElement = FooterType ? (<FooterType footer={footer} />) : null;
 
         return (
             <LayoutType
