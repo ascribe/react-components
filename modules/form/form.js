@@ -9,6 +9,8 @@ import SimpleProperty from './properties/simple_property';
 
 import FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
 
+import { objectOnlyArrayValue } from '../prop_types';
+
 import Grouping from '../ui/grouping';
 
 
@@ -79,6 +81,21 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
             disabled: bool,
 
             /**
+             * Errors to display.
+             *
+             * Should be a dictionary mapping Property names to an array of errors.
+             * The errors will be filtered out and passed to the Property whose name matches the key
+             * (if any). A special `form` key in this dictionary will associate any of the errors
+             * under it to the Form (to be rendered through `renderFormErrors`) instead of any
+             * Properties.
+             *
+             * Each entry in this dictionary should be of the form:
+             *   - [Property name]: error[]
+             *   - form: error[] to associate with the Form
+             */
+            errors: objectOnlyArrayValue,
+
+            /**
              * Allows you to specify fake hidden inputs that will be inserted at the start of the form
              * when the `autoComplete` prop is also set to "off". This is necessary to trick
              * Webkit-based browsers, which ignore the `autoComplete="off"` attribute
@@ -129,6 +146,18 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
              *                          [Property's name]: failed validation property
              */
             onValidationError: func,
+
+            /**
+             * Render any Form-associated errors (ie. errors passed in through `errors.form`) that
+             * will be displayed on top of any other children.
+             *
+             * If you'd like more control or want to place your errors somewhere else, you can
+             * ignore this prop and render your components using the given `errors.form`.
+             *
+             * @param  {*[]}  errors Errors associated to this Form
+             * @return {node}        Any React-renderable node
+             */
+            renderFormErrors: func,
 
             // All other props are passed to the rendered <form> element
         },
@@ -278,7 +307,7 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
         },
 
         renderChildren() {
-            const { children, customPropertyTypes, disabled } = this.props;
+            const { children, customPropertyTypes, disabled, errors = {} } = this.props;
             const trackedPropertyTypes = customPropertyTypes.concat(TRACKED_PROPERTY_TYPES);
 
             // Reset and reregister our tracked Properties to ensure we're not tracking any
@@ -317,6 +346,7 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
                         // If the entire form is disabled, a child can still be activated if it uses
                         // the `overrideFormDefaults` prop to control its disabled status itself.
                         disabled: overrideFormDefaults ? childDisabled : disabled || childDisabled,
+                        errors: errors[name],
                         onChange: (...args) => {
                             safeInvoke(onChange, ...args);
                             this.onPropertyChange();
@@ -331,14 +361,26 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
         render() {
             const {
                 autoComplete,
+                errors,
                 fakeAutoCompleteInputs,
+                renderFormErrors,
                 buttonDefault: ignoredButtonDefault, // ignored
                 buttonEdited: ignoredButtonEdited, // ignored
                 buttonSubmitting: ignoredButtonSubmitted, // ignored
+                customPropertyTypes: ignoredCustomPropertyTypes, // ignored
+                onEdited: ignoredOnEdited, // ignored
                 onSubmit: ignoredOnSubmit, // ignored
                 onValidationError: ignoredOnValidationError, // ignored
                 ...props
             } = this.props;
+
+            let errorComponent;
+            if (errors && errors.form) {
+                const { invoked, result } = safeInvoke(renderFormErrors, errors.form);
+                if (invoked) {
+                    errorComponent = result;
+                }
+            }
 
             return (
                 <form
@@ -347,6 +389,7 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
                     onSubmit={this.onSubmit}
                     role="form">
                     {autoComplete === 'off' ? fakeAutoCompleteInputs : null}
+                    {errorComponent}
                     {this.renderChildren()}
                     {this.renderButtons()}
                 </form>

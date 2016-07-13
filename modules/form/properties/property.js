@@ -9,11 +9,13 @@ import { validateInput } from '../utils/private/validation_utils';
 import styles from './property.scss';
 
 
-const { bool, element, func, node, oneOfType, string } = React.PropTypes;
+const { any, arrayOf, bool, element, func, node, oneOfType, string } = React.PropTypes;
 
 // Default layouts
-const PropertyErrorLabel = CssModules(({ children }) => (
-    <div styleName="label-error">{children}</div>
+const PropertyErrorLabel = CssModules(({ errors }) => (
+    // Show show the first error, if any
+    errors && errors.length ? (<div styleName="label-error">{errors[0]}</div>)
+                            : null
 ), styles);
 
 const PropertyFooter = CssModules(({ children }) => (
@@ -45,7 +47,6 @@ const Property = React.createClass({
 
         autoFocus: bool,
         className: string,
-        createErrorMessage: func,
 
         /**
          * As the child input is controlled by this Property, the default value should be set using
@@ -62,6 +63,7 @@ const Property = React.createClass({
 
         disabled: bool,
         errorLabelType: func,
+        errors: arrayOf(any),
         footer: node,
         footerType: func,
         hidden: bool,
@@ -90,19 +92,6 @@ const Property = React.createClass({
 
     getDefaultProps() {
         return {
-            createErrorMessage: (errorProp) => {
-                switch (errorProp) {
-                    case 'min' || 'max':
-                        return 'The value you defined is not in the valid range';
-                    case 'pattern':
-                        return 'The value you defined is not matching the valid pattern';
-                    case 'required':
-                        return 'This field is required';
-                    default:
-                        return null;
-                }
-            },
-
             /**
              * With react 15.0, we have to make sure that valueless controlled inputs should use
              * value="" instead of value={null}.
@@ -132,7 +121,6 @@ const Property = React.createClass({
              */
             initialValue,
 
-            errorMessage: null,
             isFocused: false,
 
             /**
@@ -204,14 +192,14 @@ const Property = React.createClass({
     },
 
     getStatus() {
-        const { disabled, highlighted, hidden } = this.props;
-        const { errorMessage, isFocused } = this.state;
+        const { errors, disabled, highlighted, hidden } = this.props;
+        const { isFocused } = this.state;
 
         if (hidden) {
             return 'hidden';
         } else if (disabled) {
             return 'fixed';
-        } else if (errorMessage) {
+        } else if (errors && errors.length) {
             return 'error';
         } else if (isFocused) {
             return 'focused';
@@ -241,22 +229,7 @@ const Property = React.createClass({
 
     // Required by Form API
     validate() {
-        const errorProp = validateInput(this.inputElement, this.getValueOfInputElement());
-        const newState = { errorMessage: null };
-
-        if (errorProp) {
-            const {
-                invoked,
-                result: errorMessage
-            } = safeInvoke(this.props.createErrorMessage, errorProp);
-
-            if (invoked && errorMessage) {
-                newState.errorMessage = errorMessage;
-            }
-        }
-
-        this.setState(newState);
-        return errorProp;
+        return validateInput(this.inputElement, this.getValueOfInputElement());
     },
 
     onBlur(event) {
@@ -370,6 +343,7 @@ const Property = React.createClass({
     render() {
         const {
             className,
+            errors,
             footer,
             label,
             name,
@@ -378,16 +352,11 @@ const Property = React.createClass({
             labelType: LabelType,
             layoutType: LayoutType
         } = this.props;
-        const { errorMessage } = this.state;
-
-        const errorElement = ErrorLabelType && errorMessage ? (
-            <ErrorLabelType>{errorMessage}</ErrorLabelType>
-        ) : null;
-
         const labelElement = LabelType && label ? (<LabelType htmlFor={name}>{label}</LabelType>)
                                                 : null;
 
         const footerElement = FooterType && footer ? (<FooterType>{footer}</FooterType>) : null;
+        const errorElement = ErrorLabelType ? (<ErrorLabelType errors={errors} />) : null;
 
         return (
             <LayoutType
