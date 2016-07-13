@@ -5,7 +5,6 @@ import React from 'react';
 import { safeInvoke } from 'js-utility-belt/es6';
 
 import Property from './properties/property';
-import SimpleProperty from './properties/simple_property';
 
 import FakeAutoCompleteInputs from './utils/fake_auto_complete_inputs';
 
@@ -400,10 +399,7 @@ function createFormForPropertyTypes(...TRACKED_PROPERTY_TYPES) {
     return Form;
 }
 
-// Property types that Form will always recognize and track
-const DEFAULT_TRACKED_PROPERTY_TYPES = [Property, SimpleProperty];
-
-// Export a default Form with the default registered Property types, but allow others to build their
-// own Forms that track custom Properties.
-export default createFormForPropertyTypes(DEFAULT_TRACKED_PROPERTY_TYPES);
+// Export a default Form with just Property as a recognized Property type, but allow others to build
+// their own Forms that track custom Properties.
+export default createFormForPropertyTypes(Property);
 export { createFormForPropertyTypes };

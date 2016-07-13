@@ -11,19 +11,23 @@ import { createTextFile, computeFileHash } from 'js-utility-belt/es6/file';
 
 import {
     FakeAutoCompleteInputs,
-    Form,
+    createFormForPropertyTypes,
     InputCheckbox,
     InputDate,
     InputTextarea,
     InputUploader,
     Property,
-    SimpleProperty
+    SimpleProperty as simplePropertyBuilder
 } from '../modules/form';
 import { Checkbox, Grouping, Spinner } from '../modules/ui';
 import { UploadButton, UploadDragAndDropArea } from '../modules/uploader';
 
 import './app.scss';
 
+
+// Create Form and tracked Property types
+const SimpleProperty = simplePropertyBuilder(Property);
+const Form = createFormForPropertyTypes(Property, SimpleProperty);
 
 // TODO: turn this into a nicely formatted styleguide
 const App = () => {
