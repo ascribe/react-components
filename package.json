@@ -23,7 +23,7 @@
     "start": "NODE_ENV=demo node server.demo.js"
   },
   "author": "Ascribe",
-  "license": "Copyright",
+  "license": "LGPL-3.0",
   "private": true,
   "devDependencies": {
     "autoprefixer": "^6.3.6",
